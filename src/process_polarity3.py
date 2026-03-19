@@ -490,6 +490,262 @@ for ph, sc in top_global[:40]:
         'doc_freq':   phrase_doc_freq[ph],
     })
 
+# ── Research Theme Engine ────────────────────────────────────────────────
+# Seeded themes with keyword anchors. Each theme auto-collects matching
+# cross-project phrases and tracks UNIQUE REVIEWERS (not mentions/projects)
+# so one prolific reviewer can't inflate a theme.
+# Phrases that match no theme surface as "Emerging" clusters automatically.
+
+RESEARCH_THEMES = [
+    {
+        'id': 'language_ai',
+        'label': 'Language & AI',
+        'color': '#34d399',
+        'desc': 'Indigenous language revitalization through AI and language technologies',
+        'keywords': [
+            'language revitalization', 'language model', 'language technology',
+            'language data', 'language-learning', 'small language', 'nlp',
+            'linguistic', 'speech', 'translation', 'corpus', 'oral language',
+            'language preservation', 'endangered language', 'language tools',
+            'language pedagogy', 'language community', 'language technologies',
+        ],
+    },
+    {
+        'id': 'data_governance',
+        'label': 'Data Sovereignty & Governance',
+        'color': '#818cf8',
+        'desc': 'Community control over data, governance frameworks, data rights',
+        'keywords': [
+            'data sovereignty', 'data governance', 'governance framework',
+            'community-controlled', 'data rights', 'data practices',
+            'data protocol', 'ownership', 'ethical framework', 'consent',
+            'community consent', 'governance', 'data stewardship',
+            'community-based data',
+        ],
+    },
+    {
+        'id': 'community_led',
+        'label': 'Community-Led Practice',
+        'color': '#f59e0b',
+        'desc': 'Research driven by community priorities and community-defined goals',
+        'keywords': [
+            'community-led', 'community-driven', 'community-based',
+            'collective decision', 'collective decision-making', 'participatory',
+            'community-centred', 'community-centered', 'community-defined',
+            'community benefit', 'grassroots', 'community-controlled',
+        ],
+    },
+    {
+        'id': 'relational',
+        'label': 'Relational Approaches',
+        'color': '#22d3ee',
+        'desc': 'Relational methodologies, reciprocal relationships, dialogue-based research',
+        'keywords': [
+            'relational', 'reciprocal', 'reciprocity', 'dialogue',
+            'dialogue-based', 'place-based', 'relationship', 'kinship',
+            'co-creation', 'partnership', 'mutual', 'two-way',
+        ],
+    },
+    {
+        'id': 'capacity',
+        'label': 'Capacity & Mentorship',
+        'color': '#fb923c',
+        'desc': 'Building researcher capacity, mentorship, knowledge transfer',
+        'keywords': [
+            'capacity building', 'mentorship', 'knowledge transfer',
+            'emerging researcher', 'training', 'professional development',
+            'mentorship learning', 'curriculum', 'pedagogy', 'skill building',
+            'capacity-building', 'researcher development',
+        ],
+    },
+    {
+        'id': 'ik_systems',
+        'label': 'Indigenous Knowledge Systems',
+        'color': '#4ade80',
+        'desc': 'Traditional knowledge, IK methods, ways of knowing integrated into AI',
+        'keywords': [
+            'indigenous knowledge', 'traditional knowledge', 'cultural knowledge',
+            'ways of knowing', 'knowledge holder', 'land-based',
+            'knowledge system', 'oral tradition', 'indigenous-centred',
+            'elder', 'cultural protocol', 'cultural grounding',
+        ],
+    },
+    {
+        'id': 'network',
+        'label': 'Network & Cross-Project',
+        'color': '#60a5fa',
+        'desc': 'Building connections across projects, pods, and communities',
+        'keywords': [
+            'connect pods', 'pods exploring', 'cross-project', 'network building',
+            'collaboration potential', 'bridge', 'cross-pod', 'shared infrastructure',
+            'collective decision-making', 'network', 'pod', 'across pods',
+        ],
+    },
+    {
+        'id': 'technical_ai',
+        'label': 'Technical AI Development',
+        'color': '#f472b6',
+        'desc': 'Building and adapting AI systems, models, tools, and pipelines',
+        'keywords': [
+            'machine learning', 'neural', 'algorithm', 'training data',
+            'model', 'pipeline', 'system', 'architecture', 'tool',
+            'technical development', 'prototype', 'workflow',
+        ],
+    },
+]
+
+def phrase_matches_theme(phrase, theme_keywords):
+    """Check if a phrase matches any keyword for a theme (substring match)."""
+    p = phrase.lower()
+    for kw in theme_keywords:
+        if kw in p or p in kw:
+            return True
+    return False
+
+def text_matches_theme(text, theme_keywords):
+    """Check if reviewer text contains any theme keyword."""
+    t = text.lower()
+    return any(kw in t for kw in theme_keywords)
+
+# For each theme: find unique reviewers, projects, phrases, and key sentences
+theme_results = []
+all_classified_phrases = set()
+
+for theme in RESEARCH_THEMES:
+    tid   = theme['id']
+    tkws  = theme['keywords']
+
+    unique_reviewers = set()
+    theme_projects   = set()
+    theme_phrases    = []
+    theme_sentences  = []  # {text, reviewer, project, code, polarity}
+
+    # Scan every eval row
+    for r in eval_rows:
+        full_text = ' '.join([r['transform'], r['advance'], r['collab'], r['risk']])
+        if not full_text.strip():
+            continue
+        if text_matches_theme(full_text, tkws):
+            unique_reviewers.add(r['reviewer'])
+            theme_projects.add(r['project'])
+            # Collect matching sentences
+            for sent in split_sentences(full_text):
+                if text_matches_theme(sent, tkws):
+                    pol, _ = classify_polarity(sent)
+                    theme_sentences.append({
+                        'text':     sent,
+                        'reviewer': r['reviewer'],
+                        'project':  extract_lead(r['project']),
+                        'code':     re.search(r'CfP[\w\-]+', r['project']).group(0)
+                                    if re.search(r'CfP[\w\-]+', r['project']) else '',
+                        'polarity': pol,
+                    })
+
+    # Collect matching cross-project phrases
+    for ph, _ in top_global:
+        if phrase_matches_theme(ph, tkws):
+            theme_phrases.append(ph)
+            all_classified_phrases.add(ph)
+
+    # Deduplicate sentences
+    seen_s = set()
+    deduped_sents = []
+    for s in theme_sentences:
+        key = s['text'][:70]
+        if key not in seen_s:
+            seen_s.add(key)
+            deduped_sents.append(s)
+    # Sort: positives first, then longer sentences
+    deduped_sents.sort(key=lambda x: (0 if x['polarity'] == 'positive' else 1, -len(x['text'])))
+
+    n_rev = len(unique_reviewers)
+    if n_rev == 0:
+        continue  # Skip themes with no reviewer coverage yet
+
+    theme_results.append({
+        'id':              tid,
+        'label':           theme['label'],
+        'color':           theme['color'],
+        'desc':            theme['desc'],
+        'n_reviewers':     n_rev,
+        'reviewers':       sorted(unique_reviewers),
+        'n_projects':      len(theme_projects),
+        'projects':        sorted(theme_projects),
+        'phrases':         theme_phrases[:8],
+        'sentences':       deduped_sents[:6],
+    })
+
+# ── Emerging themes: cross-project phrases not captured by any seed theme ──
+# Group unclassified phrases by co-occurrence within the same reviewer texts
+unclassified = [ph for ph, _ in top_global if ph not in all_classified_phrases]
+
+# Find reviewers who use each unclassified phrase
+phrase_reviewers = defaultdict(set)
+for r in eval_rows:
+    full_text = ' '.join([r['transform'], r['advance'], r['collab'], r['risk']]).lower()
+    for ph in unclassified:
+        if ph in full_text:
+            phrase_reviewers[ph].add(r['reviewer'])
+
+# Cluster unclassified phrases by shared reviewer set
+# Simple approach: group phrases used by 2+ of the same reviewers
+emerging_clusters = []
+used_phrases = set()
+for ph in unclassified:
+    if ph in used_phrases or len(phrase_reviewers[ph]) < 2:
+        continue
+    # Find phrases with overlapping reviewer sets
+    cluster_phrases = [ph]
+    cluster_reviewers = set(phrase_reviewers[ph])
+    for ph2 in unclassified:
+        if ph2 == ph or ph2 in used_phrases:
+            continue
+        overlap = cluster_reviewers & phrase_reviewers[ph2]
+        if len(overlap) >= 1 and len(phrase_reviewers[ph2]) >= 1:
+            cluster_phrases.append(ph2)
+            cluster_reviewers |= phrase_reviewers[ph2]
+    if len(cluster_reviewers) >= 2:
+        # Collect sentences containing these phrases
+        em_sents = []
+        seen_s = set()
+        for r in eval_rows:
+            full_text = ' '.join([r['transform'], r['advance'], r['collab'], r['risk']])
+            for sent in split_sentences(full_text):
+                if any(cp in sent.lower() for cp in cluster_phrases):
+                    key = sent[:70]
+                    if key not in seen_s:
+                        seen_s.add(key)
+                        pol, _ = classify_polarity(sent)
+                        em_sents.append({'text': sent, 'reviewer': r['reviewer'],
+                                         'project': extract_lead(r['project']),
+                                         'code': re.search(r'CfP[\w\-]+', r['project']).group(0)
+                                                 if re.search(r'CfP[\w\-]+', r['project']) else '',
+                                         'polarity': pol})
+        # Name the emerging theme from its top phrase
+        label = 'Emerging: ' + cluster_phrases[0].title()
+        emerging_clusters.append({
+            'id':          'emerging_' + cluster_phrases[0].replace(' ', '_').replace('-', '_'),
+            'label':       label,
+            'color':       '#94a3b8',
+            'desc':        'Pattern surfaced automatically from reviewer language — not yet in a named theme',
+            'n_reviewers': len(cluster_reviewers),
+            'reviewers':   sorted(cluster_reviewers),
+            'n_projects':  len(set(ph for ph in cluster_phrases)),
+            'projects':    [],
+            'phrases':     cluster_phrases[:6],
+            'sentences':   em_sents[:4],
+            'emerging':    True,
+        })
+        used_phrases.update(cluster_phrases)
+
+# Add emerging clusters to theme results (they appear with dashed borders in UI)
+all_themes = theme_results + emerging_clusters
+
+print(f"\n=== RESEARCH THEMES ===")
+for t in all_themes:
+    em = ' [EMERGING]' if t.get('emerging') else ''
+    print(f"  {t['label']:35s} reviewers={t['n_reviewers']} phrases={len(t['phrases'])}{em}")
+
 # Per-project top phrases (cross-project bigrams/hyphenated only)
 for pid, pd in project_data.items():
     top_p = sorted(
@@ -759,6 +1015,7 @@ out_data = {
     'projects':            output_projects,
     'reviewers':           output_reviewers,
     'emergent_phrases':    emergent_phrases,
+    'research_themes':     all_themes,
     'network_signals':     network_signals,
     'ts_dimensions':       TS_DIMENSIONS,
     'ts_project_scores':   ts_project_scores,

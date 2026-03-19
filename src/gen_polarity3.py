@@ -821,116 +821,163 @@ function renderCoverage() {
 // ── VIEW 3: Emergent Voice ────────────────────────────────────────────────
 function renderVoice() {
   var el = document.getElementById('view-voice');
+  var themes = DATA.research_themes || [];
 
-  var phrases = DATA.emergent_phrases.filter(function(p) {
-    // All phrases are now bigrams/hyphenated + cross-project (n>=2) from pipeline
-    // Extra guard: keep only multi-word or hyphenated
-    var isBigram = p.phrase.indexOf(' ') > -1;
-    var isHyphen = p.phrase.indexOf('-') > -1;
-    return (isBigram || isHyphen) && p.n_projects >= 2;
-  }).slice(0, 28);
-
-  el.innerHTML = '<h3 style="font-size:13px;font-weight:700;color:#64748b;margin-bottom:8px">'
-    + 'What reviewers are actually saying &mdash; emergent phrases from reviewer text. No categories predefined. '
-    + '<span style="color:#4ade80">Green</span> = used in positive signals, '
-    + '<span style="color:#f87171">Red</span> = appears in concerns, '
-    + '<span style="color:#818cf8">Purple</span> = both / neutral.</h3>'
+  el.innerHTML =
+    '<div style="margin-bottom:10px">'
+    + '<h3 style="font-size:13px;font-weight:700;color:#64748b;margin-bottom:3px">'
+    + 'Research themes interpreted from reviewer language &mdash; not predefined categories.'
+    + '</h3>'
+    + '<p style="font-size:11px;color:#475569;line-height:1.5">'
+    + 'Bubble size = number of <strong>unique reviewers</strong> who touched this theme. '
+    + 'Dashed border = pattern surfaced automatically, not yet named. Click any bubble to explore.'
+    + '</p></div>'
     + '<div id="voice-wrap">'
     + '<div id="voice-svg-wrap"></div>'
-    + '<div id="voice-detail"><h3>Click a phrase to explore</h3>'
-    + '<p style="font-size:11px;color:#64748b;line-height:1.5">Each bubble shows a phrase that emerged from reviewer language. Size = how distinctive it is. Click to see which projects use it.</p>'
-    + '</div></div>';
+    + '<div id="voice-detail">'
+    + '<div style="font-size:12px;color:#64748b;line-height:1.7;padding-top:8px">'
+    + 'Select a theme to see which reviewers touched it, the phrases they used, and key sentences.'
+    + '</div></div></div>';
 
   var svgWrap = document.getElementById('voice-svg-wrap');
-  var W = svgWrap.clientWidth || 580;
+  var W = svgWrap.clientWidth || 560;
   var H = 460;
 
-  function phColor(pol) {
-    if (pol > 0) return '#4ade80';
-    if (pol < 0) return '#f87171';
-    return '#818cf8';
-  }
+  // Scale: bubble size = unique reviewer count (relational — all sizes matter)
+  var maxRev = d3.max(themes, function(t) { return t.n_reviewers; }) || 1;
+  var minRev = d3.min(themes, function(t) { return t.n_reviewers; }) || 1;
+  // Use sqrt scale so smallest is still visible, largest doesn't overwhelm
+  var rScale = d3.scaleSqrt()
+    .domain([minRev, maxRev])
+    .range([32, 72]);
 
-  var maxScore = d3.max(phrases, function(p) { return p.score; });
-  var rScale = d3.scaleSqrt().domain([0, maxScore]).range([24, 64]);
-
-  var nodes = phrases.map(function(p) {
-    return { phrase: p.phrase, score: p.score, polarity: p.polarity,
-             n_projects: p.n_projects, projects: p.projects,
-             r: rScale(p.score), x: W/2 + (Math.random()-.5)*100,
-             y: H/2 + (Math.random()-.5)*100 };
+  var nodes = themes.map(function(t, i) {
+    var angle = (i / themes.length) * 2 * Math.PI;
+    var spread = 120;
+    return {
+      id:          t.id,
+      label:       t.label,
+      color:       t.color,
+      desc:        t.desc,
+      n_reviewers: t.n_reviewers,
+      reviewers:   t.reviewers || [],
+      n_projects:  t.n_projects,
+      projects:    t.projects || [],
+      phrases:     t.phrases || [],
+      sentences:   t.sentences || [],
+      emerging:    t.emerging || false,
+      r:           rScale(t.n_reviewers),
+      x:           W/2 + Math.cos(angle) * spread,
+      y:           H/2 + Math.sin(angle) * spread,
+    };
   });
 
   var svg = d3.select(svgWrap).append('svg')
     .attr('width', W).attr('height', H);
 
   var sim = d3.forceSimulation(nodes)
-    .force('charge', d3.forceManyBody().strength(8))
+    .force('charge', d3.forceManyBody().strength(6))
     .force('center', d3.forceCenter(W/2, H/2))
-    .force('collision', d3.forceCollide(function(d) { return d.r + 5; }).strength(0.9))
-    .force('x', d3.forceX(W/2).strength(0.04))
-    .force('y', d3.forceY(H/2).strength(0.05));
+    .force('collision', d3.forceCollide(function(d) { return d.r + 8; }).strength(0.92))
+    .force('x', d3.forceX(W/2).strength(0.03))
+    .force('y', d3.forceY(H/2).strength(0.04));
 
   var bubb = svg.selectAll('.voice-bubble')
     .data(nodes).enter().append('g').attr('class','voice-bubble')
     .style('cursor','pointer');
 
+  // Circle — dashed stroke for emerging themes
   bubb.append('circle')
     .attr('r', function(d) { return d.r; })
-    .attr('fill', function(d) { return phColor(d.polarity); })
-    .attr('fill-opacity', .18)
-    .attr('stroke', function(d) { return phColor(d.polarity); })
-    .attr('stroke-width', 1.5)
-    .attr('stroke-opacity', .7);
+    .attr('fill', function(d) { return d.color; })
+    .attr('fill-opacity', .15)
+    .attr('stroke', function(d) { return d.color; })
+    .attr('stroke-width', function(d) { return d.emerging ? 1.5 : 2; })
+    .attr('stroke-dasharray', function(d) { return d.emerging ? '5,3' : 'none'; })
+    .attr('stroke-opacity', .8);
 
-  bubb.append('text')
-    .attr('text-anchor','middle')
-    .attr('dominant-baseline','middle')
-    .attr('fill', function(d) { return phColor(d.polarity); })
-    .attr('font-size', function(d) { return Math.max(8, Math.min(13, d.r * 0.35)); })
-    .attr('font-weight', '700')
-    .text(function(d) { return d.phrase; });
+  // Theme label — wrap long labels onto two lines
+  bubb.each(function(d) {
+    var g = d3.select(this);
+    var words = d.label.split(' ');
+    var mid = Math.ceil(words.length / 2);
+    var line1 = words.slice(0, mid).join(' ');
+    var line2 = words.slice(mid).join(' ');
+    var fs = Math.max(8, Math.min(12, d.r * 0.28));
+    if (line2) {
+      g.append('text').attr('text-anchor','middle').attr('dominant-baseline','middle')
+        .attr('y', -fs * 0.7).attr('fill', d.color).attr('font-size', fs)
+        .attr('font-weight','700').attr('pointer-events','none').text(line1);
+      g.append('text').attr('text-anchor','middle').attr('dominant-baseline','middle')
+        .attr('y', fs * 0.7).attr('fill', d.color).attr('font-size', fs)
+        .attr('font-weight','700').attr('pointer-events','none').text(line2);
+    } else {
+      g.append('text').attr('text-anchor','middle').attr('dominant-baseline','middle')
+        .attr('fill', d.color).attr('font-size', fs)
+        .attr('font-weight','700').attr('pointer-events','none').text(line1);
+    }
+    // Reviewer count badge
+    g.append('text').attr('text-anchor','middle').attr('dominant-baseline','middle')
+      .attr('y', d.r - 13).attr('fill', d.color).attr('font-size', 9)
+      .attr('opacity', .75).attr('pointer-events','none')
+      .text(d.n_reviewers + (d.n_reviewers === 1 ? ' reviewer' : ' reviewers'));
+  });
 
   sim.on('tick', function() {
     bubb.attr('transform', function(d) {
-      d.x = Math.max(d.r + 4, Math.min(W - d.r - 4, d.x));
-      d.y = Math.max(d.r + 4, Math.min(H - d.r - 4, d.y));
+      d.x = Math.max(d.r + 6, Math.min(W - d.r - 6, d.x));
+      d.y = Math.max(d.r + 6, Math.min(H - d.r - 6, d.y));
       return 'translate(' + d.x + ',' + d.y + ')';
     });
   });
 
   bubb.on('click', function(event, d) {
-    // Dim all, highlight selected
-    bubb.selectAll('circle').attr('fill-opacity', .08).attr('stroke-opacity', .3);
-    d3.select(this).select('circle').attr('fill-opacity', .32).attr('stroke-opacity', 1);
+    bubb.selectAll('circle').attr('fill-opacity', .07).attr('stroke-opacity', .3);
+    d3.select(this).select('circle').attr('fill-opacity', .28).attr('stroke-opacity', 1);
 
     var detail = document.getElementById('voice-detail');
-    var projList = d.projects.map(function(pid) {
-      var proj = DATA.projects.find(function(p) { return p.id === pid; });
-      if (!proj) return '';
-      var pos = (proj.positives || []).find(function(s) {
-        return s.text.toLowerCase().indexOf(d.phrase.split(' ')[0]) > -1;
-      });
-      var neg = (proj.concerns || []).find(function(s) {
-        return s.text.toLowerCase().indexOf(d.phrase.split(' ')[0]) > -1;
-      });
-      var snippet = pos ? ('<span style="color:#4ade80">\u2713 ' + pos.text.slice(0,80) + '\u2026</span>')
-                  : neg ? ('<span style="color:#f87171">\u25B3 ' + neg.text.slice(0,80) + '\u2026</span>')
-                  : '<span style="color:#64748b">Appears in reviewer notes</span>';
-      return '<div class="vd-proj"><strong>' + proj.short + ' <span style="color:#64748b">' + proj.code + '</span></strong>'
-        + '<span style="font-size:10px;color:#64748b;display:block">' + proj.primary_area + '</span>'
-        + snippet + '</div>';
+
+    // Phrases as tags
+    var phraseTags = (d.phrases || []).map(function(ph) {
+      return '<span style="display:inline-block;font-size:10px;padding:2px 8px;border-radius:99px;'
+        + 'background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);'
+        + 'margin:2px;color:#94a3b8">' + ph + '</span>';
     }).join('');
 
-    var polLabel = d.polarity > 0 ? '<span style="color:#4ade80">Positive signal</span>'
-                 : d.polarity < 0 ? '<span style="color:#f87171">Concern signal</span>'
-                 : '<span style="color:#818cf8">Mixed / contextual</span>';
+    // Reviewer list
+    var revList = (d.reviewers || []).map(function(rv) {
+      return '<span style="display:inline-block;font-size:10px;padding:2px 8px;border-radius:99px;'
+        + 'background:' + d.color + '22;color:' + d.color + ';margin:2px">' + rv + '</span>';
+    }).join('');
 
-    detail.innerHTML = '<h3>Phrase Explorer</h3>'
-      + '<div class="vd-phrase" style="color:' + phColor(d.polarity) + '">' + d.phrase + '</div>'
-      + '<div style="font-size:11px;margin-bottom:6px">' + polLabel
-      + ' &middot; <span style="color:#64748b">' + d.n_projects + ' project' + (d.n_projects > 1 ? 's' : '') + '</span></div>'
-      + '<div class="vd-projects">' + projList + '</div>';
+    // Key sentences (up to 3)
+    var sentHTML = (d.sentences || []).slice(0, 3).map(function(s) {
+      var polColor = s.polarity === 'positive' ? '#4ade80' : s.polarity === 'concern' ? '#f87171' : '#94a3b8';
+      var polIcon  = s.polarity === 'positive' ? '\u25B2' : s.polarity === 'concern' ? '\u25BC' : '\u25CF';
+      return '<div style="padding:8px 10px;border-radius:8px;background:rgba(255,255,255,.04);'
+        + 'border-left:3px solid ' + d.color + ';margin-bottom:6px;font-size:11px;line-height:1.5;">'
+        + '<div style="color:var(--text)">' + s.text + '</div>'
+        + '<div style="font-size:10px;color:#64748b;margin-top:4px">'
+        + '<span style="color:' + polColor + '">' + polIcon + '</span> '
+        + s.reviewer + ' &middot; <strong style="color:#94a3b8">' + s.code + '</strong>'
+        + '</div></div>';
+    }).join('');
+
+    var emBadge = d.emerging
+      ? '<span style="font-size:10px;padding:2px 8px;border-radius:99px;border:1px dashed #94a3b8;color:#94a3b8;margin-left:6px">auto-detected</span>'
+      : '';
+
+    detail.innerHTML =
+      '<div style="border-left:3px solid ' + d.color + ';padding-left:10px;margin-bottom:10px">'
+      + '<div style="font-size:15px;font-weight:700;color:' + d.color + '">' + d.label + emBadge + '</div>'
+      + '<div style="font-size:11px;color:#64748b;margin-top:3px">' + d.desc + '</div>'
+      + '</div>'
+      + '<div style="font-size:10px;color:#64748b;margin-bottom:4px;text-transform:uppercase;letter-spacing:.05em">Reviewers</div>'
+      + '<div style="margin-bottom:10px">' + revList + '</div>'
+      + (phraseTags ? '<div style="font-size:10px;color:#64748b;margin-bottom:4px;text-transform:uppercase;letter-spacing:.05em">Phrases</div>'
+          + '<div style="margin-bottom:10px">' + phraseTags + '</div>' : '')
+      + (sentHTML ? '<div style="font-size:10px;color:#64748b;margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em">Reviewer Sentences</div>'
+          + sentHTML : '');
   });
 }
 

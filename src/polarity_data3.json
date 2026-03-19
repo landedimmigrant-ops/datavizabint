@@ -981,8 +981,8 @@
       "conviction": 0.521,
       "concern_lang": 0.06,
       "reviewers": [
-        "Jason",
-        "Suzanne"
+        "Suzanne",
+        "Jason"
       ],
       "top_phrases": [
         "case study",
@@ -1059,14 +1059,14 @@
       "name": "Jackson",
       "n_projects": 8,
       "projects": [
+        "Christine Clark - CfP04",
+        "Jackie Rice - CfP01-07",
+        "Michelle Sylvestre - CfP02-13",
+        "Sara Diamond & Archer Pechawis - CfP01-08",
         "Shankhalika Srikanth - CfP02-16",
         "Antoine Bellemare-Pepin - CfP04",
-        "Michelle Sylvestre - CfP02-13",
-        "Jackie Rice - CfP01-07",
-        "Christine Clark - CfP04",
         "Darby Herman - CfP02-11",
-        "Kaiya Healy - CfP02-10",
-        "Sara Diamond & Archer Pechawis - CfP01-08"
+        "Kaiya Healy - CfP02-10"
       ],
       "conviction": 0.567,
       "concern": 0.096,
@@ -1401,9 +1401,9 @@
       "name": "Jason",
       "n_projects": 3,
       "projects": [
-        "Jackie Rice - CfP01-07",
         "Ma'ema'eolehua Matsumoto - CfP02-05",
-        "Ashley Cordes - CfP01-01"
+        "Ashley Cordes - CfP01-01",
+        "Jackie Rice - CfP01-07"
       ],
       "conviction": 0.541,
       "concern": 0.186,
@@ -2553,6 +2553,635 @@
         "Ma'ema'eolehua Matsumoto - CfP02-05"
       ],
       "doc_freq": 3
+    }
+  ],
+  "research_themes": [
+    {
+      "id": "language_ai",
+      "label": "Language & AI",
+      "color": "#34d399",
+      "desc": "Indigenous language revitalization through AI and language technologies",
+      "n_reviewers": 2,
+      "reviewers": [
+        "Jackson",
+        "Suzanne"
+      ],
+      "n_projects": 6,
+      "projects": [
+        "Antoine Bellemare-Pepin - CfP04",
+        "Christine Clark - CfP04",
+        "Darby Herman - CfP02-11",
+        "Jackie Rice - CfP01-07",
+        "Sara Diamond & Archer Pechawis - CfP01-08",
+        "Shankhalika Srikanth - CfP02-16"
+      ],
+      "phrases": [
+        "language revitalization",
+        "small language",
+        "language models",
+        "language data",
+        "language-learning tools",
+        "language-learning",
+        "language technologies",
+        "language tools"
+      ],
+      "sentences": [
+        {
+          "text": "There is very strong potential for collaboration with other projects across the AbInt network, particularly those working with language models, community data governance, virtual environments, and Indigenous-centred AI design.",
+          "reviewer": "Jackson",
+          "project": "Sara Diamond and Archer Pechawis",
+          "code": "CfP01-08",
+          "polarity": "positive"
+        },
+        {
+          "text": "This project contributes to AbInt\u2019s Transformation Statement through its focus on community-led language work, collaborative curriculum development, and attention to data sovereignty in the context of language revitalization.",
+          "reviewer": "Jackson",
+          "project": "Shankhalika Srikanth",
+          "code": "CfP02-16",
+          "polarity": "positive"
+        },
+        {
+          "text": "There is strong potential for collaboration with other projects across the AbInt network, particularly those working with language revitalization, digital storytelling, community-based AI, and Indigenous data governance.",
+          "reviewer": "Jackson",
+          "project": "Jackie Rice",
+          "code": "CfP01-07",
+          "polarity": "positive"
+        },
+        {
+          "text": "The work demonstrates a relational approach to knowledge creation, with teachers and community members directly shaping the learning materials and guiding how language data are generated and used.",
+          "reviewer": "Jackson",
+          "project": "Shankhalika Srikanth",
+          "code": "CfP02-16",
+          "polarity": "positive"
+        },
+        {
+          "text": "As the project develops its planned AI components, it could connect with other PODs exploring language models, community-based data practices, or culturally grounded interface design.",
+          "reviewer": "Jackson",
+          "project": "Darby Herman",
+          "code": "CfP02-11",
+          "polarity": "positive"
+        },
+        {
+          "text": "While the AI component is still at an early, exploratory stage, the project reflects the broader transformation goals by emphasizing community control, culturally grounded pedagogy, and careful consideration of how future language-learning tools could be developed in ways that align with local priorities rather than external technical models The project could advance into the Imaginaries phase by further developing its approach to community-driven language pedagogy as a framework for thinking about how AI tools might be designed in ways that follow local knowledge systems rather than external models.",
+          "reviewer": "Jackson",
+          "project": "Shankhalika Srikanth",
+          "code": "CfP02-16",
+          "polarity": "neutral"
+        }
+      ]
+    },
+    {
+      "id": "data_governance",
+      "label": "Data Sovereignty & Governance",
+      "color": "#818cf8",
+      "desc": "Community control over data, governance frameworks, data rights",
+      "n_reviewers": 3,
+      "reviewers": [
+        "Jackson",
+        "Jason",
+        "Suzanne"
+      ],
+      "n_projects": 8,
+      "projects": [
+        "Ashley Cordes - CfP01-01",
+        "Christine Clark - CfP04",
+        "Darby Herman - CfP02-11",
+        "Jackie Rice - CfP01-07",
+        "Kaiya Healy - CfP02-10",
+        "Ma'ema'eolehua Matsumoto - CfP02-05",
+        "Sara Diamond & Archer Pechawis - CfP01-08",
+        "Shankhalika Srikanth - CfP02-16"
+      ],
+      "phrases": [
+        "data governance",
+        "data sovereignty",
+        "governance frameworks",
+        "community-controlled",
+        "community-based data",
+        "data practices"
+      ],
+      "sentences": [
+        {
+          "text": "Its focus on relational methodologies and Elder-guided processes also positions it well to contribute to network-wide conversations about ethics, data sovereignty, and Indigenous-centred design, making it a useful hub for collaboration as other projects move further into technical development.",
+          "reviewer": "Jackson",
+          "project": "Jackie Rice",
+          "code": "CfP01-07",
+          "polarity": "positive"
+        },
+        {
+          "text": "Through experiments with adapting LLMs and SLMs, developing community-guided data practices, and embedding storytelling, ceremony, and collective decision-making into technical workflows, the project shifts AI development away from extractive models toward reciprocal, community-led approaches.",
+          "reviewer": "Jackson",
+          "project": "Sara Diamond and Archer Pechawis",
+          "code": "CfP01-08",
+          "polarity": "positive"
+        },
+        {
+          "text": "Its combination of technical prototyping, governance design, and capacity building through workshops, student leadership, and partnerships supports AbInt\u2019s goal of transforming AI by aligning computation with Indigenous knowledge systems, sovereignty, and shared responsibility.",
+          "reviewer": "Jackson",
+          "project": "Sara Diamond and Archer Pechawis",
+          "code": "CfP01-08",
+          "polarity": "positive"
+        },
+        {
+          "text": "It could serve as a point of dialogue with projects focused on Indigenous data sovereignty, relational methodologies, and community-led infrastructure, especially where there is interest in language, pedagogy, or small-data approaches.",
+          "reviewer": "Suzanne",
+          "project": "Shankhalika Srikanth",
+          "code": "CfP02-16",
+          "polarity": "positive"
+        },
+        {
+          "text": "There is very strong potential for collaboration with other projects across the AbInt network, particularly those working with language models, community data governance, virtual environments, and Indigenous-centred AI design.",
+          "reviewer": "Jackson",
+          "project": "Sara Diamond and Archer Pechawis",
+          "code": "CfP01-08",
+          "polarity": "positive"
+        },
+        {
+          "text": "This project contributes to AbInt\u2019s Transformation Statement through its focus on community-led language work, collaborative curriculum development, and attention to data sovereignty in the context of language revitalization.",
+          "reviewer": "Jackson",
+          "project": "Shankhalika Srikanth",
+          "code": "CfP02-16",
+          "polarity": "positive"
+        }
+      ]
+    },
+    {
+      "id": "community_led",
+      "label": "Community-Led Practice",
+      "color": "#f59e0b",
+      "desc": "Research driven by community priorities and community-defined goals",
+      "n_reviewers": 3,
+      "reviewers": [
+        "Jackson",
+        "Jason",
+        "Suzanne"
+      ],
+      "n_projects": 8,
+      "projects": [
+        "Antoine Bellemare-Pepin - CfP04",
+        "Ashley Cordes - CfP01-01",
+        "Christine Clark - CfP04",
+        "Darby Herman - CfP02-11",
+        "Jackie Rice - CfP01-07",
+        "Ma'ema'eolehua Matsumoto - CfP02-05",
+        "Sara Diamond & Archer Pechawis - CfP01-08",
+        "Shankhalika Srikanth - CfP02-16"
+      ],
+      "phrases": [
+        "community-led",
+        "community-driven",
+        "collective decision-making",
+        "community-controlled",
+        "community-driven language",
+        "decision-making",
+        "community-based data",
+        "community-defined priorities"
+      ],
+      "sentences": [
+        {
+          "text": "Through experiments with adapting LLMs and SLMs, developing community-guided data practices, and embedding storytelling, ceremony, and collective decision-making into technical workflows, the project shifts AI development away from extractive models toward reciprocal, community-led approaches.",
+          "reviewer": "Jackson",
+          "project": "Sara Diamond and Archer Pechawis",
+          "code": "CfP01-08",
+          "polarity": "positive"
+        },
+        {
+          "text": "The risk of not pursuing the project would be significant, as it supports the relational and community-driven foundations necessary for Indigenous-centred AI, while also building capacity through residencies, mentorship, and shared learning across the AbInt network.",
+          "reviewer": "Jackson",
+          "project": "Jackie Rice",
+          "code": "CfP01-07",
+          "polarity": "positive"
+        },
+        {
+          "text": "It could serve as a point of dialogue with projects focused on Indigenous data sovereignty, relational methodologies, and community-led infrastructure, especially where there is interest in language, pedagogy, or small-data approaches.",
+          "reviewer": "Suzanne",
+          "project": "Shankhalika Srikanth",
+          "code": "CfP02-16",
+          "polarity": "positive"
+        },
+        {
+          "text": "By supporting artist residencies, community conversations, and the creation of digital and performative works, the project shifts AI inquiry away from purely technical development toward culturally grounded, community-led processes.",
+          "reviewer": "Jackson",
+          "project": "Jackie Rice",
+          "code": "CfP01-07",
+          "polarity": "positive"
+        },
+        {
+          "text": "This project contributes to AbInt\u2019s Transformation Statement through its focus on community-led language work, collaborative curriculum development, and attention to data sovereignty in the context of language revitalization.",
+          "reviewer": "Jackson",
+          "project": "Shankhalika Srikanth",
+          "code": "CfP02-16",
+          "polarity": "positive"
+        },
+        {
+          "text": "There is strong potential for collaboration with other projects across the AbInt network, particularly those working with language revitalization, digital storytelling, community-based AI, and Indigenous data governance.",
+          "reviewer": "Jackson",
+          "project": "Jackie Rice",
+          "code": "CfP01-07",
+          "polarity": "positive"
+        }
+      ]
+    },
+    {
+      "id": "relational",
+      "label": "Relational Approaches",
+      "color": "#22d3ee",
+      "desc": "Relational methodologies, reciprocal relationships, dialogue-based research",
+      "n_reviewers": 3,
+      "reviewers": [
+        "Jackson",
+        "Jason",
+        "Suzanne"
+      ],
+      "n_projects": 10,
+      "projects": [
+        "Antoine Bellemare-Pepin - CfP04",
+        "Ashley Cordes - CfP01-01",
+        "Christine Clark - CfP04",
+        "Darby Herman - CfP02-11",
+        "Jackie Rice - CfP01-07",
+        "Kaiya Healy - CfP02-10",
+        "Ma'ema'eolehua Matsumoto - CfP02-05",
+        "Michelle Sylvestre - CfP02-13",
+        "Sara Diamond & Archer Pechawis - CfP01-08",
+        "Shankhalika Srikanth - CfP02-16"
+      ],
+      "phrases": [
+        "co-creation methodologies"
+      ],
+      "sentences": [
+        {
+          "text": "Its emphasis on collaboration with community partners, development of culturally grounded curriculum materials, and experimentation with technology as a supportive rather than dominant framework aligns with the program\u2019s goal of shifting AI research toward relational, ethical, and locally defined practices.",
+          "reviewer": "Jackson",
+          "project": "Christine Clark",
+          "code": "CfP04",
+          "polarity": "positive"
+        },
+        {
+          "text": "The project also aligns well with network activities focused on relational AI, digital territories, and culturally grounded interface design, and could benefit from further collaboration through shared builds, workshops, and cross-POD development sessions that expand the work beyond its original context.",
+          "reviewer": "Jackson",
+          "project": "Kaiya Healy",
+          "code": "CfP02-10",
+          "polarity": "positive"
+        },
+        {
+          "text": "The project is well positioned to advance into the Imaginaries phase by further developing its dialogue-based and land-based methodologies as frameworks for imagining Indigenous-centred approaches to AI, particularly through language, storytelling, and relational understandings of knowledge and memory.",
+          "reviewer": "Jackson",
+          "project": "Jackie Rice",
+          "code": "CfP01-07",
+          "polarity": "positive"
+        },
+        {
+          "text": "Continued collaboration within the network, along with clearer pathways for sharing builds, workflows, and community-informed design methods, would help the project move from a single environment toward a more scalable and relational digital infrastructure aligned with the goals of these later phases.",
+          "reviewer": "Jackson",
+          "project": "Kaiya Healy",
+          "code": "CfP02-10",
+          "polarity": "positive"
+        },
+        {
+          "text": "Its focus on relational methodologies and Elder-guided processes also positions it well to contribute to network-wide conversations about ethics, data sovereignty, and Indigenous-centred design, making it a useful hub for collaboration as other projects move further into technical development.",
+          "reviewer": "Jackson",
+          "project": "Jackie Rice",
+          "code": "CfP01-07",
+          "polarity": "positive"
+        },
+        {
+          "text": "Through experiments with adapting LLMs and SLMs, developing community-guided data practices, and embedding storytelling, ceremony, and collective decision-making into technical workflows, the project shifts AI development away from extractive models toward reciprocal, community-led approaches.",
+          "reviewer": "Jackson",
+          "project": "Sara Diamond and Archer Pechawis",
+          "code": "CfP01-08",
+          "polarity": "positive"
+        }
+      ]
+    },
+    {
+      "id": "capacity",
+      "label": "Capacity & Mentorship",
+      "color": "#fb923c",
+      "desc": "Building researcher capacity, mentorship, knowledge transfer",
+      "n_reviewers": 2,
+      "reviewers": [
+        "Jackson",
+        "Suzanne"
+      ],
+      "n_projects": 6,
+      "projects": [
+        "Christine Clark - CfP04",
+        "Darby Herman - CfP02-11",
+        "Jackie Rice - CfP01-07",
+        "Kaiya Healy - CfP02-10",
+        "Sara Diamond & Archer Pechawis - CfP01-08",
+        "Shankhalika Srikanth - CfP02-16"
+      ],
+      "phrases": [
+        "capacity building",
+        "mentorship learning"
+      ],
+      "sentences": [
+        {
+          "text": "Its emphasis on collaboration with community partners, development of culturally grounded curriculum materials, and experimentation with technology as a supportive rather than dominant framework aligns with the program\u2019s goal of shifting AI research toward relational, ethical, and locally defined practices.",
+          "reviewer": "Jackson",
+          "project": "Christine Clark",
+          "code": "CfP04",
+          "polarity": "positive"
+        },
+        {
+          "text": "The strong mentorship structure and focus on learning also make this a good candidate for collaboration through workshops, shared development sessions, or student exchanges, which could help expand the work beyond its current scope while contributing to broader network capacity building.",
+          "reviewer": "Jackson",
+          "project": "Darby Herman",
+          "code": "CfP02-11",
+          "polarity": "positive"
+        },
+        {
+          "text": "Its combination of technical prototyping, governance design, and capacity building through workshops, student leadership, and partnerships supports AbInt\u2019s goal of transforming AI by aligning computation with Indigenous knowledge systems, sovereignty, and shared responsibility.",
+          "reviewer": "Jackson",
+          "project": "Sara Diamond and Archer Pechawis",
+          "code": "CfP01-08",
+          "polarity": "positive"
+        },
+        {
+          "text": "The risk of not pursuing the project would be significant, as it supports the relational and community-driven foundations necessary for Indigenous-centred AI, while also building capacity through residencies, mentorship, and shared learning across the AbInt network.",
+          "reviewer": "Jackson",
+          "project": "Jackie Rice",
+          "code": "CfP01-07",
+          "polarity": "positive"
+        },
+        {
+          "text": "Through the development of an interactive Unity-based world, the work explores alternative ways of understanding relationality, energy, and place within digital media, while grounding the process in mentorship, community learning, and POD-based practices.",
+          "reviewer": "Jackson",
+          "project": "Kaiya Healy",
+          "code": "CfP02-10",
+          "polarity": "positive"
+        },
+        {
+          "text": "It could serve as a point of dialogue with projects focused on Indigenous data sovereignty, relational methodologies, and community-led infrastructure, especially where there is interest in language, pedagogy, or small-data approaches.",
+          "reviewer": "Suzanne",
+          "project": "Shankhalika Srikanth",
+          "code": "CfP02-16",
+          "polarity": "positive"
+        }
+      ]
+    },
+    {
+      "id": "ik_systems",
+      "label": "Indigenous Knowledge Systems",
+      "color": "#4ade80",
+      "desc": "Traditional knowledge, IK methods, ways of knowing integrated into AI",
+      "n_reviewers": 2,
+      "reviewers": [
+        "Jackson",
+        "Jason"
+      ],
+      "n_projects": 9,
+      "projects": [
+        "Antoine Bellemare-Pepin - CfP04",
+        "Christine Clark - CfP04",
+        "Darby Herman - CfP02-11",
+        "Jackie Rice - CfP01-07",
+        "Kaiya Healy - CfP02-10",
+        "Ma'ema'eolehua Matsumoto - CfP02-05",
+        "Michelle Sylvestre - CfP02-13",
+        "Sara Diamond & Archer Pechawis - CfP01-08",
+        "Shankhalika Srikanth - CfP02-16"
+      ],
+      "phrases": [
+        "indigenous-centred",
+        "cultural knowledge"
+      ],
+      "sentences": [
+        {
+          "text": "The project is well positioned to advance into the Imaginaries phase by further developing its dialogue-based and land-based methodologies as frameworks for imagining Indigenous-centred approaches to AI, particularly through language, storytelling, and relational understandings of knowledge and memory.",
+          "reviewer": "Jackson",
+          "project": "Jackie Rice",
+          "code": "CfP01-07",
+          "polarity": "positive"
+        },
+        {
+          "text": "This project contributes strongly to AbInt\u2019s Transformation Statement by demonstrating how Indigenous knowledge systems, particularly Blackfoot metaphysics and teachings, can inform the creation of sovereign digital environments that challenge Western assumptions about space, time, and intelligence.",
+          "reviewer": "Jackson",
+          "project": "Kaiya Healy",
+          "code": "CfP02-10",
+          "polarity": "positive"
+        },
+        {
+          "text": "Its focus on relational methodologies and Elder-guided processes also positions it well to contribute to network-wide conversations about ethics, data sovereignty, and Indigenous-centred design, making it a useful hub for collaboration as other projects move further into technical development.",
+          "reviewer": "Jackson",
+          "project": "Jackie Rice",
+          "code": "CfP01-07",
+          "polarity": "positive"
+        },
+        {
+          "text": "Its combination of technical prototyping, governance design, and capacity building through workshops, student leadership, and partnerships supports AbInt\u2019s goal of transforming AI by aligning computation with Indigenous knowledge systems, sovereignty, and shared responsibility.",
+          "reviewer": "Jackson",
+          "project": "Sara Diamond and Archer Pechawis",
+          "code": "CfP01-08",
+          "polarity": "positive"
+        },
+        {
+          "text": "The risk of not pursuing the project would be the loss of a strong example of Indigenous-centred digital environment design, which contributes to AbInt\u2019s goals by expanding how virtual space, storytelling, and relational worldviews can shape future AI and interactive systems.",
+          "reviewer": "Jackson",
+          "project": "Kaiya Healy",
+          "code": "CfP02-10",
+          "polarity": "positive"
+        },
+        {
+          "text": "The risk of not pursuing the project would be significant, as it supports the relational and community-driven foundations necessary for Indigenous-centred AI, while also building capacity through residencies, mentorship, and shared learning across the AbInt network.",
+          "reviewer": "Jackson",
+          "project": "Jackie Rice",
+          "code": "CfP01-07",
+          "polarity": "positive"
+        }
+      ]
+    },
+    {
+      "id": "network",
+      "label": "Network & Cross-Project",
+      "color": "#60a5fa",
+      "desc": "Building connections across projects, pods, and communities",
+      "n_reviewers": 3,
+      "reviewers": [
+        "Jackson",
+        "Jason",
+        "Suzanne"
+      ],
+      "n_projects": 9,
+      "projects": [
+        "Antoine Bellemare-Pepin - CfP04",
+        "Ashley Cordes - CfP01-01",
+        "Christine Clark - CfP04",
+        "Darby Herman - CfP02-11",
+        "Jackie Rice - CfP01-07",
+        "Kaiya Healy - CfP02-10",
+        "Michelle Sylvestre - CfP02-13",
+        "Sara Diamond & Archer Pechawis - CfP01-08",
+        "Shankhalika Srikanth - CfP02-16"
+      ],
+      "phrases": [
+        "collective decision-making",
+        "decision-making",
+        "connect pods",
+        "pods exploring",
+        "shared infrastructure"
+      ],
+      "sentences": [
+        {
+          "text": "The project also aligns well with network activities focused on relational AI, digital territories, and culturally grounded interface design, and could benefit from further collaboration through shared builds, workshops, and cross-POD development sessions that expand the work beyond its original context.",
+          "reviewer": "Jackson",
+          "project": "Kaiya Healy",
+          "code": "CfP02-10",
+          "polarity": "positive"
+        },
+        {
+          "text": "Continued collaboration within the network, along with clearer pathways for sharing builds, workflows, and community-informed design methods, would help the project move from a single environment toward a more scalable and relational digital infrastructure aligned with the goals of these later phases.",
+          "reviewer": "Jackson",
+          "project": "Kaiya Healy",
+          "code": "CfP02-10",
+          "polarity": "positive"
+        },
+        {
+          "text": "Its focus on relational methodologies and Elder-guided processes also positions it well to contribute to network-wide conversations about ethics, data sovereignty, and Indigenous-centred design, making it a useful hub for collaboration as other projects move further into technical development.",
+          "reviewer": "Jackson",
+          "project": "Jackie Rice",
+          "code": "CfP01-07",
+          "polarity": "positive"
+        },
+        {
+          "text": "Through experiments with adapting LLMs and SLMs, developing community-guided data practices, and embedding storytelling, ceremony, and collective decision-making into technical workflows, the project shifts AI development away from extractive models toward reciprocal, community-led approaches.",
+          "reviewer": "Jackson",
+          "project": "Sara Diamond and Archer Pechawis",
+          "code": "CfP01-08",
+          "polarity": "positive"
+        },
+        {
+          "text": "The strong mentorship structure and focus on learning also make this a good candidate for collaboration through workshops, shared development sessions, or student exchanges, which could help expand the work beyond its current scope while contributing to broader network capacity building.",
+          "reviewer": "Jackson",
+          "project": "Darby Herman",
+          "code": "CfP02-11",
+          "polarity": "positive"
+        },
+        {
+          "text": "The risk of not pursuing the project would be significant, as it supports the relational and community-driven foundations necessary for Indigenous-centred AI, while also building capacity through residencies, mentorship, and shared learning across the AbInt network.",
+          "reviewer": "Jackson",
+          "project": "Jackie Rice",
+          "code": "CfP01-07",
+          "polarity": "positive"
+        }
+      ]
+    },
+    {
+      "id": "technical_ai",
+      "label": "Technical AI Development",
+      "color": "#f472b6",
+      "desc": "Building and adapting AI systems, models, tools, and pipelines",
+      "n_reviewers": 3,
+      "reviewers": [
+        "Jackson",
+        "Jason",
+        "Suzanne"
+      ],
+      "n_projects": 9,
+      "projects": [
+        "Antoine Bellemare-Pepin - CfP04",
+        "Ashley Cordes - CfP01-01",
+        "Christine Clark - CfP04",
+        "Darby Herman - CfP02-11",
+        "Jackie Rice - CfP01-07",
+        "Kaiya Healy - CfP02-10",
+        "Ma'ema'eolehua Matsumoto - CfP02-05",
+        "Sara Diamond & Archer Pechawis - CfP01-08",
+        "Shankhalika Srikanth - CfP02-16"
+      ],
+      "phrases": [
+        "language models",
+        "language-learning tools",
+        "learning tools",
+        "digital systems",
+        "language tools"
+      ],
+      "sentences": [
+        {
+          "text": "Continued collaboration within the network, along with clearer pathways for sharing builds, workflows, and community-informed design methods, would help the project move from a single environment toward a more scalable and relational digital infrastructure aligned with the goals of these later phases.",
+          "reviewer": "Jackson",
+          "project": "Kaiya Healy",
+          "code": "CfP02-10",
+          "polarity": "positive"
+        },
+        {
+          "text": "This project contributes strongly to AbInt\u2019s Transformation Statement by demonstrating how Indigenous knowledge systems, particularly Blackfoot metaphysics and teachings, can inform the creation of sovereign digital environments that challenge Western assumptions about space, time, and intelligence.",
+          "reviewer": "Jackson",
+          "project": "Kaiya Healy",
+          "code": "CfP02-10",
+          "polarity": "positive"
+        },
+        {
+          "text": "Its focus on relational methodologies and Elder-guided processes also positions it well to contribute to network-wide conversations about ethics, data sovereignty, and Indigenous-centred design, making it a useful hub for collaboration as other projects move further into technical development.",
+          "reviewer": "Jackson",
+          "project": "Jackie Rice",
+          "code": "CfP01-07",
+          "polarity": "positive"
+        },
+        {
+          "text": "Through experiments with adapting LLMs and SLMs, developing community-guided data practices, and embedding storytelling, ceremony, and collective decision-making into technical workflows, the project shifts AI development away from extractive models toward reciprocal, community-led approaches.",
+          "reviewer": "Jackson",
+          "project": "Sara Diamond and Archer Pechawis",
+          "code": "CfP01-08",
+          "polarity": "positive"
+        },
+        {
+          "text": "Its combination of technical prototyping, governance design, and capacity building through workshops, student leadership, and partnerships supports AbInt\u2019s goal of transforming AI by aligning computation with Indigenous knowledge systems, sovereignty, and shared responsibility.",
+          "reviewer": "Jackson",
+          "project": "Sara Diamond and Archer Pechawis",
+          "code": "CfP01-08",
+          "polarity": "positive"
+        },
+        {
+          "text": "The risk of not pursuing the project would be the loss of a strong example of Indigenous-centred digital environment design, which contributes to AbInt\u2019s goals by expanding how virtual space, storytelling, and relational worldviews can shape future AI and interactive systems.",
+          "reviewer": "Jackson",
+          "project": "Kaiya Healy",
+          "code": "CfP02-10",
+          "polarity": "positive"
+        }
+      ]
+    },
+    {
+      "id": "emerging_lasting_capacity",
+      "label": "Emerging: Lasting Capacity",
+      "color": "#94a3b8",
+      "desc": "Pattern surfaced automatically from reviewer language \u2014 not yet in a named theme",
+      "n_reviewers": 2,
+      "reviewers": [
+        "Jason",
+        "Suzanne"
+      ],
+      "n_projects": 1,
+      "projects": [],
+      "phrases": [
+        "lasting capacity"
+      ],
+      "sentences": [
+        {
+          "text": "Builds lasting capacity among researchers, learners, and communities to shape AI futures that are ethical, culturally grounded, and responsive to the needs of Indigenous communities, Canada, and the world.",
+          "reviewer": "Jason",
+          "project": "Jackie Rice",
+          "code": "CfP01-07",
+          "polarity": "neutral"
+        },
+        {
+          "text": "Builds lasting capacity among researchers, learners, and communities Unfortunately have pivoted away from building a technical prototype (to a proof-of-concept for protocol-driven information access).",
+          "reviewer": "Jason",
+          "project": "Ma'ema'eolehua Matsumoto",
+          "code": "CfP02-05",
+          "polarity": "neutral"
+        },
+        {
+          "text": "This book will generate lasting capacity by publishing our early research into this field.",
+          "reviewer": "Suzanne",
+          "project": "Ashley Cordes",
+          "code": "CfP01-01",
+          "polarity": "neutral"
+        }
+      ],
+      "emerging": true
     }
   ],
   "network_signals": {
