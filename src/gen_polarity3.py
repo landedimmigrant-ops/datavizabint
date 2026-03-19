@@ -216,6 +216,89 @@ html, body { height: 100%; font-family: 'Inter', system-ui, sans-serif;
 .asc-gap { opacity: .5; border-style: dashed; }
 .asc-gap .asc-align { color: var(--neg); }
 
+/* ── Reviewer Intelligence ── */
+#intel-layout { display: flex; gap: 20px; align-items: flex-start; }
+#intel-phrases-panel {
+  width: 220px; flex-shrink: 0;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; padding: 14px;
+  position: sticky; top: 0;
+}
+#intel-phrases-panel h4 { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 10px; }
+.intel-phrase-tag {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 11px; padding: 4px 9px; border-radius: 99px;
+  margin: 3px 2px; cursor: default;
+  background: rgba(129,140,248,.12); color: var(--accent);
+  border: 1px solid rgba(129,140,248,.2);
+}
+.intel-phrase-tag .itag-count {
+  background: rgba(129,140,248,.25); border-radius: 99px;
+  padding: 1px 5px; font-size: 10px; font-weight: 700;
+}
+#intel-main { flex: 1; min-width: 0; }
+.intel-bucket { margin-bottom: 28px; }
+.intel-bucket-header {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 12px; padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+.intel-bucket-icon { font-size: 18px; }
+.intel-bucket-title { font-size: 14px; font-weight: 700; }
+.intel-bucket-count { font-size: 11px; color: var(--muted); margin-left: auto; }
+.intel-cards { display: flex; flex-direction: column; gap: 8px; }
+.intel-card {
+  border-radius: 10px; padding: 12px 14px;
+  border-left: 4px solid transparent;
+  font-size: 12px; line-height: 1.6;
+  position: relative;
+}
+/* Colour per type */
+.intel-card.recommendation {
+  background: rgba(245,158,11,.08);
+  border-left-color: #f59e0b;
+}
+.intel-card.question {
+  background: rgba(34,211,238,.07);
+  border-left-color: #22d3ee;
+}
+.intel-card.action {
+  background: rgba(74,222,128,.07);
+  border-left-color: #4ade80;
+}
+.intel-card.observation {
+  background: rgba(167,139,250,.07);
+  border-left-color: #a78bfa;
+}
+.intel-card-text { margin-bottom: 6px; color: var(--text); }
+.intel-card-meta {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 10px; color: var(--muted); flex-wrap: wrap;
+}
+.intel-area-dot {
+  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+}
+.intel-code {
+  font-weight: 700; font-size: 10px;
+  padding: 1px 6px; border-radius: 4px;
+  background: var(--border);
+}
+.intel-filter-bar {
+  display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 18px;
+}
+.intel-filter-btn {
+  font-size: 11px; padding: 5px 12px; border-radius: 99px;
+  border: 1px solid var(--border); background: transparent;
+  color: var(--muted); cursor: pointer; transition: all .15s;
+}
+.intel-filter-btn:hover { border-color: var(--accent); color: var(--text); }
+.intel-filter-btn.active { color: var(--bg); }
+.intel-filter-btn.f-all.active    { background: var(--accent); border-color: var(--accent); }
+.intel-filter-btn.f-rec.active    { background: #f59e0b; border-color: #f59e0b; }
+.intel-filter-btn.f-qst.active    { background: #22d3ee; border-color: #22d3ee; }
+.intel-filter-btn.f-act.active    { background: #4ade80; border-color: #4ade80; }
+.intel-filter-btn.f-obs.active    { background: #a78bfa; border-color: #a78bfa; }
+
 /* ── Scrollbar ── */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: var(--bg); }
@@ -235,12 +318,14 @@ html, body { height: 100%; font-family: 'Inter', system-ui, sans-serif;
   <button class="nav-tab" data-view="coverage">Coverage Map</button>
   <button class="nav-tab" data-view="voice">Emergent Voice</button>
   <button class="nav-tab" data-view="cards">Signal Cards</button>
+  <button class="nav-tab" data-view="intel">Reviewer Intelligence</button>
 </nav>
 
 <div id="view-landscape" class="view active"></div>
 <div id="view-coverage"  class="view"></div>
 <div id="view-voice"     class="view"></div>
 <div id="view-cards"     class="view"></div>
+<div id="view-intel"     class="view"></div>
 
 <script>
 // ── Data ──────────────────────────────────────────────────────────────────
@@ -296,7 +381,8 @@ var VIEWS = {
   landscape: renderLandscape,
   coverage:  renderCoverage,
   voice:     renderVoice,
-  cards:     renderCards
+  cards:     renderCards,
+  intel:     renderIntelligence
 };
 
 // ── VIEW 1: Polarity Landscape ────────────────────────────────────────────
@@ -737,11 +823,11 @@ function renderVoice() {
   var el = document.getElementById('view-voice');
 
   var phrases = DATA.emergent_phrases.filter(function(p) {
-    // Show bigrams and hyphenated terms + long single words (>7 chars)
+    // All phrases are now bigrams/hyphenated + cross-project (n>=2) from pipeline
+    // Extra guard: keep only multi-word or hyphenated
     var isBigram = p.phrase.indexOf(' ') > -1;
     var isHyphen = p.phrase.indexOf('-') > -1;
-    var isLong   = p.phrase.length > 8;
-    return isBigram || isHyphen || isLong;
+    return (isBigram || isHyphen) && p.n_projects >= 2;
   }).slice(0, 28);
 
   el.innerHTML = '<h3 style="font-size:13px;font-weight:700;color:#64748b;margin-bottom:8px">'
@@ -917,6 +1003,115 @@ function hexToRgb(hex) {
   var g = parseInt(hex.substring(2,4),16);
   var b = parseInt(hex.substring(4,6),16);
   return r + ',' + g + ',' + b;
+}
+
+// ── VIEW 5: Reviewer Intelligence ─────────────────────────────────────────
+function renderIntelligence() {
+  var el = document.getElementById('view-intel');
+  var sig = DATA.network_signals;
+  var phrases = DATA.emergent_phrases.filter(function(p) {
+    return (p.phrase.indexOf(' ') > -1 || p.phrase.indexOf('-') > -1) && p.n_projects >= 2;
+  }).slice(0, 30);
+
+  // Area colour lookup
+  var AREA_COL = {
+    'Language': '#34d399', 'Storytelling': '#a78bfa',
+    'Environmental Stewardship': '#4ade80', 'Env Stewardship': '#4ade80',
+    'Socio-Neuro AI': '#f97316', 'Multi-Agent Systems': '#60a5fa',
+    'Other': '#64748b'
+  };
+
+  // ── Cross-project phrase tags panel ──
+  var tagHTML = phrases.map(function(p) {
+    var pol = p.polarity > 0 ? 'rgba(74,222,128,.15)' : p.polarity < 0 ? 'rgba(248,113,113,.15)' : 'rgba(129,140,248,.12)';
+    var polBorder = p.polarity > 0 ? 'rgba(74,222,128,.3)' : p.polarity < 0 ? 'rgba(248,113,113,.3)' : 'rgba(129,140,248,.2)';
+    var polText = p.polarity > 0 ? '#4ade80' : p.polarity < 0 ? '#f87171' : '#818cf8';
+    return '<span class="intel-phrase-tag" style="background:' + pol + ';border-color:' + polBorder + ';color:' + polText + '" title="' + p.n_projects + ' projects">'
+      + p.phrase
+      + '<span class="itag-count" style="background:' + polBorder + '">' + p.n_projects + '</span>'
+      + '</span>';
+  }).join('');
+
+  // ── Build a sentence card ──
+  function makeCard(s) {
+    var aColor = AREA_COL[s.area] || '#64748b';
+    var polIcon = s.polarity === 'positive' ? '\u25B2' : s.polarity === 'concern' ? '\u25BC' : '\u25CF';
+    var polColor = s.polarity === 'positive' ? '#4ade80' : s.polarity === 'concern' ? '#f87171' : '#64748b';
+    return '<div class="intel-card ' + s.type + '">'
+      + '<div class="intel-card-text">' + s.text + '</div>'
+      + '<div class="intel-card-meta">'
+      + '<span class="intel-area-dot" style="background:' + aColor + '"></span>'
+      + '<span class="intel-code">' + s.code + '</span>'
+      + '<span style="color:#94a3b8">' + s.reviewer + '</span>'
+      + '<span style="color:' + polColor + ';margin-left:auto">' + polIcon + ' ' + s.polarity + '</span>'
+      + '</div></div>';
+  }
+
+  // ── Bucket sections ──
+  var buckets = [
+    { key: 'recommendations', label: 'Recommendations', icon: '\uD83D\uDCA1', cls: 'f-rec',
+      desc: 'What reviewers think should happen — suggestions, pivots, improvements' },
+    { key: 'questions',       label: 'Open Questions',   icon: '\u2753',      cls: 'f-qst',
+      desc: 'What remains unclear, hard to assess, or unresolved across the network' },
+    { key: 'actions',         label: 'Action Signals',   icon: '\uD83D\uDD04', cls: 'f-act',
+      desc: 'What is already in motion — active work, partnerships, commitments' },
+    { key: 'observations',    label: 'Key Observations', icon: '\uD83D\uDCCC', cls: 'f-obs',
+      desc: 'Substantive insights from reviewers — strong reads on projects' },
+  ];
+
+  // Filter bar
+  var filterHTML = '<div class="intel-filter-bar">'
+    + '<button class="intel-filter-btn f-all active" onclick="intelFilter(\'all\',this)">All</button>';
+  buckets.forEach(function(b) {
+    var n = (sig[b.key] || []).length;
+    filterHTML += '<button class="intel-filter-btn ' + b.cls + '" onclick="intelFilter(\'' + b.key + '\',this)">'
+      + b.icon + ' ' + b.label + ' <span style="opacity:.6">(' + n + ')</span></button>';
+  });
+  filterHTML += '</div>';
+
+  // Bucket HTML
+  var bucketsHTML = buckets.map(function(b) {
+    var items = sig[b.key] || [];
+    if (!items.length) return '';
+    var cards = items.map(makeCard).join('');
+    return '<div class="intel-bucket" data-bucket="' + b.key + '">'
+      + '<div class="intel-bucket-header">'
+      + '<span class="intel-bucket-icon">' + b.icon + '</span>'
+      + '<div><div class="intel-bucket-title">' + b.label + '</div>'
+      + '<div style="font-size:11px;color:#64748b;margin-top:2px">' + b.desc + '</div></div>'
+      + '<span class="intel-bucket-count">' + items.length + ' signals</span>'
+      + '</div>'
+      + '<div class="intel-cards">' + cards + '</div>'
+      + '</div>';
+  }).join('');
+
+  el.innerHTML =
+    '<div style="margin-bottom:16px">'
+    + '<h3 style="font-size:13px;font-weight:700;color:#64748b;margin-bottom:4px">'
+    + 'Reviewer Intelligence &mdash; what the reviewers are actually saying, in their own words.'
+    + '</h3>'
+    + '<p style="font-size:11px;color:#475569;line-height:1.5">'
+    + 'Full sentences from evaluation forms, classified by type. Phrases in the left panel appear across 2+ projects independently.'
+    + '</p></div>'
+    + filterHTML
+    + '<div id="intel-layout">'
+    + '<div id="intel-phrases-panel"><h4>Cross-Project Phrases</h4>' + tagHTML + '</div>'
+    + '<div id="intel-main">' + bucketsHTML + '</div>'
+    + '</div>';
+}
+
+function intelFilter(bucket, btn) {
+  // Update button states
+  document.querySelectorAll('.intel-filter-btn').forEach(function(b) { b.classList.remove('active'); });
+  btn.classList.add('active');
+  // Show/hide buckets
+  document.querySelectorAll('.intel-bucket').forEach(function(b) {
+    if (bucket === 'all' || b.dataset.bucket === bucket) {
+      b.style.display = '';
+    } else {
+      b.style.display = 'none';
+    }
+  });
 }
 
 // ── Init ──────────────────────────────────────────────────────────────────

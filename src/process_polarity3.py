@@ -6,17 +6,17 @@ Merges data from:
   2. Research Dashboard (project metadata: area, AI depth, status, pod)
 
 Produces polarity_data3.json with:
-  - 10 enriched project objects (incl. research_area, ai_depth, title, status, pod)
-  - Research Area summaries (Language, Storytelling, Env Stewardship, Socio-Neuro AI, Multi-Agent Systems)
-  - Emergent phrase clusters from ALL reviewer text (TF-IDF, no predefined themes)
-  - Sentence-level signals with project+source+reviewer attribution
-  - Reviewer profiles with word frequency
+  - 10 enriched project objects
+  - Research Area summaries
+  - Emergent phrases: bigrams/hyphenated ONLY, appearing across 2+ projects
+  - Typed sentences: recommendation | question | action | observation
+  - Network signals: cross-project typed sentences for Reviewer Intelligence view
 """
 
 import json, math, re, openpyxl
 from collections import Counter, defaultdict
 
-EVAL_XLSX = '/sessions/gifted-exciting-ramanujan/mnt/uploads/Abundant Intelligences_ Project Evaluation Form (Responses).xlsx'
+EVAL_XLSX = '/sessions/gifted-exciting-ramanujan/mnt/Data viz for program report/AbInt Phase 2 Evaluation Form.xlsx).xlsx'
 DASH_XLSX = '/sessions/gifted-exciting-ramanujan/mnt/uploads/1. Research Dashboard.xlsx'
 OUT       = '/sessions/gifted-exciting-ramanujan/polarity_data3.json'
 
@@ -56,28 +56,25 @@ print(f"Loaded {len(eval_rows)} evaluation rows from {len(set(r['project'] for r
 wb_dash = openpyxl.load_workbook(DASH_XLSX)
 ws_dash = wb_dash['Research Dashboard - Ready for ']
 
-# Build dashboard lookup by lead name (normalised)
 def norm_name(s):
     if not s: return ''
     s = str(s).lower().strip()
-    # Remove everything after comma or after parenthesis (handles "Antoine Bellemare-Pepin (supervisor)")
     s = re.split(r'[,\(]', s)[0].strip()
-    # Also strip trailing whitespace/newlines
     return s
 
 dashboard = {}
 for row_idx in range(3, 102):
-    b = ws_dash.cell(row_idx, 2).value   # LEAD
-    c = ws_dash.cell(row_idx, 3).value   # TITLE
-    e = ws_dash.cell(row_idx, 5).value   # TYPE (CfP / Pod Research)
-    f = ws_dash.cell(row_idx, 6).value   # POD
-    g = ws_dash.cell(row_idx, 7).value   # STATUS
-    i = ws_dash.cell(row_idx, 9).value   # PRIMARY AREA
-    j = ws_dash.cell(row_idx, 10).value  # SECONDARY AREA
-    k = ws_dash.cell(row_idx, 11).value  # AI DEPTH
-    m = ws_dash.cell(row_idx, 13).value  # IND METHODOLOGIES
-    n = ws_dash.cell(row_idx, 14).value  # INFRASTRUCTURE SHARABILITY
-    o = ws_dash.cell(row_idx, 15).value  # SHARABLE METHODOLOGY
+    b = ws_dash.cell(row_idx, 2).value
+    c = ws_dash.cell(row_idx, 3).value
+    e = ws_dash.cell(row_idx, 5).value
+    f = ws_dash.cell(row_idx, 6).value
+    g = ws_dash.cell(row_idx, 7).value
+    i = ws_dash.cell(row_idx, 9).value
+    j = ws_dash.cell(row_idx, 10).value
+    k = ws_dash.cell(row_idx, 11).value
+    m = ws_dash.cell(row_idx, 13).value
+    n = ws_dash.cell(row_idx, 14).value
+    o = ws_dash.cell(row_idx, 15).value
     if not b or not str(b).strip(): continue
     key = norm_name(b)
     title_clean = re.sub(r'\s+', ' ', str(c)).strip() if c else ''
@@ -94,17 +91,13 @@ for row_idx in range(3, 102):
         'infra_share':      str(n).strip() if n else 'None',
         'sharable_method':  str(o).strip() if o else 'None',
     }
-    # Keep only one record per lead (first hit wins for multi-project leads)
     if key not in dashboard:
         dashboard[key] = record
 
 print(f"Dashboard: {len(dashboard)} project leads loaded")
 
 # ── Match eval form to dashboard ─────────────────────────────────────────
-# Eval form project field = "Ashley Cordes - CfP01-01" → extract lead name
 def extract_lead(proj_str):
-    # "Ashley Cordes - CfP01-01"  →  "Ashley Cordes"
-    # "Sara Diamond & Archer Pechawis - CfP01-08" → "Sara Diamond and Archer Pechawis"
     lead = re.split(r'\s*-\s*CfP', proj_str)[0].strip()
     lead = lead.replace('&', 'and')
     return lead
@@ -112,10 +105,8 @@ def extract_lead(proj_str):
 def get_dash_info(proj_str):
     lead = extract_lead(proj_str)
     key  = norm_name(lead)
-    # Exact match first
     if key in dashboard:
         return dashboard[key]
-    # Partial match: last name
     last = key.split()[-1] if key.split() else ''
     for dk, dv in dashboard.items():
         if last and last in dk:
@@ -127,7 +118,6 @@ def get_dash_info(proj_str):
         'infra_share': 'None', 'sharable_method': 'None',
     }
 
-# Verify matching
 print("\nProject matching:")
 for pid in sorted(set(r['project'] for r in eval_rows)):
     info = get_dash_info(pid)
@@ -157,7 +147,7 @@ def lang_scores(texts):
     conc = round(min(.90, (nr/norm)*.16), 3)
     return conv, conc
 
-# ── Risk score from Risk column ──────────────────────────────────────────
+# ── Risk score ───────────────────────────────────────────────────────────
 RISK_NEG = ['one risk is','a risk is','risk is that','concern is','challenge is',
             'challenging','highly experimental','relies on','not clear how',
             'it is not clear','limited scope','solely focused','dependent on',
@@ -180,7 +170,7 @@ def risk_col_score(risk_text):
     score = min(0.90, max(0.05, 0.15 + net * 0.10))
     return round(score, 3)
 
-# ── Sentence classifier ───────────────────────────────────────────────────
+# ── Sentence classifiers ──────────────────────────────────────────────────
 POS_PATTERNS = [
     'well positioned','strong potential','contributes strongly',
     'demonstrates how','fits naturally','risk appears relatively low',
@@ -200,12 +190,43 @@ NEG_PATTERNS = [
     'narrow in scope','underdeveloped','no clear plan',
 ]
 
+# Sentence TYPE patterns (independent of positive/concern polarity)
+RECOMMENDATION_PATTERNS = [
+    'should ', 'would benefit', 'recommend', 'suggest', 'could consider',
+    'needs to', 'need to', 'ought to', 'it would be worth', 'would be helpful',
+    'would be valuable', 'would be important', 'could be strengthened',
+    'could be deepened', 'could be expanded', 'might consider', 'might benefit',
+    'could explore', 'should consider', 'should explore', 'would encourage',
+    'important to', 'critical to ensure', 'essential to',
+    # Patterns from actual reviewer language
+    'could deepen', 'could expand', 'could develop', 'could strengthen',
+    'could add', 'could include', 'could benefit', 'could be added',
+    'would need', 'would require', 'may be needed', 'may need to',
+    'might be worth', 'might want to', 'might be helpful',
+    'more attention', 'clearer', 'more explicit', 'more concrete',
+    'pivot', 'deepen', 'be added to support',
+]
+QUESTION_PATTERNS = [
+    '?', 'unclear', 'it is not clear', 'hard to assess', 'difficult to assess',
+    'not sure', 'i wonder', 'uncertain', 'question is', 'not entirely clear',
+    'remains to be seen', 'how will', 'what will', 'whether ', 'not yet clear',
+    'curious', 'unsure', 'hard to know', 'difficult to know',
+]
+ACTION_PATTERNS = [
+    'will ', 'is developing', 'has developed', 'has been', 'is building',
+    'is working', 'is creating', 'plans to', 'intends to', 'next step',
+    'moving forward', 'committed to', 'currently working', 'is already',
+    'has already', 'is actively', 'has established', 'is engaged',
+    'is partnering', 'is collaborating', 'has partnered',
+]
+
 def split_sentences(text):
     text = re.sub(r'\s+', ' ', text.strip())
     raw = re.split(r'(?<=[.!?])\s+', text)
     return [s.strip() for s in raw if len(s.split()) >= 6]
 
-def classify(sent):
+def classify_polarity(sent):
+    """Returns positive/concern/neutral + strength."""
     s = sent.lower()
     pos = sum(1 for p in POS_PATTERNS if p in s)
     neg = sum(1 for p in NEG_PATTERNS if p in s)
@@ -213,14 +234,33 @@ def classify(sent):
     if neg >= pos and neg > 0: return 'concern',  neg
     return 'neutral', 0
 
+def classify_type(sent):
+    """
+    Returns one of: recommendation | question | action | observation
+    Priority order: recommendation > question > action > observation
+    """
+    s = sent.lower()
+    # Recommendation takes priority — it's the most actionable
+    if any(p in s for p in RECOMMENDATION_PATTERNS):
+        return 'recommendation'
+    # Questions / uncertainty
+    if any(p in s for p in QUESTION_PATTERNS):
+        return 'question'
+    # Action signals — what's in motion
+    if any(p in s for p in ACTION_PATTERNS):
+        return 'action'
+    # Everything else is an observation
+    return 'observation'
+
 def extract_sentences(row):
+    """Extract polarity-classified sentences (positive/concern) per row."""
     positives, concerns = [], []
     fields = [('transform', row['transform']), ('advance', row['advance']),
               ('risk', row['risk']), ('collab', row['collab'])]
     for col_name, text in fields:
         if not text: continue
         for sent in split_sentences(text):
-            label, strength = classify(sent)
+            label, strength = classify_polarity(sent)
             if label == 'positive':
                 positives.append({'text': sent, 'reviewer': row['reviewer'],
                                    'project': row['project'], 'source': col_name,
@@ -231,7 +271,42 @@ def extract_sentences(row):
                                   'strength': strength})
     return positives, concerns
 
-# ── Stopwords for phrase extraction ───────────────────────────────────────
+def extract_typed_sentences(row, project_area):
+    """
+    Extract ALL sentences with type classification.
+    Returns list of {text, type, polarity, reviewer, project, source, area}
+    Filters out very short or uninformative sentences.
+    """
+    results = []
+    fields = [
+        ('transform', row['transform']),
+        ('advance',   row['advance']),
+        ('collab',    row['collab']),
+        ('risk',      row['risk']),
+    ]
+    for col_name, text in fields:
+        if not text: continue
+        for sent in split_sentences(text):
+            # Skip sentences that are just too generic to be useful
+            if len(sent.split()) < 8:
+                continue
+            sent_type    = classify_type(sent)
+            polarity, _  = classify_polarity(sent)
+            # For observations, only include positive or concern — skip neutral noise
+            if sent_type == 'observation' and polarity == 'neutral':
+                continue
+            results.append({
+                'text':     sent,
+                'type':     sent_type,
+                'polarity': polarity,
+                'reviewer': row['reviewer'],
+                'project':  row['project'],
+                'source':   col_name,
+                'area':     project_area,
+            })
+    return results
+
+# ── Stopwords ─────────────────────────────────────────────────────────────
 STOPWORDS = set([
     'project','projects','abint','network','phase','development','approach',
     'work','working','provide','provides','include','includes','focus',
@@ -257,7 +332,6 @@ STOPWORDS = set([
     'more','to','in','of','it','i','we','he','she','our','very','such','also',
     'need','needs','needed','using','used','make','makes','making','take',
     'takes','taking','think','thinking','allow','allows','allowing',
-    # Domain-specific noise: project names, network terms, generic academic words
     'abundant','dish','spoon','described','description','materials','material',
     'internal','environment','environments','storytelling',
     'collaboration','collaborative','goal','transforming','transformations',
@@ -273,6 +347,10 @@ def tokenize(text):
 def get_bigrams(tokens):
     return [tokens[i]+' '+tokens[i+1] for i in range(len(tokens)-1)
             if tokens[i] not in STOPWORDS and tokens[i+1] not in STOPWORDS]
+
+def get_hyphenated(text):
+    """Extract hyphenated compound terms like indigenous-centred, community-led."""
+    return re.findall(r'\b[a-z]{3,}-[a-z]{3,}\b', text.lower())
 
 # ── Build project-level data ──────────────────────────────────────────────
 project_data = {}
@@ -305,6 +383,7 @@ for r in eval_rows:
             'quality': [],
             'positives': [],
             'concerns': [],
+            'typed_sentences': [],
         }
     pd = project_data[pid]
     all_texts = [r['transform'], r['risk'], r['collab'], r['advance']]
@@ -317,9 +396,12 @@ for r in eval_rows:
     pos_sents, neg_sents = extract_sentences(r)
     pd['positives'].extend(pos_sents)
     pd['concerns'].extend(neg_sents)
+    # Typed sentences for Reviewer Intelligence view
+    area = get_dash_info(pid)['primary_area']
+    pd['typed_sentences'].extend(extract_typed_sentences(r, area))
 
 # Compute scores per project
-AI_DEPTH_NUM = {'High': 3, 'Mid': 2, 'Low': 1, 'None': 0, 'None': 0}
+AI_DEPTH_NUM = {'High': 3, 'Mid': 2, 'Low': 1, 'None': 0}
 
 for pid, pd in project_data.items():
     conv, conc = lang_scores(pd['texts'])
@@ -333,16 +415,15 @@ for pid, pd in project_data.items():
     pd['concern_lang']   = conc
     pd['ai_depth_num']   = AI_DEPTH_NUM.get(pd['ai_depth'], 0)
 
-# ── TF-IDF on ALL reviewer text (transform + advance) per project ─────────
+# ── TF-IDF: bigrams + hyphenated only, must appear in 2+ projects ─────────
 all_phrases_per_doc = {}
 for pid, pd in project_data.items():
-    text = ' '.join(pd['transform_texts'])
-    if pd['texts']: text += ' ' + ' '.join(pd['texts'])
+    text = ' '.join(pd['texts']).lower()
     toks = tokenize(text)
     bigs = get_bigrams(toks)
-    # Include distinctive single words (>7 chars) as well
-    notable = [t for t in toks if len(t) > 7]
-    all_phrases_per_doc[pid] = Counter(bigs + notable)
+    hyph = get_hyphenated(text)
+    # Only bigrams and hyphenated — no single words
+    all_phrases_per_doc[pid] = Counter(bigs + hyph)
 
 N = len(all_phrases_per_doc)
 phrase_doc_freq = Counter()
@@ -356,64 +437,114 @@ def tfidf(pid, phrase):
     idf = math.log(N / phrase_doc_freq[phrase])
     return tf * idf
 
-# Global phrase scores
+# Global phrase scores — CROSS-PROJECT ONLY (doc_freq >= 2)
 phrase_scores = {}
 for pid in all_phrases_per_doc:
     for phrase in all_phrases_per_doc[pid]:
+        if phrase_doc_freq[phrase] < 2:
+            continue  # Skip phrases that only appear in one project
         if phrase not in phrase_scores:
             phrase_scores[phrase] = 0
         phrase_scores[phrase] += tfidf(pid, phrase)
 
-# Determine polarity of each phrase: is it predominantly used in
-# positive or concern sentences?
-phrase_polarity = Counter()  # phrase -> net positive count
+# Determine polarity of each phrase from sentence context
+phrase_polarity = Counter()
 for r in eval_rows:
-    for field_name, text in [('transform', r['transform']), ('advance', r['advance'])]:
+    for field_name, text in [('transform', r['transform']), ('advance', r['advance']),
+                               ('collab', r['collab']), ('risk', r['risk'])]:
         if not text: continue
         for sent in split_sentences(text):
-            label, _ = classify(sent)
+            label, _ = classify_polarity(sent)
             if label in ('positive', 'concern'):
                 toks = tokenize(sent)
                 bigs = get_bigrams(toks)
-                notable = [t for t in toks if len(t) > 7]
-                for ph in bigs + notable:
+                hyph = get_hyphenated(sent)
+                for ph in bigs + hyph:
                     if label == 'positive': phrase_polarity[ph] += 1
                     else:                   phrase_polarity[ph] -= 1
 
-# Top global phrases excluding very common ones
 top_global = sorted(
-    [(ph, sc) for ph, sc in phrase_scores.items()
-     if phrase_doc_freq[ph] >= 1 and len(ph) > 4],
+    [(ph, sc) for ph, sc in phrase_scores.items() if len(ph) > 4],
     key=lambda x: -x[1]
 )[:50]
 
-print("\n=== TOP 30 EMERGENT PHRASES ===")
+print("\n=== TOP 30 EMERGENT PHRASES (cross-project, multi-word only) ===")
 for ph, sc in top_global[:30]:
-    pol = phrase_polarity.get(ph, 0)
-    pids = [pid[:25] for pid, cnts in all_phrases_per_doc.items() if cnts.get(ph, 0) > 0]
+    pol   = phrase_polarity.get(ph, 0)
+    n_doc = phrase_doc_freq[ph]
+    pids  = [pid[:20] for pid, cnts in all_phrases_per_doc.items() if cnts.get(ph, 0) > 0]
     pol_label = 'POS' if pol > 0 else ('NEG' if pol < 0 else 'MIX')
-    print(f"  {ph:35s} {sc:.2f}  {pol_label:3s}  n={len(pids)}  [{', '.join(pids[:2])}]")
+    print(f"  {ph:35s} {sc:.2f}  {pol_label:3s}  n={n_doc}  [{', '.join(pids[:3])}]")
 
-# Build emergent phrase objects for JSON
 emergent_phrases = []
 for ph, sc in top_global[:40]:
     pol = phrase_polarity.get(ph, 0)
     projects_using = [pid for pid, cnts in all_phrases_per_doc.items()
                       if cnts.get(ph, 0) > 0]
     emergent_phrases.append({
-        'phrase': ph,
-        'score': round(sc, 3),
-        'polarity': 1 if pol > 0 else (-1 if pol < 0 else 0),
+        'phrase':     ph,
+        'score':      round(sc, 3),
+        'polarity':   1 if pol > 0 else (-1 if pol < 0 else 0),
         'n_projects': len(projects_using),
-        'projects': projects_using,
-        'doc_freq': phrase_doc_freq[ph],
+        'projects':   projects_using,
+        'doc_freq':   phrase_doc_freq[ph],
     })
 
-# Per-project top phrases
+# Per-project top phrases (cross-project bigrams/hyphenated only)
 for pid, pd in project_data.items():
-    top_p = sorted(all_phrases_per_doc.get(pid, {}).items(),
-                   key=lambda x: -tfidf(pid, x[0]))[:6]
-    pd['top_phrases'] = [p for p, _ in top_p if len(p) > 4]
+    top_p = sorted(
+        [(ph, sc) for ph, sc in all_phrases_per_doc.get(pid, {}).items()
+         if phrase_doc_freq[ph] >= 2],
+        key=lambda x: -tfidf(pid, x[0])
+    )[:6]
+    pd['top_phrases'] = [p for p, _ in top_p]
+
+# ── Network Signals: typed sentences across all projects ─────────────────
+# Build four buckets for Reviewer Intelligence view
+network_signals = {
+    'recommendations': [],
+    'questions':       [],
+    'actions':         [],
+    'observations':    [],
+}
+
+seen_sigs = set()
+for pid, pd in project_data.items():
+    for s in pd['typed_sentences']:
+        key = s['text'][:80]
+        if key in seen_sigs:
+            continue
+        seen_sigs.add(key)
+        entry = {
+            'text':       s['text'],
+            'type':       s['type'],
+            'polarity':   s['polarity'],
+            'reviewer':   s['reviewer'],
+            'project':    pd['short'],
+            'project_id': pid,
+            'code':       pd['code'],
+            'area':       pd['primary_area'],
+        }
+        type_map = {
+            'recommendation': 'recommendations',
+            'question':       'questions',
+            'action':         'actions',
+            'observation':    'observations',
+        }
+        bucket = type_map.get(s['type'], 'observations')
+        network_signals[bucket].append(entry)
+
+# Sort each bucket: positive first, then by text length (longer = more substantive)
+for bucket in network_signals:
+    network_signals[bucket].sort(
+        key=lambda x: (0 if x['polarity'] == 'positive' else 1, -len(x['text']))
+    )
+
+print(f"\n=== REVIEWER INTELLIGENCE SIGNALS ===")
+for bname, items in network_signals.items():
+    print(f"  {bname:20s}: {len(items)} sentences")
+    for item in items[:2]:
+        print(f"    [{item['code']}] {item['text'][:100]}...")
 
 # ── Research Area summaries ───────────────────────────────────────────────
 RESEARCH_AREAS = [
@@ -456,7 +587,7 @@ for area in RESEARCH_AREAS:
     plist = area_projects.get(aid, [])
     if not plist: continue
 
-    valid = [(pid, w) for pid, w in plist if pid in project_data]
+    valid   = [(pid, w) for pid, w in plist if pid in project_data]
     pids    = [x[0] for x in valid]
     weights = [x[1] for x in valid]
 
@@ -465,7 +596,6 @@ for area in RESEARCH_AREAS:
     align_avg  = round(wavg(align_vals, weights), 2)
     risk_avg   = round(wavg(risk_vals,  weights), 3)
 
-    # Collect signal sentences
     all_pos, all_neg = [], []
     seen_pos, seen_neg = set(), set()
     for pid, w in valid:
@@ -492,12 +622,11 @@ for area in RESEARCH_AREAS:
     all_pos.sort(key=lambda x: -x['weight'])
     all_neg.sort(key=lambda x: -x['weight'])
 
-    # Top phrases for this area's projects
     area_phrases = []
     seen_ph = set()
     for pid in pids:
         for ph in project_data[pid].get('top_phrases', []):
-            if ph not in seen_ph and len(ph) > 4:
+            if ph not in seen_ph:
                 seen_ph.add(ph)
                 area_phrases.append(ph)
 
@@ -526,8 +655,8 @@ def reviewer_words(rrows):
         r['transform']+' '+r['advance']+' '+r['collab']+' '+r['risk']
         for r in rrows
     )
-    words  = [w for w in tokenize(all_text) if w not in STOPWORDS and len(w) > 3]
-    bigrams= [words[i]+' '+words[i+1] for i in range(len(words)-1)]
+    words   = [w for w in tokenize(all_text) if w not in STOPWORDS and len(w) > 3]
+    bigrams = [words[i]+' '+words[i+1] for i in range(len(words)-1)]
     return {
         'words':   Counter(words).most_common(60),
         'bigrams': Counter(bigrams).most_common(20),
@@ -578,8 +707,7 @@ for pid, pd in project_data.items():
         'concerns':       pd['concerns'][:4],
     })
 
-# ── Transformation Statement dimensions ──────────────────────────────────
-# These 7 dimensions are parsed from the AbInt TS for the coverage map
+# ── TS dimensions ─────────────────────────────────────────────────────────
 TS_DIMENSIONS = [
     {'id': 'ts_ik',       'label': 'Indigenous Knowledge Integration',
      'desc': 'IK holders, knowledge systems, and ways of knowing brought into AI'},
@@ -597,7 +725,6 @@ TS_DIMENSIONS = [
      'desc': 'Future imaginaries, speculative design, visioning for Phase 2+'},
 ]
 
-# Score each project against TS dimensions using keyword presence in reviewer text
 TS_KEYWORDS = {
     'ts_ik':        ['indigenous knowledge','knowledge system','ways of knowing',
                      'knowledge holder','traditional knowledge','land-based'],
@@ -623,7 +750,6 @@ for pid, pd in project_data.items():
     for dim_id, keywords in TS_KEYWORDS.items():
         hits = sum(full_text.count(kw) for kw in keywords)
         word_count = max(len(full_text.split()), 1)
-        # Normalise: hits per 100 words, capped at 1.0
         scores[dim_id] = round(min(1.0, hits / (word_count / 100) * 0.5), 3)
     ts_project_scores[pid] = scores
 
@@ -633,6 +759,7 @@ out_data = {
     'projects':            output_projects,
     'reviewers':           output_reviewers,
     'emergent_phrases':    emergent_phrases,
+    'network_signals':     network_signals,
     'ts_dimensions':       TS_DIMENSIONS,
     'ts_project_scores':   ts_project_scores,
     'top_global_phrases':  [p['phrase'] for p in emergent_phrases[:30]],
@@ -649,5 +776,8 @@ for a in output_areas:
 print(f"Projects: {len(output_projects)}")
 for p in sorted(output_projects, key=lambda x: -x['alignment_avg']):
     print(f"  {p['short'][:25]:25s} {p['code']:8s} align={p['alignment_avg']} risk={p['risk_score']} area={p['primary_area']}")
-print(f"Emergent phrases: {len(emergent_phrases)}")
+print(f"Emergent phrases (cross-project): {len(emergent_phrases)}")
 print(f"Top 10 phrases: {[p['phrase'] for p in emergent_phrases[:10]]}")
+print(f"\nNetwork Signals:")
+for bname, items in network_signals.items():
+    print(f"  {bname:20s}: {len(items)} sentences")
