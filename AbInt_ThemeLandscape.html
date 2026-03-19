@@ -1,0 +1,440 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Abundant Intelligences - Phase 2 Research Landscape</title><script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/d3-cloud/1.2.5/d3.layout.cloud.min.js"></script><style>
+:root{--bg:#0c0e17;--surface:#161926;--surface2:#1e2235;--border:#272d48;--text:#dde1f0;--muted:#7880a0;--accent:#7c9eff;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh;overflow-x:hidden;}
+header{background:var(--surface);border-bottom:1px solid var(--border);padding:16px 28px;display:flex;align-items:center;justify-content:space-between;}
+.htitle h1{font-size:1rem;font-weight:600;letter-spacing:.03em;}
+.htitle p{font-size:.7rem;color:var(--muted);margin-top:2px;}
+.hbadges{display:flex;gap:6px;flex-wrap:wrap;}
+.badge{background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:3px 10px;font-size:.65rem;color:var(--muted);}
+nav{display:flex;gap:2px;padding:12px 28px 0;border-bottom:1px solid var(--border);background:var(--surface);}
+nav button{background:none;border:none;color:var(--muted);font-size:.78rem;padding:7px 14px;cursor:pointer;border-bottom:2px solid transparent;border-radius:6px 6px 0 0;transition:all .2s;}
+nav button.active{color:var(--accent);border-bottom-color:var(--accent);background:rgba(124,158,255,.07);}
+nav button:hover:not(.active){color:var(--text);background:var(--surface2);}
+.view{display:none;}.view.active{display:flex;flex-direction:column;}
+#landscape-wrap{display:flex;flex:1;height:calc(100vh - 118px);}
+#land-left{flex:1;position:relative;overflow:hidden;}
+#land-svg{width:100%;height:100%;}
+#land-right{width:330px;background:var(--surface);border-left:1px solid var(--border);overflow-y:auto;flex-shrink:0;}
+#right-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;text-align:center;padding:28px;gap:12px;color:var(--muted);}
+#right-empty .icon{font-size:2.2rem;opacity:.35;}
+#right-empty p{font-size:.72rem;line-height:1.65;}
+#theme-detail{display:none;padding:20px;}
+.td-name{font-size:.93rem;font-weight:600;margin-bottom:3px;}
+.td-desc{font-size:.68rem;color:var(--muted);line-height:1.6;margin-bottom:16px;}
+.td-section{font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:8px;}
+.td-divider{border:none;border-top:1px solid var(--border);margin:14px 0;}
+.sig-row{display:flex;align-items:center;gap:8px;margin-bottom:7px;}
+.sig-name{font-size:.68rem;color:var(--text);width:82px;flex-shrink:0;}
+.sig-track{flex:1;height:7px;background:var(--surface2);border-radius:4px;overflow:hidden;}
+.sig-fill{height:100%;border-radius:4px;transition:width .5s cubic-bezier(.4,0,.2,1);}
+.sig-val{font-size:.62rem;color:var(--muted);width:28px;text-align:right;}
+.meta-explanation{font-size:.65rem;color:var(--muted);line-height:1.5;margin-bottom:10px;font-style:italic;}
+.meta-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+.meta-lbl{font-size:.68rem;color:var(--text);width:120px;flex-shrink:0;}
+.meta-track{flex:1;height:7px;background:var(--surface2);border-radius:4px;overflow:hidden;}
+.meta-fill{height:100%;border-radius:4px;transition:width .5s;}
+.meta-val{font-size:.62rem;color:var(--muted);width:28px;text-align:right;}
+.meta-legend{display:flex;flex-direction:column;gap:3px;margin-top:8px;}
+.ml-item{font-size:.6rem;color:var(--muted);padding-left:4px;}
+.ml-item.green::before{content:'● ';color:#34d399;}
+.ml-item.amber::before{content:'● ';color:#fbbf24;}
+.meta-section{font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin:10px 0 6px;}
+.phrase-tag{display:inline-block;background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:3px 8px;font-size:.63rem;color:var(--muted);margin:3px 3px 3px 0;}
+.quote-block{background:var(--surface2);border-left:3px solid;border-radius:0 6px 6px 0;padding:10px 12px;margin-bottom:8px;}
+.quote-text{font-size:.68rem;line-height:1.55;color:var(--text);font-style:italic;margin-bottom:4px;}
+.quote-rev{font-size:.6rem;color:var(--muted);}
+.proj-pill{display:flex;align-items:center;flex-wrap:wrap;gap:5px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:7px 10px;margin-bottom:5px;}
+.pp-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.pp-name{font-size:.68rem;flex:1;min-width:80px;}
+.pp-code{font-size:.6rem;color:var(--muted);font-family:monospace;}
+.axis-lbl{font-size:10.5px;fill:var(--muted);}
+.q-lbl{fill:var(--muted);font-size:9px;opacity:.4;}
+.midline{stroke:var(--border);stroke-dasharray:5,5;opacity:.6;}
+#land-ctrls{position:absolute;bottom:16px;left:16px;display:flex;gap:6px;flex-wrap:wrap;z-index:10;}
+.ctrl-chip{background:rgba(22,25,38,.88);border:1px solid var(--border);border-radius:20px;padding:5px 12px;font-size:.68rem;cursor:pointer;color:var(--muted);transition:all .2s;backdrop-filter:blur(4px);}
+.ctrl-chip.active{border-color:var(--accent);color:var(--accent);background:rgba(124,158,255,.1);}
+#land-leg{position:absolute;top:14px;left:14px;background:rgba(22,25,38,.85);border:1px solid var(--border);border-radius:8px;padding:10px 14px;backdrop-filter:blur(4px);}
+#land-leg h4{font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:8px;}
+.leg-row{display:flex;align-items:center;gap:6px;font-size:.64rem;color:var(--text);margin-bottom:4px;}
+.leg-small{font-size:.58rem;color:var(--muted);}
+#cards-view{padding:20px 28px;overflow-y:auto;flex:1;}
+#cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px;}
+.theme-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;transition:border-color .2s,box-shadow .2s;}
+.theme-card:hover{border-color:rgba(124,158,255,.3);box-shadow:0 4px 24px rgba(0,0,0,.3);}
+.tc-header{display:flex;align-items:flex-start;gap:12px;margin-bottom:14px;}
+.tc-swatch{width:36px;height:36px;border-radius:8px;flex-shrink:0;opacity:.85;}
+.tc-title{font-size:.88rem;font-weight:600;line-height:1.3;}
+.tc-count{font-size:.62rem;color:var(--muted);margin-top:2px;}
+.tc-badges{margin-left:auto;display:flex;flex-direction:column;gap:3px;flex-shrink:0;}
+.tc-badge{display:block;border:1px solid;border-radius:4px;padding:2px 7px;font-size:.6rem;text-align:center;white-space:nowrap;}
+.tc-desc{font-size:.68rem;color:var(--muted);line-height:1.6;margin-bottom:14px;}
+.tc-divider{border:none;border-top:1px solid var(--border);margin:12px 0;}
+.tc-quote{font-size:.67rem;color:var(--muted);line-height:1.55;font-style:italic;border-left:2px solid;padding-left:10px;margin-bottom:8px;}
+.tc-rev{font-size:.58rem;color:var(--muted);margin-top:2px;}
+.tc-phrases{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:12px;}
+.tc-projs{display:flex;flex-wrap:wrap;gap:4px;margin-top:10px;}
+.tc-ptag{background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:2px 7px;font-size:.6rem;color:var(--muted);}
+#leadership-view{padding:20px 28px;overflow-y:auto;flex:1;}
+#leadership-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(380px,1fr));gap:20px;}
+.rev-panel{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;}
+.rp-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:4px;}
+.rp-name{font-size:.9rem;font-weight:600;}
+.rp-meta{font-size:.65rem;color:var(--muted);margin-top:3px;margin-bottom:14px;}
+.rp-toggles{display:flex;gap:5px;margin-bottom:16px;}
+.rp-btn{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:4px 11px;font-size:.67rem;cursor:pointer;color:var(--muted);transition:all .2s;}
+.rp-btn.active{background:rgba(124,158,255,.12);border-color:var(--accent);color:var(--accent);}
+.rp-content{min-height:260px;}
+.notice{background:rgba(251,191,36,.07);border:1px solid rgba(251,191,36,.2);border-radius:8px;padding:9px 14px;font-size:.68rem;color:#fbbf24;margin:10px 28px 0;line-height:1.5;}
+#tip{position:fixed;pointer-events:none;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 13px;max-width:260px;font-size:.68rem;z-index:999;box-shadow:0 6px 24px rgba(0,0,0,.5);display:none;color:var(--text);}
+::-webkit-scrollbar{width:5px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+</style></head><body><header><div class="htitle"><h1>Abundant Intelligences &mdash; Phase 2 Research Landscape</h1><p>Strategic theme view &middot; Reviewer conviction &amp; concern derived from language &middot; Not a ranking</p></div><div class="hbadges"><span class="badge">6 Research Themes</span><span class="badge">10 Projects</span><span class="badge">2 Reviewers</span><span class="badge">Language-based scoring</span></div></header><nav><button class="active" onclick="showView('landscape',this)">&#9312; Theme Landscape</button><button onclick="showView('cards',this)">&#9313; Theme Cards</button><button onclick="showView('leadership',this)">&#9314; Leadership Language</button></nav><div id="view-landscape" class="view active"><div class="notice"><strong>How to read conviction &amp; concern:</strong> Bubble opacity = reviewer conviction (how directly and clearly reviewers endorsed this theme &mdash; drawn from their word choices, not a rating). Toggle &ldquo;Concern rings&rdquo; to see where reviewers used risk, challenge, or feasibility-doubt language. Click any bubble to see the full breakdown.</div><div id="landscape-wrap"><div id="land-left"><svg id="land-svg"></svg><div id="land-leg"><h4>Reading the landscape</h4><div class="leg-row">Bubble opacity<span class="leg-small">&nbsp;= reviewer conviction (language-based)</span></div><div class="leg-row">Dashed ring<span class="leg-small">&nbsp;= conviction strength</span></div><div class="leg-row">Bubble size<span class="leg-small">&nbsp;= contributing projects</span></div><div class="leg-row">Position<span class="leg-small">&nbsp;= Transform (Y) &times; Advancement (X)</span></div></div><div id="land-ctrls"><button class="ctrl-chip active" id="chip-sat" onclick="toggleSat(this)">Show projects</button><button class="ctrl-chip active" id="chip-lbl" onclick="toggleLbl(this)">Theme labels</button><button class="ctrl-chip" id="chip-concern" onclick="toggleConcern(this)">Concern rings</button></div></div><div id="land-right"><div id="right-empty"><div class="icon">&#9675;</div><p>Click a theme bubble<br>to see signals, reviewer conviction,<br>concern level, and key phrases</p></div><div id="theme-detail"></div></div></div></div><div id="view-cards" class="view"><div class="notice">Each card shows research signals alongside how reviewers spoke about the theme. Conviction and concern are language-derived &mdash; not ratings given by reviewers, but patterns in how they wrote.</div><div id="cards-view"><div id="cards-grid"></div></div></div><div id="view-leadership" class="view"><div class="notice">Conviction and concern scores are shown per reviewer based on their full body of feedback. A reviewer with lower conviction may be asking the right harder questions, not dismissing the work.</div><div id="leadership-view"><div id="leadership-grid"></div></div></div><div id="tip"></div><script>const DATA = {"themes": [{"id": "ik_governance", "title": "Indigenous Knowledge & AI Governance", "short": "IK & Governance", "color": "#a78bfa", "description": "Projects exploring how Indigenous knowledge systems can shape AI governance, data sovereignty, and community-defined ethical frameworks.", "project_weights": {"Ashley Cordes - CfP01-01": 0.9, "Jackie Rice - CfP01-07": 0.8, "Sara Diamond & Archer Pechawis - CfP01-08": 0.7}, "key_phrases": ["IK-AI governance", "data sovereignty", "community-defined priorities", "self-determination", "community consultation"], "reviewer_quotes": {"Jackson": "well positioned to advance through its dialogic, community-grounded methodology", "Jason": "conceived and governed by centring Indigenous knowledge systems, community-defined priorities, and principles of data sovereignty"}, "transformation": 0.742, "risk": 0.54, "collaboration": 0.761, "advancement": 0.88, "conviction": 0.581, "concern": 0.211, "n_projects": 3, "projects": [{"id": "Ashley Cordes - CfP01-01", "short": "Ashley Cordes", "code": "CfP01-01", "weight": 0.9, "conviction": 0.512, "concern": 0.303}, {"id": "Jackie Rice - CfP01-07", "short": "Jackie Rice", "code": "CfP01-07", "weight": 0.8, "conviction": 0.632, "concern": 0.171}, {"id": "Sara Diamond & Archer Pechawis - CfP01-08", "short": "Sara Diamond & Archer Pechawis", "code": "CfP01-08", "weight": 0.7, "conviction": 0.61, "concern": 0.14}]}, {"id": "language_ai", "title": "Language Revitalization & AI", "short": "Language & AI", "color": "#34d399", "description": "Projects harnessing AI in service of Indigenous language preservation, revitalization, and community-controlled language data governance.", "project_weights": {"Kaiya Healy - CfP02-10": 1.0, "Shankhalika Srikanth - CfP02-16": 0.9, "Ma'ema'eolehua Matsumoto - CfP02-05": 0.85, "Christine Clark - CfP04": 0.75}, "key_phrases": ["language revitalization", "Indigenous language AI", "community-controlled language data", "culturally grounded tools", "Hawaiian language consortium"], "reviewer_quotes": {"Jackson": "demonstrates how Indigenous language can serve as both the content and design constraint for AI systems", "Jason": "push hard on Lehua to articulate the proof of concept for a Hawaiian language AI"}, "transformation": 0.731, "risk": 0.42, "collaboration": 0.671, "advancement": 0.769, "conviction": 0.532, "concern": 0.196, "n_projects": 4, "projects": [{"id": "Kaiya Healy - CfP02-10", "short": "Kaiya Healy", "code": "CfP02-10", "weight": 1.0, "conviction": 0.569, "concern": 0.177}, {"id": "Shankhalika Srikanth - CfP02-16", "short": "Shankhalika Srikanth", "code": "CfP02-16", "weight": 0.9, "conviction": 0.563, "concern": 0.108}, {"id": "Ma'ema'eolehua Matsumoto - CfP02-05", "short": "Ma'ema'eolehua Matsumoto", "code": "CfP02-05", "weight": 0.85, "conviction": 0.424, "concern": 0.39}, {"id": "Christine Clark - CfP04", "short": "Christine Clark", "code": "CfP04", "weight": 0.75, "conviction": 0.569, "concern": 0.108}]}, {"id": "creative_speculative", "title": "Creative Research-Creation & Speculative AI", "short": "Creative & Speculative", "color": "#f97316", "description": "Projects using artistic practice and speculative methodologies to reimagine AI's role in Indigenous futures and Imaginaries.", "project_weights": {"Darby Herman - CfP02-11": 1.0, "Antoine Bellemare-Pepin - CfP04": 0.9, "Kaiya Healy - CfP02-10": 0.6}, "key_phrases": ["speculative exploration", "research-creation", "Imaginaries phase", "creative development", "neuro-symbolic storytelling"], "reviewer_quotes": {"Jackson": "fits naturally within the Imaginaries phase through its speculative exploration of symbolic systems and embodied knowledge"}, "transformation": 0.79, "risk": 0.55, "collaboration": 0.715, "advancement": 0.882, "conviction": 0.565, "concern": 0.199, "n_projects": 3, "projects": [{"id": "Darby Herman - CfP02-11", "short": "Darby Herman", "code": "CfP02-11", "weight": 1.0, "conviction": 0.577, "concern": 0.11}, {"id": "Antoine Bellemare-Pepin - CfP04", "short": "Antoine Bellemare-Pepin", "code": "CfP04", "weight": 0.9, "conviction": 0.55, "concern": 0.312}, {"id": "Kaiya Healy - CfP02-10", "short": "Kaiya Healy", "code": "CfP02-10", "weight": 0.6, "conviction": 0.569, "concern": 0.177}]}, {"id": "community_relational", "title": "Community-Led & Relational Practice", "short": "Community-Led Design", "color": "#60a5fa", "description": "Projects centring relational, community-grounded methodologies \u2014 consent, dialogue, and collective authorship as the design approach itself.", "project_weights": {"Jackie Rice - CfP01-07": 1.0, "Darby Herman - CfP02-11": 0.8, "Sara Diamond & Archer Pechawis - CfP01-08": 0.7, "Michelle Sylvestre - CfP02-13": 0.5}, "key_phrases": ["relational methodology", "community consultation", "dialogic approach", "collective authorship", "community-grounded process"], "reviewer_quotes": {"Jackson": "grounded in research-creation, dialogue, and community engagement as its primary methodology", "Jason": "Deepen the community engagement to develop 2-3 concrete IIAIs"}, "transformation": 0.693, "risk": 0.434, "collaboration": 0.698, "advancement": 0.82, "conviction": 0.563, "concern": 0.139, "n_projects": 4, "projects": [{"id": "Jackie Rice - CfP01-07", "short": "Jackie Rice", "code": "CfP01-07", "weight": 1.0, "conviction": 0.632, "concern": 0.171}, {"id": "Darby Herman - CfP02-11", "short": "Darby Herman", "code": "CfP02-11", "weight": 0.8, "conviction": 0.577, "concern": 0.11}, {"id": "Sara Diamond & Archer Pechawis - CfP01-08", "short": "Sara Diamond & Archer Pechawis", "code": "CfP01-08", "weight": 0.7, "conviction": 0.61, "concern": 0.14}, {"id": "Michelle Sylvestre - CfP02-13", "short": "Michelle Sylvestre", "code": "CfP02-13", "weight": 0.5, "conviction": 0.334, "concern": 0.118}]}, {"id": "technical_transformation", "title": "Technical AI Transformation", "short": "Technical Transformation", "color": "#f87171", "description": "Projects directly engaging with or reworking AI systems at a technical level \u2014 from data governance architecture to neuro-symbolic AI.", "project_weights": {"Sara Diamond & Archer Pechawis - CfP01-08": 1.0, "Antoine Bellemare-Pepin - CfP04": 1.0}, "key_phrases": ["reworking AI systems", "adapting existing AI", "neuro-symbolic AI", "data governance architecture", "technical transformation"], "reviewer_quotes": {"Jackson": "actively reworking AI systems, data governance, and technical infrastructure from an Indigenous standpoint"}, "transformation": 0.85, "risk": 0.69, "collaboration": 0.75, "advancement": 0.915, "conviction": 0.58, "concern": 0.226, "n_projects": 2, "projects": [{"id": "Sara Diamond & Archer Pechawis - CfP01-08", "short": "Sara Diamond & Archer Pechawis", "code": "CfP01-08", "weight": 1.0, "conviction": 0.61, "concern": 0.14}, {"id": "Antoine Bellemare-Pepin - CfP04", "short": "Antoine Bellemare-Pepin", "code": "CfP04", "weight": 1.0, "conviction": 0.55, "concern": 0.312}]}, {"id": "pedagogy_mobilization", "title": "Pedagogy & Knowledge Mobilization", "short": "Pedagogy & Mobilization", "color": "#fbbf24", "description": "Projects developing curriculum, educational resources, and strategies to mobilize AbInt research into teaching practice and wider community benefit.", "project_weights": {"Christine Clark - CfP04": 1.0, "Shankhalika Srikanth - CfP02-16": 0.7, "Ashley Cordes - CfP01-01": 0.8}, "key_phrases": ["curriculum development", "knowledge mobilization", "community-driven pedagogy", "book as background reading", "pedagogical approach"], "reviewer_quotes": {"Jackson": "could move into the Imaginaries phase by further developing its community-driven pedagogy", "Jason": "Book first. Imaginaries: deepen through use the book as background reading"}, "transformation": 0.684, "risk": 0.478, "collaboration": 0.626, "advancement": 0.8, "conviction": 0.549, "concern": 0.17, "n_projects": 3, "projects": [{"id": "Christine Clark - CfP04", "short": "Christine Clark", "code": "CfP04", "weight": 1.0, "conviction": 0.569, "concern": 0.108}, {"id": "Shankhalika Srikanth - CfP02-16", "short": "Shankhalika Srikanth", "code": "CfP02-16", "weight": 0.7, "conviction": 0.563, "concern": 0.108}, {"id": "Ashley Cordes - CfP01-01", "short": "Ashley Cordes", "code": "CfP01-01", "weight": 0.8, "conviction": 0.512, "concern": 0.303}]}], "projects": [{"id": "Michelle Sylvestre - CfP02-13", "short_title": "Michelle Sylvestre", "code": "CfP02-13", "n_reviewers": 1, "conviction": 0.334, "concern": 0.118, "transformation": 0.35, "risk": 0.25, "collaboration": 0.22, "advancement": 0.35, "alignment_avg": 5.0, "quality_avg": 5.0, "summary": "I am not entirely certain how this aligns with the AbINT Transformations statement. While it does describe engagement with a few elders and community members, the primary focus appears to remain internal to the POD and i\u2026", "reviewer_notes": {"Jackson": {"transform": "I am not entirely certain how this aligns with the AbINT Transformations statement. While it does describe engagement with a few elders and community members, the primary focus appears to remain inter\u2026", "risk": "The level of risk here appears to be minimal, largely because the scope of the project itself is fairly limited. My concern is less about risk and more about the leadership structure. In this case, th\u2026", "collab": "I do not clearly see the potential for this project to scale to the broader network. The work appears to be highly place- and context-specific, which gives it strength on its own terms, but may also m\u2026", "advance": "I do not see a strong potential for advancement here. As described, the project feels fairly contained in scope, and it is not clear what new development would take place beyond what has already been\u2026", "alignment": 5.0, "quality": 5.0}}, "reviewers": ["Jackson"]}, {"id": "Darby Herman - CfP02-11", "short_title": "Darby Herman", "code": "CfP02-11", "n_reviewers": 1, "conviction": 0.577, "concern": 0.11, "transformation": 0.7, "risk": 0.42, "collaboration": 0.78, "advancement": 0.9, "alignment_avg": 9.0, "quality_avg": 9.0, "summary": "The project contributes to AbInt\u2019s Transformation Statement primarily through its Indigenous-centred direction, mentorship-driven learning, and early exploration of how AI could be developed within a Blackfoot cultural c\u2026", "reviewer_notes": {"Jackson": {"transform": "The project contributes to AbInt\u2019s Transformation Statement primarily through its Indigenous-centred direction, mentorship-driven learning, and early exploration of how AI could be developed within a\u2026", "risk": "Risk appears relatively low, as the project is exploratory and limited in scope, with most activities focused on mentorship, learning, and early-stage development rather than complex AI deployment. A\u2026", "collab": "Yes, there is good potential for collaboration with other projects in the AbInt network, particularly those working with language, storytelling, and Indigenous-centred approaches to AI. As the project\u2026", "advance": "The project shows good potential to advance into the Imaginaries and Intelligences phases, particularly through its focus on storytelling, language, and culturally grounded approaches to AI. In the Im\u2026", "alignment": 9.0, "quality": 9.0}}, "reviewers": ["Jackson"]}, {"id": "Kaiya Healy - CfP02-10", "short_title": "Kaiya Healy", "code": "CfP02-10", "n_reviewers": 1, "conviction": 0.569, "concern": 0.177, "transformation": 0.85, "risk": 0.42, "collaboration": 0.78, "advancement": 0.93, "alignment_avg": 9.0, "quality_avg": 9.0, "summary": "This project contributes strongly to AbInt\u2019s Transformation Statement by demonstrating how Indigenous knowledge systems, particularly Blackfoot metaphysics and teachings, can inform the creation of sovereign digital envi\u2026", "reviewer_notes": {"Jackson": {"transform": "This project contributes strongly to AbInt\u2019s Transformation Statement by demonstrating how Indigenous knowledge systems, particularly Blackfoot metaphysics and teachings, can inform the creation of so\u2026", "risk": "Risk appears relatively low, as the project is primarily focused on creative development, learning, and community-informed digital world-building rather than high-risk technical or data-driven AI syst\u2026", "collab": "There is strong potential for collaboration with other projects in the AbInt network, particularly those working with virtual environments, storytelling, language, and Indigenous-centred approaches to\u2026", "advance": "The project has strong potential to advance into the Imaginaries phase through further development of its conceptual framework around Indigenous metaphysics, relational space, and alternative understa\u2026", "alignment": 9.0, "quality": 9.0}}, "reviewers": ["Jackson"]}, {"id": "Jackie Rice - CfP01-07", "short_title": "Jackie Rice", "code": "CfP01-07", "n_reviewers": 2, "conviction": 0.632, "concern": 0.171, "transformation": 0.75, "risk": 0.42, "collaboration": 0.73, "advancement": 0.865, "alignment_avg": 8.5, "quality_avg": 9.0, "summary": "This project contributes strongly to AbInt\u2019s Transformation Statement through its relational, Indigenous-centred approach to AI research grounded in Blackfoot knowledge, Elder guidance, and land-based dialogue. By suppor\u2026", "reviewer_notes": {"Jackson": {"transform": "This project contributes strongly to AbInt\u2019s Transformation Statement through its relational, Indigenous-centred approach to AI research grounded in Blackfoot knowledge, Elder guidance, and land-based\u2026", "risk": "Risk appears relatively low, as the project is grounded in research-creation, dialogue, and community-led processes rather than high-risk technical deployment. One potential risk is that the work depe\u2026", "collab": "There is strong potential for collaboration with other projects across the AbInt network, particularly those working with language revitalization, digital storytelling, community-based AI, and Indigen\u2026", "advance": "The project is well positioned to advance into the Imaginaries phase by further developing its dialogue-based and land-based methodologies as frameworks for imagining Indigenous-centred approaches to\u2026", "alignment": 9.0, "quality": 9.0}, "Jason": {"transform": "conceived and governed by centring Indigenous knowledge systems, community-defined priorities, and principles of data sovereignty. Through the co-creation of methodologies, infrastructure, policy enga\u2026", "risk": "Risk is mainly in potentially drifting out of alignment with community perspectives.\u2026", "collab": "All other projects who are establishing community consultation methodologies. Any project that is contemplating or has mounted art residencies (HIFI Lab comes to mind.) Any project looking to articula\u2026", "advance": "Imaginaries: Deepen the community engagement to develop 2-3 concrete IIAIs. Intelligences: strive to have everyhthing in place to take 1 of those into prototype stage.\u2026", "alignment": 8.0, "quality": 9.0}}, "reviewers": ["Jackson", "Jason"]}, {"id": "Sara Diamond & Archer Pechawis - CfP01-08", "short_title": "Sara Diamond & Archer Pechawis", "code": "CfP01-08", "n_reviewers": 1, "conviction": 0.61, "concern": 0.14, "transformation": 0.85, "risk": 0.6, "collaboration": 0.9, "advancement": 1.0, "alignment_avg": 10.0, "quality_avg": 9.0, "summary": "This project contributes strongly to AbInt\u2019s Transformation Statement by actively reworking AI systems through Indigenous governance, methodologies, and relational ethics grounded in the Dish With One Spoon covenant. Thr\u2026", "reviewer_notes": {"Jackson": {"transform": "This project contributes strongly to AbInt\u2019s Transformation Statement by actively reworking AI systems through Indigenous governance, methodologies, and relational ethics grounded in the Dish With One\u2026", "risk": "Risk is moderate, as the project engages directly with adapting existing AI systems, data governance, and community-based protocols, which require ongoing coordination across technical, cultural, and\u2026", "collab": "There is very strong potential for collaboration with other projects across the AbInt network, particularly those working with language models, community data governance, virtual environments, and Ind\u2026", "advance": "This research is well positioned to advance into the Imaginaries phase by further developing its governance frameworks, storytelling logics, and treaty-based ethics as foundations for alternative appr\u2026", "alignment": 10.0, "quality": 9.0}}, "reviewers": ["Jackson"]}, {"id": "Shankhalika Srikanth - CfP02-16", "short_title": "Shankhalika Srikanth", "code": "CfP02-16", "n_reviewers": 1, "conviction": 0.563, "concern": 0.108, "transformation": 0.7, "risk": 0.42, "collaboration": 0.6, "advancement": 0.8, "alignment_avg": 8.0, "quality_avg": 8.0, "summary": "This project contributes to AbInt\u2019s Transformation Statement through its focus on community-led language work, collaborative curriculum development, and attention to data sovereignty in the context of language revitaliza\u2026", "reviewer_notes": {"Jackson": {"transform": "This project contributes to AbInt\u2019s Transformation Statement through its focus on community-led language work, collaborative curriculum development, and attention to data sovereignty in the context of\u2026", "risk": "Risk appears relatively low, as the project focuses primarily on curriculum development, collaboration with language teachers, and exploratory planning rather than complex technical implementation. On\u2026", "collab": "There is potential for collaboration with other projects in the AbInt network, particularly those working in language revitalization, community-based data practices, and the development of locally gui\u2026", "advance": "The project could advance into the Imaginaries phase by further developing its approach to community-driven language pedagogy as a framework for thinking about how AI tools might be designed in ways t\u2026", "alignment": 8.0, "quality": 8.0}}, "reviewers": ["Jackson"]}, {"id": "Christine Clark - CfP04", "short_title": "Christine Clark", "code": "CfP04", "n_reviewers": 1, "conviction": 0.569, "concern": 0.108, "transformation": 0.7, "risk": 0.42, "collaboration": 0.6, "advancement": 0.8, "alignment_avg": 8.0, "quality_avg": 8.0, "summary": "This project contributes to AbInt\u2019s Transformation Statement by foregrounding Indigenous-led and community-centred approaches to language, culture, and knowledge transmission, while exploring how digital tools and AI-rel\u2026", "reviewer_notes": {"Jackson": {"transform": "This project contributes to AbInt\u2019s Transformation Statement by foregrounding Indigenous-led and community-centred approaches to language, culture, and knowledge transmission, while exploring how digi\u2026", "risk": "A risk is that the project remains primarily focused on curriculum development without clearly extending into technical, infrastructural, or network-level outcomes, which could limit its relevance to\u2026", "collab": "There is potential for this project to connect with other AbInt projects working on language revitalization, small language models, data governance, and community-based AI infrastructure, particularly\u2026", "advance": "The project could move into the Imaginaries phase by further developing its community-driven pedagogical approach as a basis for thinking about how language technologies should be designed in ways tha\u2026", "alignment": 8.0, "quality": 8.0}}, "reviewers": ["Jackson"]}, {"id": "Antoine Bellemare-Pepin - CfP04", "short_title": "Antoine Bellemare-Pepin", "code": "CfP04", "n_reviewers": 1, "conviction": 0.55, "concern": 0.312, "transformation": 0.85, "risk": 0.78, "collaboration": 0.6, "advancement": 0.83, "alignment_avg": 8.0, "quality_avg": 9.0, "summary": "The project contributes to AbInt\u2019s Transformation Statement by proposing new ways of bringing Indigenous knowledge systems into dialogue with computational methods, particularly through the integration of linguistic anal\u2026", "reviewer_notes": {"Jackson": {"transform": "The project contributes to AbInt\u2019s Transformation Statement by proposing new ways of bringing Indigenous knowledge systems into dialogue with computational methods, particularly through the integratio\u2026", "risk": "One risk is that the project relies on highly experimental methods combining neuroscience, symbolic analysis, and AI, which may make outcomes difficult to realize within the project timeframe or limit\u2026", "collab": "There is potential for collaboration with projects working on language, storytelling, and symbolic systems, as well as those developing small language models, interactive platforms, or locally grounde\u2026", "advance": "The project fits naturally within the Imaginaries phase through its speculative exploration of symbolic language, dreaming, and human\u2013AI interaction, and could contribute to that phase by further deve\u2026", "alignment": 8.0, "quality": 9.0}}, "reviewers": ["Jackson"]}, {"id": "Ashley Cordes - CfP01-01", "short_title": "Ashley Cordes", "code": "CfP01-01", "n_reviewers": 1, "conviction": 0.512, "concern": 0.303, "transformation": 0.65, "risk": 0.6, "collaboration": 0.68, "advancement": 0.8, "alignment_avg": 8.0, "quality_avg": 7.0, "summary": "IK-AI governance, community-defined priorities, and principles of data sovereignty. Builds capacity amongst researchers, learners, and communities.  This project is challenging, because so much of what was reported is no\u2026", "reviewer_notes": {"Jason": {"transform": "IK-AI governance, community-defined priorities, and principles of data sovereignty. Builds capacity amongst researchers, learners, and communities.\u2026", "risk": "This project is challenging, because so much of what was reported is not tied to the CfP project. Book: For the CfP I don't see many risks. The collection is much needed, and I'm pleased to see the tu\u2026", "collab": "Book: Hemi as part of the KMB portfolio should develop a strategy to share it. All Pods should be sent copies, and encourage local discussion sessions about it. Bring into Reading Group for discussion\u2026", "advance": "Book first. Imaginaries: deepen through use the book as background reading to prep for the FIIAI Workshops; review book and extract out concrete IIAI that might be found; deepen and support by doing a\u2026", "alignment": 8.0, "quality": 7.0}}, "reviewers": ["Jason"]}, {"id": "Ma'ema'eolehua Matsumoto - CfP02-05", "short_title": "Ma'ema'eolehua Matsumoto", "code": "CfP02-05", "n_reviewers": 1, "conviction": 0.424, "concern": 0.39, "transformation": 0.65, "risk": 0.42, "collaboration": 0.68, "advancement": 0.52, "alignment_avg": 6.0, "quality_avg": 7.0, "summary": "how artificial intelligence is conceived; Indigenous knowledge systems, community-defined priorities, and principles of data sovereignty. Through the co-creation of methodologies and Indigenous-centred AI systems... towa\u2026", "reviewer_notes": {"Jason": {"transform": "how artificial intelligence is conceived; Indigenous knowledge systems, community-defined priorities, and principles of data sovereignty. Through the co-creation of methodologies and Indigenous-centre\u2026", "risk": "Usual risk regarding community alignment. The risk of not pursuing is wasting momentum built up with Elders on engaging with this issue. Also must note: this project had a very late start, only a coup\u2026", "collab": "I think all the Hawaiian language projects could be brought together, and a consortium made with the other language projects (Maori, Niitsitapi, maybe Haudenosaunee)\u2026", "advance": "Hard to asses since so late getting started. Imaginaries: push hard on Lehua to articulate the proof of concept to feed into Kanaka FIIAI, and to run some sessions based on that. Not a clear path forw\u2026", "alignment": 6.0, "quality": 7.0}}, "reviewers": ["Jason"]}], "reviewers": [{"name": "Jackson", "n_projects": 8, "projects": ["Michelle", "Darby", "Kaiya", "Jackie", "Sara", "Shankhalika", "Christine", "Antoine"], "full_projects": ["Michelle Sylvestre - CfP02-13", "Darby Herman - CfP02-11", "Kaiya Healy - CfP02-10", "Jackie Rice - CfP01-07", "Sara Diamond & Archer Pechawis - CfP01-08", "Shankhalika Srikanth - CfP02-16", "Christine Clark - CfP04", "Antoine Bellemare-Pepin - CfP04"], "feedbacks": [{"project": "Michelle Sylvestre - CfP02-13", "transform": "I am not entirely certain how this aligns with the AbINT Transformations statement. While it does describe engagement with a few elders and community members, the primary focus appears to remain internal to the POD and its members. It is somewhat unclear how these interactions extend beyond those in", "risk": "The level of risk here appears to be minimal, largely because the scope of the project itself is fairly limited. My concern is less about risk and more about the leadership structure. In this case, the project seems to have been led primarily by a single non-Indigenous member, and it may have been s", "collab": "I do not clearly see the potential for this project to scale to the broader network. The work appears to be highly place- and context-specific, which gives it strength on its own terms, but may also make it difficult to adapt or translate to other PODs or to the wider Abundant Intelligences framewor", "advance": "I do not see a strong potential for advancement here. As described, the project feels fairly contained in scope, and it is not clear what new development would take place beyond what has already been completed. While the work itself seems thoughtful and well situated in its specific context, the pro", "alignment": 5.0, "quality": 5.0}, {"project": "Darby Herman - CfP02-11", "transform": "The project contributes to AbInt\u2019s Transformation Statement primarily through its Indigenous-centred direction, mentorship-driven learning, and early exploration of how AI could be developed within a Blackfoot cultural context. The work demonstrates capacity building, student training, and public kn", "risk": "Risk appears relatively low, as the project is exploratory and limited in scope, with most activities focused on mentorship, learning, and early-stage development rather than complex AI deployment. A potential risk is that, as a primarily student-led initiative, the work may lack continuity or long-", "collab": "Yes, there is good potential for collaboration with other projects in the AbInt network, particularly those working with language, storytelling, and Indigenous-centred approaches to AI. As the project develops its planned AI components, it could connect with other PODs exploring language models, com", "advance": "The project shows good potential to advance into the Imaginaries and Intelligences phases, particularly through its focus on storytelling, language, and culturally grounded approaches to AI. In the Imaginaries phase, the work could deepen its conceptual framework by further developing the role of co", "alignment": 9.0, "quality": 9.0}, {"project": "Kaiya Healy - CfP02-10", "transform": "This project contributes strongly to AbInt\u2019s Transformation Statement by demonstrating how Indigenous knowledge systems, particularly Blackfoot metaphysics and teachings, can inform the creation of sovereign digital environments that challenge Western assumptions about space, time, and intelligence.", "risk": "Risk appears relatively low, as the project is primarily focused on creative development, learning, and community-informed digital world-building rather than high-risk technical or data-driven AI systems. One potential risk is that the work is closely tied to an individual research process, which co", "collab": "There is strong potential for collaboration with other projects in the AbInt network, particularly those working with virtual environments, storytelling, language, and Indigenous-centred approaches to digital and AI systems. The Unity-based world and the methods developed around VFX, sound, and inte", "advance": "The project has strong potential to advance into the Imaginaries phase through further development of its conceptual framework around Indigenous metaphysics, relational space, and alternative understandings of time, energy, and environment within digital worlds. In the Intelligences phase, the work ", "alignment": 9.0, "quality": 9.0}, {"project": "Jackie Rice - CfP01-07", "transform": "This project contributes strongly to AbInt\u2019s Transformation Statement through its relational, Indigenous-centred approach to AI research grounded in Blackfoot knowledge, Elder guidance, and land-based dialogue. By supporting artist residencies, community conversations, and the creation of digital an", "risk": "Risk appears relatively low, as the project is grounded in research-creation, dialogue, and community-led processes rather than high-risk technical deployment. One potential risk is that the work depends on ongoing relationships with Elders, students, and community partners, so continuity and care a", "collab": "There is strong potential for collaboration with other projects across the AbInt network, particularly those working with language revitalization, digital storytelling, community-based AI, and Indigenous data governance. The project\u2019s dialogue-based and residency-driven structure creates opportuniti", "advance": "The project is well positioned to advance into the Imaginaries phase by further developing its dialogue-based and land-based methodologies as frameworks for imagining Indigenous-centred approaches to AI, particularly through language, storytelling, and relational understandings of knowledge and memo", "alignment": 9.0, "quality": 9.0}, {"project": "Sara Diamond & Archer Pechawis - CfP01-08", "transform": "This project contributes strongly to AbInt\u2019s Transformation Statement by actively reworking AI systems through Indigenous governance, methodologies, and relational ethics grounded in the Dish With One Spoon covenant. Through experiments with adapting LLMs and SLMs, developing community-guided data p", "risk": "Risk is moderate, as the project engages directly with adapting existing AI systems, data governance, and community-based protocols, which require ongoing coordination across technical, cultural, and institutional contexts. There is a risk that the scope\u2014spanning governance frameworks, software expe", "collab": "There is very strong potential for collaboration with other projects across the AbInt network, particularly those working with language models, community data governance, virtual environments, and Indigenous-centred AI design. The project\u2019s work on LLM guardrails, SLM repositories, and Dish With One", "advance": "This research is well positioned to advance into the Imaginaries phase by further developing its governance frameworks, storytelling logics, and treaty-based ethics as foundations for alternative approaches to AI design. The work already proposes new conceptual models\u2014such as Dish With One Spoon as ", "alignment": 10.0, "quality": 9.0}, {"project": "Shankhalika Srikanth - CfP02-16", "transform": "This project contributes to AbInt\u2019s Transformation Statement through its focus on community-led language work, collaborative curriculum development, and attention to data sovereignty in the context of language revitalization. The work demonstrates a relational approach to knowledge creation, with te", "risk": "Risk appears relatively low, as the project focuses primarily on curriculum development, collaboration with language teachers, and exploratory planning rather than complex technical implementation. One potential risk is that the work is closely tied to a specific community context and small working ", "collab": "There is potential for collaboration with other projects in the AbInt network, particularly those working in language revitalization, community-based data practices, and the development of locally guided learning tools. The curriculum work and phrase-based analysis methods could connect with project", "advance": "The project could advance into the Imaginaries phase by further developing its approach to community-driven language pedagogy as a framework for thinking about how AI tools might be designed in ways that follow local knowledge systems rather than external models. In the Intelligences phase, this wou", "alignment": 8.0, "quality": 8.0}, {"project": "Christine Clark - CfP04", "transform": "This project contributes to AbInt\u2019s Transformation Statement by foregrounding Indigenous-led and community-centred approaches to language, culture, and knowledge transmission, while exploring how digital tools and AI-related methods can be adapted to support these priorities rather than replace them", "risk": "A risk is that the project remains primarily focused on curriculum development without clearly extending into technical, infrastructural, or network-level outcomes, which could limit its relevance to AbInt\u2019s broader goals around AI and shared research methods. This could be mitigated by more explici", "collab": "There is potential for this project to connect with other AbInt projects working on language revitalization, small language models, data governance, and community-based AI infrastructure, particularly where pedagogical materials could inform future tool development. Collaboration could also emerge w", "advance": "The project could move into the Imaginaries phase by further developing its community-driven pedagogical approach as a basis for thinking about how language technologies should be designed in ways that follow local knowledge systems and teaching practices. To advance into the Intelligences phase, th", "alignment": 8.0, "quality": 8.0}, {"project": "Antoine Bellemare-Pepin - CfP04", "transform": "The project contributes to AbInt\u2019s Transformation Statement by proposing new ways of bringing Indigenous knowledge systems into dialogue with computational methods, particularly through the integration of linguistic analysis, neuroscience, and AI to explore symbolic language and storytelling. Its em", "risk": "One risk is that the project relies on highly experimental methods combining neuroscience, symbolic analysis, and AI, which may make outcomes difficult to realize within the project timeframe or limit their usefulness to the wider network. There is also a risk that the work remains conceptually stro", "collab": "There is potential for collaboration with projects working on language, storytelling, and symbolic systems, as well as those developing small language models, interactive platforms, or locally grounded AI tools. The project\u2019s focus on latent spaces, symbolic mapping, and human\u2013AI interaction could c", "advance": "The project fits naturally within the Imaginaries phase through its speculative exploration of symbolic language, dreaming, and human\u2013AI interaction, and could contribute to that phase by further developing its conceptual and methodological framework for culturally grounded AI design. To advance int", "alignment": 8.0, "quality": 9.0}], "conviction": 0.542, "concern": 0.157, "themes": {"words": [["project", 58], ["language", 47], ["community", 45], ["work", 41], ["network", 33], ["development", 31], ["indigenous", 29], ["abint", 27], ["other", 27], ["through", 26], ["technical", 26], ["risk", 24], ["data", 24], ["shared", 21], ["based", 21], ["systems", 21], ["projects", 21], ["knowledge", 20], ["collaboration", 20], ["phase", 19], ["digital", 18], ["methods", 17], ["tools", 17], ["potential", 15], ["learning", 15], ["approaches", 15], ["governance", 14], ["models", 14], ["while", 13], ["rather", 13], ["within", 13], ["centred", 13], ["storytelling", 13], ["grounded", 13], ["particularly", 12], ["design", 12], ["relational", 12], ["infrastructure", 12], ["developing", 11], ["intelligences", 11]], "bigrams": [["indigenous centred", 12], ["other projects", 11], ["other pods", 8], ["culturally grounded", 8], ["collaboration other", 8], ["language models", 8], ["project contributes", 7], ["abint transformation", 7], ["transformation statement", 7], ["knowledge systems", 7], ["risk pursuing", 7], ["pursuing project", 7], ["imaginaries phase", 7], ["intelligences phase", 7], ["language revitalization", 7], ["indigenous knowledge", 6], ["centred approaches", 6], ["potential collaboration", 6], ["abint network", 6], ["working language", 6], ["community based", 6], ["further developing", 6], ["learning tools", 6], ["data governance", 6], ["decision making", 5]], "trigrams": [["abint transformation statement", 7], ["risk pursuing project", 7], ["collaboration other projects", 6], ["indigenous centred approaches", 5], ["potential collaboration other", 5], ["abint network particularly", 5], ["network particularly working", 5], ["language learning tools", 5], ["other abint projects", 5], ["later phases project", 5], ["phases project contributes", 5], ["phase further developing", 5]]}}, {"name": "Jason", "n_projects": 3, "projects": ["Ashley", "Jackie", "Ma'ema'eolehua"], "full_projects": ["Ashley Cordes - CfP01-01", "Jackie Rice - CfP01-07", "Ma'ema'eolehua Matsumoto - CfP02-05"], "feedbacks": [{"project": "Ashley Cordes - CfP01-01", "transform": "IK-AI governance, community-defined priorities, and principles of data sovereignty. Builds capacity amongst researchers, learners, and communities. ", "risk": "This project is challenging, because so much of what was reported is not tied to the CfP project. Book: For the CfP I don't see many risks. The collection is much needed, and I'm pleased to see the turn-out. TASK: Ashley need to send us a TOC, and an update on where she is on the publication timelin", "collab": "Book: Hemi as part of the KMB portfolio should develop a strategy to share it. All Pods should be sent copies, and encourage local discussion sessions about it. Bring into Reading Group for discussion. Send to select Partners and policy people. Start planning the follow up collection. ", "advance": "Book first. Imaginaries: deepen through use the book as background reading to prep for the FIIAI Workshops; review book and extract out concrete IIAI that might be found; deepen and support by doing a second volume. Intelligences: Deepen through use as a methdologies guide for technology development", "alignment": 8.0, "quality": 7.0}, {"project": "Jackie Rice - CfP01-07", "transform": "conceived and governed by centring Indigenous knowledge systems, community-defined priorities, and principles of data sovereignty. Through the co-creation of methodologies, infrastructure, policy engagement, and Indigenous-centred AI systems; towards relational and accountable approaches co-develope", "risk": "Risk is mainly in potentially drifting out of alignment with community perspectives.", "collab": "All other projects who are establishing community consultation methodologies. Any project that is contemplating or has mounted art residencies (HIFI Lab comes to mind.) Any project looking to articulate their IK into forms that are readable from an AI frame.", "advance": "Imaginaries: Deepen the community engagement to develop 2-3 concrete IIAIs. Intelligences: strive to have everyhthing in place to take 1 of those into prototype stage. ", "alignment": 8.0, "quality": 9.0}, {"project": "Ma'ema'eolehua Matsumoto - CfP02-05", "transform": "how artificial intelligence is conceived; Indigenous knowledge systems, community-defined priorities, and principles of data sovereignty. Through the co-creation of methodologies and Indigenous-centred AI systems... towards relational and accountable approaches co-developed with those communities. B", "risk": "Usual risk regarding community alignment. The risk of not pursuing is wasting momentum built up with Elders on engaging with this issue. Also must note: this project had a very late start, only a couple of months, because of funding flow issues. ", "collab": "I think all the Hawaiian language projects could be brought together, and a consortium made with the other language projects (Maori, Niitsitapi, maybe Haudenosaunee)", "advance": "Hard to asses since so late getting started. Imaginaries: push hard on Lehua to articulate the proof of concept to feed into Kanaka FIIAI, and to run some sessions based on that. Not a clear path forward in the Intelligences phase.", "alignment": 6.0, "quality": 7.0}], "conviction": 0.509, "concern": 0.279, "themes": {"words": [["community", 10], ["communities", 7], ["other", 6], ["project", 5], ["book", 5], ["deepen", 5], ["indigenous", 5], ["data", 4], ["sovereignty", 4], ["risk", 4], ["imaginaries", 4], ["through", 4], ["systems", 4], ["defined", 3], ["priorities", 3], ["principles", 3], ["builds", 3], ["capacity", 3], ["researchers", 3], ["learners", 3], ["intelligences", 3], ["methodologies", 3], ["projects", 3], ["because", 2], ["much", 2], ["collection", 2], ["ashley", 2], ["send", 2], ["getting", 2], ["consultation", 2], ["develop", 2], ["discussion", 2], ["sessions", 2], ["reading", 2], ["policy", 2], ["start", 2], ["fiiai", 2], ["concrete", 2], ["conceived", 2], ["knowledge", 2]], "bigrams": [["data sovereignty", 4], ["community defined", 3], ["defined priorities", 3], ["priorities principles", 3], ["principles data", 3], ["researchers learners", 3], ["learners communities", 3], ["imaginaries deepen", 3], ["community consultation", 2], ["deepen through", 2], ["indigenous knowledge", 2], ["knowledge systems", 2], ["systems community", 2], ["sovereignty through", 2], ["through creation", 2], ["creation methodologies", 2], ["indigenous centred", 2], ["centred systems", 2], ["systems towards", 2], ["towards relational", 2], ["relational accountable", 2], ["accountable approaches", 2], ["approaches developed", 2], ["developed communities", 2], ["communities builds", 2]], "trigrams": [["community defined priorities", 3], ["defined priorities principles", 3], ["priorities principles data", 3], ["principles data sovereignty", 3], ["researchers learners communities", 3], ["indigenous knowledge systems", 2], ["knowledge systems community", 2], ["systems community defined", 2], ["data sovereignty through", 2], ["sovereignty through creation", 2], ["through creation methodologies", 2], ["indigenous centred systems", 2]]}}]};
+
+const THEMES = DATA.themes;
+const REVIEWERS = DATA.reviewers;
+
+function showView(name,btn){
+  document.querySelectorAll('.view').forEach(function(v){v.classList.remove('active');});
+  document.querySelectorAll('nav button').forEach(function(b){b.classList.remove('active');});
+  document.getElementById('view-'+name).classList.add('active');
+  btn.classList.add('active');
+  if(name==='landscape' && !landscapeBuilt) buildLandscape();
+  if(name==='cards' && !cardsBuilt) buildCards();
+  if(name==='leadership' && !leadershipBuilt) buildLeadership();
+}
+
+function riskColor(r){
+  if(r<0.4) return d3.interpolateRgb('#4ade80','#fbbf24')(r/0.4);
+  return d3.interpolateRgb('#fbbf24','#f87171')((r-0.4)/0.6);
+}
+function pct(v){return Math.round(v*100)+'%';}
+
+function convBar(val,label){
+  var c = val>0.6?'#34d399':val>0.45?'#fbbf24':'#f87171';
+  return '<div class="meta-row"><span class="meta-lbl">'+label+'</span>'
+    +'<div class="meta-track"><div class="meta-fill" style="width:'+pct(val)+';background:'+c+'"></div></div>'
+    +'<span class="meta-val">'+pct(val)+'</span></div>';
+}
+function concernBar(val,label){
+  var c = val<0.15?'#34d399':val<0.3?'#fbbf24':'#f87171';
+  return '<div class="meta-row"><span class="meta-lbl">'+label+'</span>'
+    +'<div class="meta-track"><div class="meta-fill" style="width:'+pct(val)+';background:'+c+'"></div></div>'
+    +'<span class="meta-val">'+pct(val)+'</span></div>';
+}
+
+// ---- LANDSCAPE -----------------------------------------------------------
+var landscapeBuilt=false, showSat=true, showLbl=true, showConcern=false;
+
+function buildLandscape(){
+  landscapeBuilt=true;
+  var wrap=document.getElementById('land-left');
+  var W=wrap.clientWidth||700, H=wrap.clientHeight||520;
+  var m={top:48,right:44,bottom:56,left:60};
+  var w=W-m.left-m.right, h=H-m.top-m.bottom;
+
+  d3.select('#land-svg').selectAll('*').remove();
+  var svg=d3.select('#land-svg').attr('width',W).attr('height',H);
+  var g=svg.append('g').attr('transform','translate('+m.left+','+m.top+')');
+
+  var xS=d3.scaleLinear().domain([0.4,1.05]).range([0,w]);
+  var yS=d3.scaleLinear().domain([0.55,1.0]).range([h,0]);
+  var rS=d3.scaleLinear().domain([2,4]).range([44,70]).clamp(true);
+  var midX=xS(0.72), midY=yS(0.75);
+
+  var qData=[
+    {x:0,y:0,w:midX,h:midY,fill:'rgba(124,158,255,0.04)',lx:midX*0.5,ly:midY*0.5,l1:'Speculative',l2:'Frontier'},
+    {x:midX,y:0,w:w-midX,h:midY,fill:'rgba(52,211,153,0.06)',lx:midX+(w-midX)*0.5,ly:midY*0.5,l1:'High-Value',l2:'Focus Zone'},
+    {x:0,y:midY,w:midX,h:h-midY,fill:'rgba(251,191,36,0.04)',lx:midX*0.5,ly:midY+(h-midY)*0.5,l1:'Foundational',l2:'Practice'},
+    {x:midX,y:midY,w:w-midX,h:h-midY,fill:'rgba(52,211,153,0.08)',lx:midX+(w-midX)*0.5,ly:midY+(h-midY)*0.5,l1:'Ready to',l2:'Advance'}
+  ];
+  qData.forEach(function(q){
+    g.append('rect').attr('x',q.x).attr('y',q.y).attr('width',q.w).attr('height',q.h).attr('fill',q.fill);
+    g.append('text').attr('class','q-lbl').attr('x',q.lx).attr('y',q.ly-6).attr('text-anchor','middle').text(q.l1);
+    g.append('text').attr('class','q-lbl').attr('x',q.lx).attr('y',q.ly+8).attr('text-anchor','middle').text(q.l2);
+  });
+  g.append('line').attr('class','midline').attr('x1',midX).attr('x2',midX).attr('y1',0).attr('y2',h);
+  g.append('line').attr('class','midline').attr('x1',0).attr('x2',w).attr('y1',midY).attr('y2',midY);
+
+  g.append('g').attr('transform','translate(0,'+h+')')
+    .call(d3.axisBottom(xS).ticks(5))
+    .call(function(a){a.select('.domain').attr('stroke','rgba(119,128,160,0.4)');
+      a.selectAll('text').style('fill','var(--muted)').style('font-size','10px');
+      a.selectAll('line').attr('stroke','rgba(119,128,160,0.3)');});
+  g.append('g')
+    .call(d3.axisLeft(yS).ticks(5))
+    .call(function(a){a.select('.domain').attr('stroke','rgba(119,128,160,0.4)');
+      a.selectAll('text').style('fill','var(--muted)').style('font-size','10px');
+      a.selectAll('line').attr('stroke','rgba(119,128,160,0.3)');});
+
+  svg.append('text').attr('class','axis-lbl').attr('x',m.left+w/2).attr('y',H-8).attr('text-anchor','middle').text('Advancement Potential');
+  svg.append('text').attr('class','axis-lbl').attr('transform','rotate(-90)').attr('x',-(m.top+h/2)).attr('y',13).attr('text-anchor','middle').text('Transformation Potential');
+
+  var tip=document.getElementById('tip');
+
+  THEMES.forEach(function(theme,i){
+    var cx=xS(theme.advancement), cy=yS(theme.transformation), r=rS(theme.n_projects);
+    var tg=g.append('g').attr('class','tbubble').attr('data-id',theme.id);
+
+    // concern ring — amber/red outer glow, toggleable
+    tg.append('circle').attr('class','concern-ring')
+      .attr('cx',cx).attr('cy',cy).attr('r',r+16)
+      .attr('fill','none')
+      .attr('stroke', theme.concern>0.25?'#f87171':'#fbbf24')
+      .attr('stroke-width', theme.concern * 12)
+      .attr('opacity', showConcern ? theme.concern*0.45 : 0)
+      .style('pointer-events','none');
+
+    // conviction dashed ring
+    tg.append('circle').attr('cx',cx).attr('cy',cy).attr('r',r+5)
+      .attr('fill','none').attr('stroke',theme.color)
+      .attr('stroke-width',1.5).attr('opacity',theme.conviction*0.65)
+      .attr('stroke-dasharray','3,4').style('pointer-events','none');
+
+    // main bubble — opacity driven by linguistic conviction
+    tg.append('circle').attr('cx',cx).attr('cy',cy).attr('r',r)
+      .attr('fill',theme.color).attr('opacity',0.10+theme.conviction*0.20)
+      .attr('stroke',theme.color).attr('stroke-width',2).attr('stroke-opacity',0.7+theme.conviction*0.3)
+      .style('cursor','pointer')
+      .on('click',function(){showThemeDetail(theme);})
+      .on('mousemove',function(event){
+        var convLabel=theme.conviction>0.6?'Strong':'theme.conviction>0.45?Moderate:Cautious';
+        tip.innerHTML='<strong>'+theme.short+'</strong><br>'
+          +theme.n_projects+' projects &middot; click to explore<br>'
+          +'<span style="font-size:.62rem;color:var(--muted)">Reviewer conviction: '+pct(theme.conviction)
+          +'  &middot;  Concern level: '+pct(theme.concern)+'</span>';
+        tip.style.display='block';
+        tip.style.left=Math.min(event.clientX+14,window.innerWidth-260)+'px';
+        tip.style.top=Math.min(event.clientY+14,window.innerHeight-90)+'px';
+      })
+      .on('mouseleave',function(){tip.style.display='none';});
+
+    tg.append('text').attr('class','bubble-lbl').attr('x',cx).attr('y',cy-4)
+      .attr('text-anchor','middle').style('pointer-events','none')
+      .style('fill',theme.color).style('font-size','10px').style('font-weight','600')
+      .text(theme.short.length>16?theme.short.split(' & ')[0]:theme.short);
+    tg.append('text').attr('x',cx).attr('y',cy+10)
+      .attr('text-anchor','middle').style('pointer-events','none')
+      .style('fill',theme.color).style('font-size','9px').style('opacity','0.65')
+      .text(theme.n_projects+' projects');
+
+    if(showSat){
+      var nP=theme.projects.length;
+      theme.projects.forEach(function(proj,pi){
+        var angle=(pi/nP)*2*Math.PI - Math.PI/2 + (i*0.28);
+        var dist=r+28+proj.weight*10;
+        var px=cx+Math.cos(angle)*dist, py=cy+Math.sin(angle)*dist;
+        tg.append('line').attr('class','sat-line')
+          .attr('x1',cx).attr('y1',cy).attr('x2',px).attr('y2',py)
+          .attr('stroke',theme.color).attr('stroke-width',proj.weight*1.3).attr('opacity',0.22)
+          .style('pointer-events','none');
+        tg.append('circle').attr('class','sat-dot')
+          .attr('cx',px).attr('cy',py).attr('r',3+proj.weight*2)
+          .attr('fill',theme.color).attr('opacity',0.55).style('pointer-events','none');
+        var anchor=px>cx?'start':'end', offset=px>cx?5:-5;
+        tg.append('text').attr('class','sat-lbl')
+          .attr('x',px+offset).attr('y',py+3).attr('text-anchor',anchor)
+          .style('fill','rgba(221,225,240,0.5)').style('font-size','8.5px').style('pointer-events','none')
+          .text(proj.short.split(' ')[0]);
+      });
+    }
+  });
+}
+
+function showThemeDetail(theme){
+  document.getElementById('right-empty').style.display='none';
+  var det=document.getElementById('theme-detail');
+  det.style.display='block';
+  var sColors={Transformation:'#a78bfa',Advancement:'#34d399',Collaboration:'#60a5fa',Risk:riskColor(theme.risk)};
+  var sigs=[{name:'Transformation',val:theme.transformation},{name:'Advancement',val:theme.advancement},{name:'Collaboration',val:theme.collaboration},{name:'Risk',val:theme.risk}];
+  var sigHtml=sigs.map(function(s){
+    return '<div class="sig-row"><span class="sig-name">'+s.name+'</span>'
+      +'<div class="sig-track"><div class="sig-fill" style="width:'+pct(s.val)+';background:'+sColors[s.name]+'"></div></div>'
+      +'<span class="sig-val">'+pct(s.val)+'</span></div>';
+  }).join('');
+  var phrases=(theme.key_phrases||[]).map(function(p){return '<span class="phrase-tag">'+p+'</span>';}).join('');
+  var quotes=Object.entries(theme.reviewer_quotes||{}).map(function(e){
+    return '<div class="quote-block" style="border-color:'+theme.color+'">'
+      +'<div class="quote-text">&ldquo;'+e[1]+'&rdquo;</div>'
+      +'<div class="quote-rev">&mdash; '+e[0]+'</div></div>';
+  }).join('');
+  var projs=theme.projects.map(function(p){
+    var convC=p.conviction>0.6?'#34d399':p.conviction>0.45?'#fbbf24':'#f87171';
+    var conC2=p.concern<0.15?'#34d399':p.concern<0.3?'#fbbf24':'#f87171';
+    return '<div class="proj-pill">'
+      +'<div class="pp-dot" style="background:'+theme.color+'"></div>'
+      +'<span class="pp-name">'+p.short+'</span>'
+      +'<span class="pp-code">'+p.code+'</span>'
+      +'<span style="font-size:.58rem;padding:1px 5px;border-radius:3px;background:'+convC+'22;color:'+convC+';border:1px solid '+convC+'44">conv '+pct(p.conviction)+'</span>'
+      +'<span style="font-size:.58rem;padding:1px 5px;border-radius:3px;background:'+conC2+'22;color:'+conC2+';border:1px solid '+conC2+'44;margin-left:3px">risk lang '+pct(p.concern)+'</span>'
+      +'</div>';
+  }).join('');
+
+  det.innerHTML='<div class="td-name" style="color:'+theme.color+'">'+theme.title+'</div>'
+    +'<div class="td-desc">'+theme.description+'</div>'
+    +'<div class="td-section">Research Signals</div>'+sigHtml
+    +'<hr class="td-divider">'
+    +'<div class="td-section">How Reviewers Speak About This Theme</div>'
+    +'<div class="meta-explanation">Derived from language patterns across all reviews contributing to this theme.</div>'
+    +convBar(theme.conviction,'Reviewer conviction')
+    +concernBar(theme.concern,'Concern language')
+    +'<div class="meta-legend">'
+    +'<span class="ml-item green">High conviction = clear, direct endorsement</span>'
+    +'<span class="ml-item amber">High concern = explicit risk or feasibility doubt</span>'
+    +'</div>'
+    +'<hr class="td-divider"><div class="td-section">Key Phrases from Reviews</div>'
+    +'<div style="margin-bottom:14px">'+phrases+'</div>'
+    +'<div class="td-section">Leadership Voice</div>'+quotes
+    +'<hr class="td-divider"><div class="td-section">Contributing Projects</div>'
+    +projs+'<div style="height:16px"></div>';
+}
+
+function toggleSat(btn){
+  showSat=!showSat; btn.classList.toggle('active',showSat);
+  document.querySelectorAll('.sat-line,.sat-dot,.sat-lbl').forEach(function(el){el.style.display=showSat?'':'none';});
+}
+function toggleLbl(btn){
+  showLbl=!showLbl; btn.classList.toggle('active',showLbl);
+  document.querySelectorAll('.bubble-lbl').forEach(function(el){el.style.display=showLbl?'':'none';});
+}
+function toggleConcern(btn){
+  showConcern=!showConcern; btn.classList.toggle('active',showConcern);
+  document.querySelectorAll('.concern-ring').forEach(function(el,i){
+    var t=THEMES[i%THEMES.length];
+    d3.select(el).attr('opacity',showConcern?t.concern*0.45:0);
+  });
+}
+
+// ---- CARDS ---------------------------------------------------------------
+var cardsBuilt=false;
+function buildCards(){
+  cardsBuilt=true;
+  var grid=document.getElementById('cards-grid');
+  grid.innerHTML='';
+  THEMES.forEach(function(theme){
+    var sigs=[{name:'Transformation',val:theme.transformation,color:'#a78bfa'},{name:'Advancement',val:theme.advancement,color:'#34d399'},{name:'Collaboration',val:theme.collaboration,color:'#60a5fa'},{name:'Risk',val:theme.risk,color:riskColor(theme.risk)}];
+    var sigHtml=sigs.map(function(s){
+      return '<div class="sig-row"><span class="sig-name">'+s.name+'</span>'
+        +'<div class="sig-track"><div class="sig-fill" style="width:'+pct(s.val)+';background:'+s.color+'"></div></div>'
+        +'<span class="sig-val">'+pct(s.val)+'</span></div>';
+    }).join('');
+    var convC=theme.conviction>0.6?'#34d399':theme.conviction>0.45?'#fbbf24':'#f87171';
+    var conC2=theme.concern<0.15?'#34d399':theme.concern<0.3?'#fbbf24':'#f87171';
+    var langBars=convBar(theme.conviction,'Reviewer conviction')+concernBar(theme.concern,'Concern language');
+    var phrases=theme.key_phrases.map(function(p){return '<span class="phrase-tag">'+p+'</span>';}).join('');
+    var quotes=Object.entries(theme.reviewer_quotes).map(function(e){
+      return '<div class="tc-quote" style="border-color:'+theme.color+'">'
+        +'&ldquo;'+e[1]+'&rdquo;<div class="tc-rev">&mdash; '+e[0]+'</div></div>';
+    }).join('');
+    var ptags=theme.projects.map(function(p){return '<span class="tc-ptag">'+p.short.split(' ')[0]+'</span>';}).join('');
+    var card=document.createElement('div');
+    card.className='theme-card';
+    card.innerHTML='<div class="tc-header"><div class="tc-swatch" style="background:'+theme.color+'"></div>'
+      +'<div><div class="tc-title">'+theme.title+'</div>'
+      +'<div class="tc-count">'+theme.n_projects+' projects</div></div>'
+      +'<div class="tc-badges">'
+      +'<span class="tc-badge" style="color:'+convC+';border-color:'+convC+'44;background:'+convC+'11">conviction '+pct(theme.conviction)+'</span>'
+      +'<span class="tc-badge" style="color:'+conC2+';border-color:'+conC2+'44;background:'+conC2+'11;margin-top:4px">concern '+pct(theme.concern)+'</span>'
+      +'</div></div>'
+      +'<div class="tc-desc">'+theme.description+'</div>'
+      +'<div>'+sigHtml+'</div>'
+      +'<div class="meta-section">How reviewers speak about this theme</div>'
+      +'<div style="margin-bottom:10px">'+langBars+'</div>'
+      +'<hr class="tc-divider"><div class="tc-phrases">'+phrases+'</div>'
+      +'<hr class="tc-divider">'+quotes
+      +'<div class="tc-projs">'+ptags+'</div>';
+    grid.appendChild(card);
+  });
+}
+
+// ---- LEADERSHIP ----------------------------------------------------------
+var leadershipBuilt=false;
+var TC_COLORS=['#a78bfa','#34d399','#f97316','#60a5fa','#f87171','#fbbf24'];
+
+function buildLeadership(){
+  leadershipBuilt=true;
+  var grid=document.getElementById('leadership-grid');
+  grid.innerHTML='';
+  REVIEWERS.forEach(function(rev){
+    var convC=rev.conviction>0.6?'#34d399':rev.conviction>0.45?'#fbbf24':'#f87171';
+    var conC2=rev.concern<0.15?'#34d399':rev.concern<0.3?'#fbbf24':'#f87171';
+    var panel=document.createElement('div');
+    panel.className='rev-panel';
+    var projNames=rev.full_projects.map(function(p){return p.split(' - ')[0].split(' ')[0];}).join(', ');
+    panel.innerHTML='<div class="rp-header">'
+      +'<div><div class="rp-name">'+rev.name+'</div>'
+      +'<div class="rp-meta">Reviewed '+rev.n_projects+' projects: '+projNames+'</div></div>'
+      +'<div style="display:flex;flex-direction:column;gap:3px;flex-shrink:0;margin-left:10px">'
+      +'<span class="tc-badge" style="color:'+convC+';border-color:'+convC+'44;background:'+convC+'11">conviction '+pct(rev.conviction)+'</span>'
+      +'<span class="tc-badge" style="color:'+conC2+';border-color:'+conC2+'44;background:'+conC2+'11">concern '+pct(rev.concern)+'</span>'
+      +'</div></div>'
+      +'<div class="rp-toggles" data-rev="'+rev.name+'">'
+      +'<button class="rp-btn active" data-mode="cloud">Word Cloud</button>'
+      +'<button class="rp-btn" data-mode="phrases">Key Phrases</button>'
+      +'<button class="rp-btn" data-mode="bars">Frequency</button>'
+      +'</div><div class="rp-content" id="rpc-'+rev.name+'"></div>';
+    grid.appendChild(panel);
+    panel.querySelectorAll('.rp-toggles .rp-btn').forEach(function(btn){
+      btn.addEventListener('click',function(){
+        btn.closest('.rp-toggles').querySelectorAll('.rp-btn').forEach(function(b){b.classList.remove('active');});
+        btn.classList.add('active');
+        renderRev(rev,btn.getAttribute('data-mode'));
+      });
+    });
+    renderRev(rev,'cloud');
+  });
+}
+
+function renderRev(rev,mode){
+  var c=document.getElementById('rpc-'+rev.name);
+  c.innerHTML='';
+  if(mode==='cloud'){
+    var W=c.clientWidth||420;
+    var svg=d3.select(c).append('svg').attr('width','100%').attr('height',260);
+    var words=rev.themes.words.slice(0,30).map(function(w){return{text:w[0],size:w[1]};});
+    var maxS=d3.max(words,function(d){return d.size;});
+    var fS=d3.scaleLinear().domain([1,maxS]).range([10,40]).clamp(true);
+    d3.layout.cloud().size([W,255]).words(words).padding(4)
+      .rotate(function(){return Math.random()>0.75?90:0;})
+      .font('Segoe UI').fontSize(function(d){return fS(d.size);})
+      .on('end',function(drawn){
+        svg.append('g').attr('transform','translate('+W/2+',130)')
+          .selectAll('text').data(drawn).enter().append('text')
+          .attr('text-anchor','middle')
+          .attr('transform',function(d){return 'translate('+d.x+','+d.y+')rotate('+d.rotate+')';})
+          .attr('font-size',function(d){return d.size+'px';})
+          .attr('fill',function(d,i){return TC_COLORS[i%TC_COLORS.length];})
+          .attr('opacity',0.85).text(function(d){return d.text;});
+      }).start();
+  } else if(mode==='phrases'){
+    var ul=document.createElement('ul');
+    ul.style.listStyle='none';
+    var items=rev.themes.trigrams.slice(0,5).concat(rev.themes.bigrams.slice(0,12)).slice(0,14);
+    items.forEach(function(item){
+      var li=document.createElement('li');
+      li.style.cssText='display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);font-size:.72rem;';
+      li.innerHTML='<span>'+item[0]+'</span><span style="background:var(--surface2);border-radius:10px;padding:1px 8px;font-size:.62rem;color:var(--muted)">&times;'+item[1]+'</span>';
+      ul.appendChild(li);
+    });
+    c.appendChild(ul);
+  } else {
+    var words2=rev.themes.words.slice(0,20);
+    var maxC=Math.max.apply(null,words2.map(function(w){return w[1];}));
+    words2.forEach(function(w,i){
+      var row=document.createElement('div');
+      row.style.cssText='display:flex;align-items:center;gap:8px;margin-bottom:7px;';
+      row.innerHTML='<span style="font-size:.68rem;width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text)">'+w[0]+'</span>'
+        +'<div style="flex:1;height:7px;background:var(--surface2);border-radius:4px;overflow:hidden;">'
+        +'<div style="height:100%;border-radius:4px;width:'+(w[1]/maxC*100).toFixed(0)+'%;background:'+TC_COLORS[i%TC_COLORS.length]+'"></div></div>'
+        +'<span style="font-size:.6rem;color:var(--muted);width:20px;text-align:right">'+w[1]+'</span>';
+      c.appendChild(row);
+    });
+  }
+}
+
+window.addEventListener('DOMContentLoaded',function(){buildLandscape();});
+window.addEventListener('resize',function(){
+  if(document.getElementById('view-landscape').classList.contains('active')){
+    landscapeBuilt=false; buildLandscape();
+  }
+});
+</script></body></html>
