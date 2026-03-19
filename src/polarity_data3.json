@@ -1,0 +1,2386 @@
+{
+  "research_areas": [
+    {
+      "id": "language",
+      "title": "Language",
+      "color": "#34d399",
+      "desc": "Expanding NLP capabilities to handle Indigenous linguistic structures and language densities.",
+      "n_projects": 8,
+      "projects": [
+        {
+          "id": "Michelle Sylvestre - CfP02-13",
+          "short": "Michelle Sylvestre",
+          "code": "CfP02-13",
+          "is_primary": false
+        },
+        {
+          "id": "Darby Herman - CfP02-11",
+          "short": "Darby Herman",
+          "code": "CfP02-11",
+          "is_primary": false
+        },
+        {
+          "id": "Jackie Rice - CfP01-07",
+          "short": "Jackie Rice",
+          "code": "CfP01-07",
+          "is_primary": true
+        },
+        {
+          "id": "Sara Diamond & Archer Pechawis - CfP01-08",
+          "short": "Sara Diamond and Archer Pechawis",
+          "code": "CfP01-08",
+          "is_primary": false
+        },
+        {
+          "id": "Shankhalika Srikanth - CfP02-16",
+          "short": "Shankhalika Srikanth",
+          "code": "CfP02-16",
+          "is_primary": true
+        },
+        {
+          "id": "Christine Clark - CfP04",
+          "short": "Christine Clark",
+          "code": "CfP04",
+          "is_primary": true
+        },
+        {
+          "id": "Antoine Bellemare-Pepin - CfP04",
+          "short": "Antoine Bellemare-Pepin",
+          "code": "CfP04",
+          "is_primary": false
+        },
+        {
+          "id": "Ma'ema'eolehua Matsumoto - CfP02-05",
+          "short": "Ma'ema'eolehua Matsumoto",
+          "code": "CfP02-05",
+          "is_primary": true
+        }
+      ],
+      "alignment_avg": 7.75,
+      "risk_score": 0.116,
+      "top_phrases": [
+        "said does",
+        "helpful clarify",
+        "entirely",
+        "engagement",
+        "conversations",
+        "entirely aligns",
+        "learning",
+        "capacity building"
+      ],
+      "positive_sentences": [
+        {
+          "text": "This project contributes strongly to AbInt\u2019s Transformation Statement through its relational, Indigenous-centred approach to AI research grounded in Blackfoot knowledge, Elder guidance, and land-based dialogue.",
+          "reviewer": "Jackson",
+          "project": "Jackie Rice",
+          "project_code": "CfP01-07",
+          "source": "transform",
+          "weight": 1.0
+        },
+        {
+          "text": "By supporting artist residencies, community conversations, and the creation of digital and performative works, the project shifts AI inquiry away from purely technical development toward culturally grounded, community-led processes.",
+          "reviewer": "Jackson",
+          "project": "Jackie Rice",
+          "project_code": "CfP01-07",
+          "source": "transform",
+          "weight": 1.0
+        },
+        {
+          "text": "The project is well positioned to advance into the Imaginaries phase by further developing its dialogue-based and land-based methodologies as frameworks for imagining Indigenous-centred approaches to AI, particularly through language, storytelling, and relational understandings of knowledge and memory.",
+          "reviewer": "Jackson",
+          "project": "Jackie Rice",
+          "project_code": "CfP01-07",
+          "source": "advance",
+          "weight": 1.0
+        },
+        {
+          "text": "Risk appears relatively low, as the project is grounded in research-creation, dialogue, and community-led processes rather than high-risk technical deployment.",
+          "reviewer": "Jackson",
+          "project": "Jackie Rice",
+          "project_code": "CfP01-07",
+          "source": "risk",
+          "weight": 1.0
+        },
+        {
+          "text": "The risk of not pursuing the project would be significant, as it supports the relational and community-driven foundations necessary for Indigenous-centred AI, while also building capacity through residencies, mentorship, and shared learning across the AbInt network.",
+          "reviewer": "Jackson",
+          "project": "Jackie Rice",
+          "project_code": "CfP01-07",
+          "source": "risk",
+          "weight": 1.0
+        }
+      ],
+      "concern_sentences": [
+        {
+          "text": "A risk is that the project remains primarily focused on curriculum development without clearly extending into technical, infrastructural, or network-level outcomes, which could limit its relevance to AbInt\u2019s broader goals around AI and shared research methods.",
+          "reviewer": "Jackson",
+          "project": "Christine Clark",
+          "project_code": "CfP04",
+          "source": "risk",
+          "weight": 1.0
+        },
+        {
+          "text": "Hard to asses since so late getting started.",
+          "reviewer": "Jason",
+          "project": "Ma'ema'eolehua Matsumoto",
+          "project_code": "CfP02-05",
+          "source": "advance",
+          "weight": 1.0
+        },
+        {
+          "text": "I am not entirely certain how this aligns with the AbINT Transformations statement.",
+          "reviewer": "Jackson",
+          "project": "Michelle Sylvestre",
+          "project_code": "CfP02-13",
+          "source": "transform",
+          "weight": 0.5
+        },
+        {
+          "text": "I do not see a strong potential for advancement here.",
+          "reviewer": "Jackson",
+          "project": "Michelle Sylvestre",
+          "project_code": "CfP02-13",
+          "source": "advance",
+          "weight": 0.5
+        },
+        {
+          "text": "As described, the project feels fairly contained in scope, and it is not clear what new development would take place beyond what has already been completed.",
+          "reviewer": "Jackson",
+          "project": "Michelle Sylvestre",
+          "project_code": "CfP02-13",
+          "source": "advance",
+          "weight": 0.5
+        }
+      ]
+    },
+    {
+      "id": "storytelling",
+      "title": "Storytelling",
+      "color": "#a78bfa",
+      "desc": "Drawing on Indigenous storytelling and oral traditions to develop richer machine understandings.",
+      "n_projects": 8,
+      "projects": [
+        {
+          "id": "Michelle Sylvestre - CfP02-13",
+          "short": "Michelle Sylvestre",
+          "code": "CfP02-13",
+          "is_primary": true
+        },
+        {
+          "id": "Darby Herman - CfP02-11",
+          "short": "Darby Herman",
+          "code": "CfP02-11",
+          "is_primary": true
+        },
+        {
+          "id": "Kaiya Healy - CfP02-10",
+          "short": "Kaiya Healy",
+          "code": "CfP02-10",
+          "is_primary": true
+        },
+        {
+          "id": "Jackie Rice - CfP01-07",
+          "short": "Jackie Rice",
+          "code": "CfP01-07",
+          "is_primary": false
+        },
+        {
+          "id": "Sara Diamond & Archer Pechawis - CfP01-08",
+          "short": "Sara Diamond and Archer Pechawis",
+          "code": "CfP01-08",
+          "is_primary": true
+        },
+        {
+          "id": "Christine Clark - CfP04",
+          "short": "Christine Clark",
+          "code": "CfP04",
+          "is_primary": false
+        },
+        {
+          "id": "Ashley Cordes - CfP01-01",
+          "short": "Ashley Cordes",
+          "code": "CfP01-01",
+          "is_primary": false
+        },
+        {
+          "id": "Ma'ema'eolehua Matsumoto - CfP02-05",
+          "short": "Ma'ema'eolehua Matsumoto",
+          "code": "CfP02-05",
+          "is_primary": false
+        }
+      ],
+      "alignment_avg": 8.04,
+      "risk_score": 0.122,
+      "top_phrases": [
+        "said does",
+        "helpful clarify",
+        "entirely",
+        "engagement",
+        "conversations",
+        "entirely aligns",
+        "learning",
+        "capacity building"
+      ],
+      "positive_sentences": [
+        {
+          "text": "The work demonstrates capacity building, student training, and public knowledge mobilization through exhibition and artist talks, and shows an effort to situate AI development within community relationships and storytelling practices.",
+          "reviewer": "Jackson",
+          "project": "Darby Herman",
+          "project_code": "CfP02-11",
+          "source": "transform",
+          "weight": 1.0
+        },
+        {
+          "text": "Risk appears relatively low, as the project is exploratory and limited in scope, with most activities focused on mentorship, learning, and early-stage development rather than complex AI deployment.",
+          "reviewer": "Jackson",
+          "project": "Darby Herman",
+          "project_code": "CfP02-11",
+          "source": "risk",
+          "weight": 1.0
+        },
+        {
+          "text": "As the project develops its planned AI components, it could connect with other PODs exploring language models, community-based data practices, or culturally grounded interface design.",
+          "reviewer": "Jackson",
+          "project": "Darby Herman",
+          "project_code": "CfP02-11",
+          "source": "collab",
+          "weight": 1.0
+        },
+        {
+          "text": "The strong mentorship structure and focus on learning also make this a good candidate for collaboration through workshops, shared development sessions, or student exchanges, which could help expand the work beyond its current scope while contributing to broader network capacity building.",
+          "reviewer": "Jackson",
+          "project": "Darby Herman",
+          "project_code": "CfP02-11",
+          "source": "collab",
+          "weight": 1.0
+        },
+        {
+          "text": "This project contributes strongly to AbInt\u2019s Transformation Statement by demonstrating how Indigenous knowledge systems, particularly Blackfoot metaphysics and teachings, can inform the creation of sovereign digital environments that challenge Western assumptions about space, time, and intelligence.",
+          "reviewer": "Jackson",
+          "project": "Kaiya Healy",
+          "project_code": "CfP02-10",
+          "source": "transform",
+          "weight": 1.0
+        }
+      ],
+      "concern_sentences": [
+        {
+          "text": "I am not entirely certain how this aligns with the AbINT Transformations statement.",
+          "reviewer": "Jackson",
+          "project": "Michelle Sylvestre",
+          "project_code": "CfP02-13",
+          "source": "transform",
+          "weight": 1.0
+        },
+        {
+          "text": "I do not see a strong potential for advancement here.",
+          "reviewer": "Jackson",
+          "project": "Michelle Sylvestre",
+          "project_code": "CfP02-13",
+          "source": "advance",
+          "weight": 1.0
+        },
+        {
+          "text": "As described, the project feels fairly contained in scope, and it is not clear what new development would take place beyond what has already been completed.",
+          "reviewer": "Jackson",
+          "project": "Michelle Sylvestre",
+          "project_code": "CfP02-13",
+          "source": "advance",
+          "weight": 1.0
+        },
+        {
+          "text": "While the work itself seems thoughtful and well situated in its specific context, the proposal does not clearly indicate how it would move forward in a meaningful way, or what new directions, outcomes, or research questions would emerge through this next phase.",
+          "reviewer": "Jackson",
+          "project": "Michelle Sylvestre",
+          "project_code": "CfP02-13",
+          "source": "advance",
+          "weight": 1.0
+        },
+        {
+          "text": "In this case, the project seems to have been led primarily by a single non-Indigenous member, and it may have been stronger if the work had been co-led with an Indigenous POD member rather than centered on one individual.",
+          "reviewer": "Jackson",
+          "project": "Michelle Sylvestre",
+          "project_code": "CfP02-13",
+          "source": "risk",
+          "weight": 1.0
+        }
+      ]
+    },
+    {
+      "id": "env",
+      "title": "Environmental Stewardship",
+      "color": "#4ade80",
+      "desc": "Traditional land management and stewardship practices informing AI-driven restoration systems.",
+      "n_projects": 1,
+      "projects": [
+        {
+          "id": "Ashley Cordes - CfP01-01",
+          "short": "Ashley Cordes",
+          "code": "CfP01-01",
+          "is_primary": true
+        }
+      ],
+      "alignment_avg": 8.0,
+      "risk_score": 0.4,
+      "top_phrases": [
+        "ik-ai governance",
+        "governance community-defined",
+        "sovereignty builds",
+        "builds capacity",
+        "capacity amongst",
+        "amongst learners"
+      ],
+      "positive_sentences": [],
+      "concern_sentences": [
+        {
+          "text": "This project is challenging, because so much of what was reported is not tied to the CfP project.",
+          "reviewer": "Jason",
+          "project": "Ashley Cordes",
+          "project_code": "CfP01-01",
+          "source": "risk",
+          "weight": 1.0
+        }
+      ]
+    },
+    {
+      "id": "socio_neuro",
+      "title": "Socio-Neuro AI",
+      "color": "#f97316",
+      "desc": "Using IK diversity to model how humans draw on socio-cultural context to learn and decide.",
+      "n_projects": 2,
+      "projects": [
+        {
+          "id": "Kaiya Healy - CfP02-10",
+          "short": "Kaiya Healy",
+          "code": "CfP02-10",
+          "is_primary": false
+        },
+        {
+          "id": "Antoine Bellemare-Pepin - CfP04",
+          "short": "Antoine Bellemare-Pepin",
+          "code": "CfP04",
+          "is_primary": true
+        }
+      ],
+      "alignment_avg": 8.33,
+      "risk_score": 0.22,
+      "top_phrases": [
+        "interactive",
+        "unity-based world",
+        "virtual space",
+        "future interactive",
+        "metaphysics",
+        "teachings",
+        "symbolic",
+        "symbolic language"
+      ],
+      "positive_sentences": [
+        {
+          "text": "Its emphasis on collaboration with Lakota knowledge holders and on grounding technical work in community interpretation reflects the program\u2019s goal of shifting AI research toward relational and culturally informed approaches.",
+          "reviewer": "Jackson",
+          "project": "Antoine Bellemare-Pepin",
+          "project_code": "CfP04",
+          "source": "transform",
+          "weight": 1.0
+        },
+        {
+          "text": "The project fits naturally within the Imaginaries phase through its speculative exploration of symbolic language, dreaming, and human\u2013AI interaction, and could contribute to that phase by further developing its conceptual and methodological framework for culturally grounded AI design.",
+          "reviewer": "Jackson",
+          "project": "Antoine Bellemare-Pepin",
+          "project_code": "CfP04",
+          "source": "advance",
+          "weight": 1.0
+        },
+        {
+          "text": "This project contributes strongly to AbInt\u2019s Transformation Statement by demonstrating how Indigenous knowledge systems, particularly Blackfoot metaphysics and teachings, can inform the creation of sovereign digital environments that challenge Western assumptions about space, time, and intelligence.",
+          "reviewer": "Jackson",
+          "project": "Kaiya Healy",
+          "project_code": "CfP02-10",
+          "source": "transform",
+          "weight": 0.5
+        },
+        {
+          "text": "Through the development of an interactive Unity-based world, the work explores alternative ways of understanding relationality, energy, and place within digital media, while grounding the process in mentorship, community learning, and POD-based practices.",
+          "reviewer": "Jackson",
+          "project": "Kaiya Healy",
+          "project_code": "CfP02-10",
+          "source": "transform",
+          "weight": 0.5
+        },
+        {
+          "text": "The project has strong potential to advance into the Imaginaries phase through further development of its conceptual framework around Indigenous metaphysics, relational space, and alternative understandings of time, energy, and environment within digital worlds.",
+          "reviewer": "Jackson",
+          "project": "Kaiya Healy",
+          "project_code": "CfP02-10",
+          "source": "advance",
+          "weight": 0.5
+        }
+      ],
+      "concern_sentences": [
+        {
+          "text": "One risk is that the project relies on highly experimental methods combining neuroscience, symbolic analysis, and AI, which may make outcomes difficult to realize within the project timeframe or limit their usefulness to the wider network.",
+          "reviewer": "Jackson",
+          "project": "Antoine Bellemare-Pepin",
+          "project_code": "CfP04",
+          "source": "risk",
+          "weight": 1.0
+        },
+        {
+          "text": "Although the project does not focus on core AI model development, it advances the transformation goals by building Indigenous-centred approaches to virtual space, storytelling, and digital world-making that can inform future AI and interactive system design within the network.",
+          "reviewer": "Jackson",
+          "project": "Kaiya Healy",
+          "project_code": "CfP02-10",
+          "source": "transform",
+          "weight": 0.5
+        },
+        {
+          "text": "Risk appears relatively low, as the project is primarily focused on creative development, learning, and community-informed digital world-building rather than high-risk technical or data-driven AI systems.",
+          "reviewer": "Jackson",
+          "project": "Kaiya Healy",
+          "project_code": "CfP02-10",
+          "source": "risk",
+          "weight": 0.5
+        }
+      ]
+    }
+  ],
+  "projects": [
+    {
+      "id": "Michelle Sylvestre - CfP02-13",
+      "short": "Michelle Sylvestre",
+      "code": "CfP02-13",
+      "title": "Exploratory Qualitative Inquiry: Unmasking Bias in AI through Speculative and Embodied Art Practice",
+      "primary_area": "Storytelling",
+      "secondary_area": "Language",
+      "type": "CfP",
+      "ai_depth": "None",
+      "ai_depth_num": 0,
+      "status": "Completed",
+      "pod": "Niitsitapi Pod",
+      "ik_methods": "Core",
+      "infra_share": "None",
+      "sharable_method": "None",
+      "alignment_avg": 5.0,
+      "quality_avg": 5.0,
+      "risk_score": 0.213,
+      "conviction": 0.473,
+      "concern_lang": 0.235,
+      "reviewers": [
+        "Jackson"
+      ],
+      "top_phrases": [
+        "said does",
+        "helpful clarify",
+        "entirely",
+        "engagement",
+        "conversations",
+        "entirely aligns"
+      ],
+      "positives": [],
+      "concerns": [
+        {
+          "text": "I am not entirely certain how this aligns with the AbINT Transformations statement.",
+          "reviewer": "Jackson",
+          "project": "Michelle Sylvestre - CfP02-13",
+          "source": "transform",
+          "strength": 1
+        },
+        {
+          "text": "I do not see a strong potential for advancement here.",
+          "reviewer": "Jackson",
+          "project": "Michelle Sylvestre - CfP02-13",
+          "source": "advance",
+          "strength": 1
+        },
+        {
+          "text": "As described, the project feels fairly contained in scope, and it is not clear what new development would take place beyond what has already been completed.",
+          "reviewer": "Jackson",
+          "project": "Michelle Sylvestre - CfP02-13",
+          "source": "advance",
+          "strength": 2
+        },
+        {
+          "text": "While the work itself seems thoughtful and well situated in its specific context, the proposal does not clearly indicate how it would move forward in a meaningful way, or what new directions, outcomes, or research questions would emerge through this next phase.",
+          "reviewer": "Jackson",
+          "project": "Michelle Sylvestre - CfP02-13",
+          "source": "advance",
+          "strength": 1
+        }
+      ]
+    },
+    {
+      "id": "Darby Herman - CfP02-11",
+      "short": "Darby Herman",
+      "code": "CfP02-11",
+      "title": "Root Stories",
+      "primary_area": "Storytelling",
+      "secondary_area": "Language",
+      "type": "CfP",
+      "ai_depth": "None",
+      "ai_depth_num": 0,
+      "status": "Completed",
+      "pod": "Niitsitapi Pod",
+      "ik_methods": "Partial",
+      "infra_share": "None",
+      "sharable_method": "None",
+      "alignment_avg": 9.0,
+      "quality_avg": 9.0,
+      "risk_score": 0.05,
+      "conviction": 0.57,
+      "concern_lang": 0.073,
+      "reviewers": [
+        "Jackson"
+      ],
+      "top_phrases": [
+        "learning",
+        "capacity building",
+        "components",
+        "mentorship",
+        "indigenous-centred direction",
+        "direction mentorship-driven"
+      ],
+      "positives": [
+        {
+          "text": "The work demonstrates capacity building, student training, and public knowledge mobilization through exhibition and artist talks, and shows an effort to situate AI development within community relationships and storytelling practices.",
+          "reviewer": "Jackson",
+          "project": "Darby Herman - CfP02-11",
+          "source": "transform",
+          "strength": 1
+        },
+        {
+          "text": "Risk appears relatively low, as the project is exploratory and limited in scope, with most activities focused on mentorship, learning, and early-stage development rather than complex AI deployment.",
+          "reviewer": "Jackson",
+          "project": "Darby Herman - CfP02-11",
+          "source": "risk",
+          "strength": 1
+        },
+        {
+          "text": "As the project develops its planned AI components, it could connect with other PODs exploring language models, community-based data practices, or culturally grounded interface design.",
+          "reviewer": "Jackson",
+          "project": "Darby Herman - CfP02-11",
+          "source": "collab",
+          "strength": 1
+        },
+        {
+          "text": "The strong mentorship structure and focus on learning also make this a good candidate for collaboration through workshops, shared development sessions, or student exchanges, which could help expand the work beyond its current scope while contributing to broader network capacity building.",
+          "reviewer": "Jackson",
+          "project": "Darby Herman - CfP02-11",
+          "source": "collab",
+          "strength": 1
+        }
+      ],
+      "concerns": []
+    },
+    {
+      "id": "Kaiya Healy - CfP02-10",
+      "short": "Kaiya Healy",
+      "code": "CfP02-10",
+      "title": "Transitionary Energies",
+      "primary_area": "Storytelling",
+      "secondary_area": "Socio-Neuro AI",
+      "type": "CfP",
+      "ai_depth": "None",
+      "ai_depth_num": 0,
+      "status": "Completed",
+      "pod": "Niitsitapi Pod",
+      "ik_methods": "Core",
+      "infra_share": "Pod",
+      "sharable_method": "None",
+      "alignment_avg": 9.0,
+      "quality_avg": 9.0,
+      "risk_score": 0.05,
+      "conviction": 0.55,
+      "concern_lang": 0.071,
+      "reviewers": [
+        "Jackson"
+      ],
+      "top_phrases": [
+        "interactive",
+        "unity-based world",
+        "virtual space",
+        "future interactive",
+        "metaphysics",
+        "teachings"
+      ],
+      "positives": [
+        {
+          "text": "This project contributes strongly to AbInt\u2019s Transformation Statement by demonstrating how Indigenous knowledge systems, particularly Blackfoot metaphysics and teachings, can inform the creation of sovereign digital environments that challenge Western assumptions about space, time, and intelligence.",
+          "reviewer": "Jackson",
+          "project": "Kaiya Healy - CfP02-10",
+          "source": "transform",
+          "strength": 1
+        },
+        {
+          "text": "Through the development of an interactive Unity-based world, the work explores alternative ways of understanding relationality, energy, and place within digital media, while grounding the process in mentorship, community learning, and POD-based practices.",
+          "reviewer": "Jackson",
+          "project": "Kaiya Healy - CfP02-10",
+          "source": "transform",
+          "strength": 1
+        },
+        {
+          "text": "The project has strong potential to advance into the Imaginaries phase through further development of its conceptual framework around Indigenous metaphysics, relational space, and alternative understandings of time, energy, and environment within digital worlds.",
+          "reviewer": "Jackson",
+          "project": "Kaiya Healy - CfP02-10",
+          "source": "advance",
+          "strength": 2
+        },
+        {
+          "text": "Continued collaboration within the network, along with clearer pathways for sharing builds, workflows, and community-informed design methods, would help the project move from a single environment toward a more scalable and relational digital infrastructure aligned with the goals of these later phases.",
+          "reviewer": "Jackson",
+          "project": "Kaiya Healy - CfP02-10",
+          "source": "advance",
+          "strength": 1
+        }
+      ],
+      "concerns": [
+        {
+          "text": "Although the project does not focus on core AI model development, it advances the transformation goals by building Indigenous-centred approaches to virtual space, storytelling, and digital world-making that can inform future AI and interactive system design within the network.",
+          "reviewer": "Jackson",
+          "project": "Kaiya Healy - CfP02-10",
+          "source": "transform",
+          "strength": 1
+        },
+        {
+          "text": "Risk appears relatively low, as the project is primarily focused on creative development, learning, and community-informed digital world-building rather than high-risk technical or data-driven AI systems.",
+          "reviewer": "Jackson",
+          "project": "Kaiya Healy - CfP02-10",
+          "source": "risk",
+          "strength": 1
+        }
+      ]
+    },
+    {
+      "id": "Jackie Rice - CfP01-07",
+      "short": "Jackie Rice",
+      "code": "CfP01-07",
+      "title": "Abundant Memory, Relational Intelligence: Dialogue-Based Methodologies for Indigenous AI Project Design",
+      "primary_area": "Language",
+      "secondary_area": "Storytelling",
+      "type": "CfP",
+      "ai_depth": "Low",
+      "ai_depth_num": 1,
+      "status": "Mid-Point",
+      "pod": "Niitsitapi Pod",
+      "ik_methods": "Core",
+      "infra_share": "Pod",
+      "sharable_method": "None",
+      "alignment_avg": 8.5,
+      "quality_avg": 9.0,
+      "risk_score": 0.05,
+      "conviction": 0.604,
+      "concern_lang": 0.085,
+      "reviewers": [
+        "Jason",
+        "Jackson"
+      ],
+      "top_phrases": [
+        "residencies",
+        "dialogue-based",
+        "methodologies",
+        "engagement",
+        "mentorship shared",
+        "shared learning"
+      ],
+      "positives": [
+        {
+          "text": "This project contributes strongly to AbInt\u2019s Transformation Statement through its relational, Indigenous-centred approach to AI research grounded in Blackfoot knowledge, Elder guidance, and land-based dialogue.",
+          "reviewer": "Jackson",
+          "project": "Jackie Rice - CfP01-07",
+          "source": "transform",
+          "strength": 3
+        },
+        {
+          "text": "By supporting artist residencies, community conversations, and the creation of digital and performative works, the project shifts AI inquiry away from purely technical development toward culturally grounded, community-led processes.",
+          "reviewer": "Jackson",
+          "project": "Jackie Rice - CfP01-07",
+          "source": "transform",
+          "strength": 1
+        },
+        {
+          "text": "The project is well positioned to advance into the Imaginaries phase by further developing its dialogue-based and land-based methodologies as frameworks for imagining Indigenous-centred approaches to AI, particularly through language, storytelling, and relational understandings of knowledge and memory.",
+          "reviewer": "Jackson",
+          "project": "Jackie Rice - CfP01-07",
+          "source": "advance",
+          "strength": 2
+        },
+        {
+          "text": "Risk appears relatively low, as the project is grounded in research-creation, dialogue, and community-led processes rather than high-risk technical deployment.",
+          "reviewer": "Jackson",
+          "project": "Jackie Rice - CfP01-07",
+          "source": "risk",
+          "strength": 3
+        }
+      ],
+      "concerns": []
+    },
+    {
+      "id": "Sara Diamond & Archer Pechawis - CfP01-08",
+      "short": "Sara Diamond and Archer Pechawis",
+      "code": "CfP01-08",
+      "title": "A Dish with One Spoon Towards \u201cGenerous AI\u201d Invention and Collaboration",
+      "primary_area": "Storytelling",
+      "secondary_area": "Language",
+      "type": "CfP",
+      "ai_depth": "Mid",
+      "ai_depth_num": 2,
+      "status": "Mid-Point",
+      "pod": "T'karonto Pod",
+      "ik_methods": "Core",
+      "infra_share": "Pod",
+      "sharable_method": "None",
+      "alignment_avg": 10.0,
+      "quality_avg": 9.0,
+      "risk_score": 0.05,
+      "conviction": 0.61,
+      "concern_lang": 0.07,
+      "reviewers": [
+        "Jackson"
+      ],
+      "top_phrases": [
+        "governance",
+        "adapting",
+        "partnerships",
+        "collective",
+        "collective decision-making",
+        "frameworks"
+      ],
+      "positives": [
+        {
+          "text": "This project contributes strongly to AbInt\u2019s Transformation Statement by actively reworking AI systems through Indigenous governance, methodologies, and relational ethics grounded in the Dish With One Spoon covenant.",
+          "reviewer": "Jackson",
+          "project": "Sara Diamond & Archer Pechawis - CfP01-08",
+          "source": "transform",
+          "strength": 4
+        },
+        {
+          "text": "Through experiments with adapting LLMs and SLMs, developing community-guided data practices, and embedding storytelling, ceremony, and collective decision-making into technical workflows, the project shifts AI development away from extractive models toward reciprocal, community-led approaches.",
+          "reviewer": "Jackson",
+          "project": "Sara Diamond & Archer Pechawis - CfP01-08",
+          "source": "transform",
+          "strength": 1
+        },
+        {
+          "text": "Its combination of technical prototyping, governance design, and capacity building through workshops, student leadership, and partnerships supports AbInt\u2019s goal of transforming AI by aligning computation with Indigenous knowledge systems, sovereignty, and shared responsibility.",
+          "reviewer": "Jackson",
+          "project": "Sara Diamond & Archer Pechawis - CfP01-08",
+          "source": "transform",
+          "strength": 1
+        },
+        {
+          "text": "This research is well positioned to advance into the Imaginaries phase by further developing its governance frameworks, storytelling logics, and treaty-based ethics as foundations for alternative approaches to AI design.",
+          "reviewer": "Jackson",
+          "project": "Sara Diamond & Archer Pechawis - CfP01-08",
+          "source": "advance",
+          "strength": 1
+        }
+      ],
+      "concerns": []
+    },
+    {
+      "id": "Shankhalika Srikanth - CfP02-16",
+      "short": "Shankhalika Srikanth",
+      "code": "CfP02-16",
+      "title": "Community-centered language curriculum development",
+      "primary_area": "Language",
+      "secondary_area": "Language",
+      "type": "CfP",
+      "ai_depth": "Low",
+      "ai_depth_num": 1,
+      "status": "Completed",
+      "pod": "Podless",
+      "ik_methods": "Core",
+      "infra_share": "Pod",
+      "sharable_method": "None",
+      "alignment_avg": 8.0,
+      "quality_avg": 8.0,
+      "risk_score": 0.05,
+      "conviction": 0.582,
+      "concern_lang": 0.0,
+      "reviewers": [
+        "Jackson"
+      ],
+      "top_phrases": [
+        "pedagogy",
+        "curriculum",
+        "teachers",
+        "external",
+        "language-learning tools",
+        "language-learning"
+      ],
+      "positives": [
+        {
+          "text": "This project contributes to AbInt\u2019s Transformation Statement through its focus on community-led language work, collaborative curriculum development, and attention to data sovereignty in the context of language revitalization.",
+          "reviewer": "Jackson",
+          "project": "Shankhalika Srikanth - CfP02-16",
+          "source": "transform",
+          "strength": 1
+        },
+        {
+          "text": "The work demonstrates a relational approach to knowledge creation, with teachers and community members directly shaping the learning materials and guiding how language data are generated and used.",
+          "reviewer": "Jackson",
+          "project": "Shankhalika Srikanth - CfP02-16",
+          "source": "transform",
+          "strength": 1
+        },
+        {
+          "text": "Risk appears relatively low, as the project focuses primarily on curriculum development, collaboration with language teachers, and exploratory planning rather than complex technical implementation.",
+          "reviewer": "Jackson",
+          "project": "Shankhalika Srikanth - CfP02-16",
+          "source": "risk",
+          "strength": 1
+        }
+      ],
+      "concerns": []
+    },
+    {
+      "id": "Christine Clark - CfP04",
+      "short": "Christine Clark",
+      "code": "CfP04",
+      "title": "Niitsi\u2019powahsin Soundscapes: Expanding Blackfoot speech corpus and exploring novel application of local TTS and voice retrieval AI in the production of Blackfoot dictionaries.",
+      "primary_area": "Language",
+      "secondary_area": "Storytelling",
+      "type": "CfP",
+      "ai_depth": "Mid",
+      "ai_depth_num": 2,
+      "status": "Beginning",
+      "pod": "Niitsitapi Pod",
+      "ik_methods": "Core",
+      "infra_share": "AbInt Network",
+      "sharable_method": "Public",
+      "alignment_avg": 8.0,
+      "quality_avg": 8.0,
+      "risk_score": 0.235,
+      "conviction": 0.588,
+      "concern_lang": 0.036,
+      "reviewers": [
+        "Jackson"
+      ],
+      "top_phrases": [
+        "pedagogical",
+        "curriculum",
+        "experimentation",
+        "foregrounding indigenous-led",
+        "indigenous-led community-centred",
+        "community-centred language"
+      ],
+      "positives": [
+        {
+          "text": "Its emphasis on collaboration with community partners, development of culturally grounded curriculum materials, and experimentation with technology as a supportive rather than dominant framework aligns with the program\u2019s goal of shifting AI research toward relational, ethical, and locally defined practices.",
+          "reviewer": "Jackson",
+          "project": "Christine Clark - CfP04",
+          "source": "transform",
+          "strength": 1
+        }
+      ],
+      "concerns": [
+        {
+          "text": "A risk is that the project remains primarily focused on curriculum development without clearly extending into technical, infrastructural, or network-level outcomes, which could limit its relevance to AbInt\u2019s broader goals around AI and shared research methods.",
+          "reviewer": "Jackson",
+          "project": "Christine Clark - CfP04",
+          "source": "risk",
+          "strength": 2
+        }
+      ]
+    },
+    {
+      "id": "Antoine Bellemare-Pepin - CfP04",
+      "short": "Antoine Bellemare-Pepin",
+      "code": "CfP04",
+      "title": "Yu\u00edyeskapi (Translating)",
+      "primary_area": "Socio-Neuro AI",
+      "secondary_area": "Language",
+      "type": "CfP",
+      "ai_depth": "High",
+      "ai_depth_num": 3,
+      "status": "Beginning",
+      "pod": "Wih\u00e1\u014bble S\u2019a Pod",
+      "ik_methods": "Core",
+      "infra_share": "Public",
+      "sharable_method": "AbInt Network",
+      "alignment_avg": 8.0,
+      "quality_avg": 9.0,
+      "risk_score": 0.305,
+      "conviction": 0.574,
+      "concern_lang": 0.173,
+      "reviewers": [
+        "Jackson"
+      ],
+      "top_phrases": [
+        "symbolic",
+        "symbolic language",
+        "human interaction",
+        "neuroscience",
+        "experimental",
+        "speculative"
+      ],
+      "positives": [
+        {
+          "text": "Its emphasis on collaboration with Lakota knowledge holders and on grounding technical work in community interpretation reflects the program\u2019s goal of shifting AI research toward relational and culturally informed approaches.",
+          "reviewer": "Jackson",
+          "project": "Antoine Bellemare-Pepin - CfP04",
+          "source": "transform",
+          "strength": 1
+        },
+        {
+          "text": "The project fits naturally within the Imaginaries phase through its speculative exploration of symbolic language, dreaming, and human\u2013AI interaction, and could contribute to that phase by further developing its conceptual and methodological framework for culturally grounded AI design.",
+          "reviewer": "Jackson",
+          "project": "Antoine Bellemare-Pepin - CfP04",
+          "source": "advance",
+          "strength": 1
+        }
+      ],
+      "concerns": [
+        {
+          "text": "One risk is that the project relies on highly experimental methods combining neuroscience, symbolic analysis, and AI, which may make outcomes difficult to realize within the project timeframe or limit their usefulness to the wider network.",
+          "reviewer": "Jackson",
+          "project": "Antoine Bellemare-Pepin - CfP04",
+          "source": "risk",
+          "strength": 3
+        }
+      ]
+    },
+    {
+      "id": "Ashley Cordes - CfP01-01",
+      "short": "Ashley Cordes",
+      "code": "CfP01-01",
+      "title": "Envisioning Indigenous Methods in Artificial Intelligence (EIMAI)",
+      "primary_area": "Env Stewardship",
+      "secondary_area": "Storytelling",
+      "type": "CfP",
+      "ai_depth": "Mid",
+      "ai_depth_num": 2,
+      "status": "Mid-Point",
+      "pod": "Podless",
+      "ik_methods": "Core",
+      "infra_share": "Public",
+      "sharable_method": "None",
+      "alignment_avg": 8.0,
+      "quality_avg": 7.0,
+      "risk_score": 0.4,
+      "conviction": 0.512,
+      "concern_lang": 0.152,
+      "reviewers": [
+        "Jason"
+      ],
+      "top_phrases": [
+        "ik-ai governance",
+        "governance community-defined",
+        "sovereignty builds",
+        "builds capacity",
+        "capacity amongst",
+        "amongst learners"
+      ],
+      "positives": [],
+      "concerns": [
+        {
+          "text": "This project is challenging, because so much of what was reported is not tied to the CfP project.",
+          "reviewer": "Jason",
+          "project": "Ashley Cordes - CfP01-01",
+          "source": "risk",
+          "strength": 2
+        }
+      ]
+    },
+    {
+      "id": "Ma'ema'eolehua Matsumoto - CfP02-05",
+      "short": "Ma'ema'eolehua Matsumoto",
+      "code": "CfP02-05",
+      "title": "\u2018IKE via AI (Information and Knowledge Encoding via Artificial Intelligence)",
+      "primary_area": "Language",
+      "secondary_area": "Storytelling",
+      "type": "CfP",
+      "ai_depth": "Low",
+      "ai_depth_num": 1,
+      "status": "Completed",
+      "pod": "Ka Hawai\u2019i Pae \u2018\u0100ina Pod",
+      "ik_methods": "Core",
+      "infra_share": "None",
+      "sharable_method": "None",
+      "alignment_avg": 6.0,
+      "quality_avg": 7.0,
+      "risk_score": 0.05,
+      "conviction": 0.525,
+      "concern_lang": 0.293,
+      "reviewers": [
+        "Jason"
+      ],
+      "top_phrases": [
+        "artificial intelligence",
+        "intelligence conceived",
+        "conceived knowledge",
+        "methodologies indigenous-centred",
+        "learners unfortunately",
+        "unfortunately pivoted"
+      ],
+      "positives": [
+        {
+          "text": "towards relational and accountable approaches co-developed with those communities.",
+          "reviewer": "Jason",
+          "project": "Ma'ema'eolehua Matsumoto - CfP02-05",
+          "source": "transform",
+          "strength": 1
+        }
+      ],
+      "concerns": [
+        {
+          "text": "Hard to asses since so late getting started.",
+          "reviewer": "Jason",
+          "project": "Ma'ema'eolehua Matsumoto - CfP02-05",
+          "source": "advance",
+          "strength": 1
+        }
+      ]
+    }
+  ],
+  "reviewers": [
+    {
+      "name": "Jackson",
+      "n_projects": 8,
+      "projects": [
+        "Shankhalika Srikanth - CfP02-16",
+        "Darby Herman - CfP02-11",
+        "Antoine Bellemare-Pepin - CfP04",
+        "Kaiya Healy - CfP02-10",
+        "Christine Clark - CfP04",
+        "Jackie Rice - CfP01-07",
+        "Sara Diamond & Archer Pechawis - CfP01-08",
+        "Michelle Sylvestre - CfP02-13"
+      ],
+      "conviction": 0.567,
+      "concern": 0.096,
+      "themes": {
+        "words": [
+          [
+            "language",
+            44
+          ],
+          [
+            "technical",
+            26
+          ],
+          [
+            "data",
+            23
+          ],
+          [
+            "shared",
+            21
+          ],
+          [
+            "systems",
+            21
+          ],
+          [
+            "knowledge",
+            20
+          ],
+          [
+            "digital",
+            18
+          ],
+          [
+            "methods",
+            17
+          ],
+          [
+            "tools",
+            17
+          ],
+          [
+            "governance",
+            14
+          ],
+          [
+            "models",
+            14
+          ],
+          [
+            "indigenous-centred",
+            12
+          ],
+          [
+            "learning",
+            12
+          ],
+          [
+            "design",
+            12
+          ],
+          [
+            "relational",
+            12
+          ],
+          [
+            "infrastructure",
+            12
+          ],
+          [
+            "developing",
+            11
+          ],
+          [
+            "pods",
+            11
+          ],
+          [
+            "broader",
+            10
+          ],
+          [
+            "goals",
+            10
+          ],
+          [
+            "toward",
+            10
+          ],
+          [
+            "these",
+            9
+          ],
+          [
+            "building",
+            9
+          ],
+          [
+            "culturally",
+            9
+          ],
+          [
+            "clearer",
+            9
+          ],
+          [
+            "mentorship",
+            9
+          ],
+          [
+            "there",
+            9
+          ],
+          [
+            "future",
+            9
+          ],
+          [
+            "beyond",
+            8
+          ],
+          [
+            "appears",
+            7
+          ],
+          [
+            "connect",
+            7
+          ],
+          [
+            "framework",
+            7
+          ],
+          [
+            "move",
+            7
+          ],
+          [
+            "stronger",
+            7
+          ],
+          [
+            "developed",
+            7
+          ],
+          [
+            "cultural",
+            7
+          ],
+          [
+            "practices",
+            7
+          ],
+          [
+            "continued",
+            7
+          ],
+          [
+            "pursuing",
+            7
+          ],
+          [
+            "interactive",
+            7
+          ],
+          [
+            "revitalization",
+            7
+          ],
+          [
+            "frameworks",
+            7
+          ],
+          [
+            "locally",
+            7
+          ],
+          [
+            "curriculum",
+            7
+          ],
+          [
+            "symbolic",
+            7
+          ],
+          [
+            "extend",
+            6
+          ],
+          [
+            "capacity",
+            6
+          ],
+          [
+            "exploratory",
+            6
+          ],
+          [
+            "phases",
+            6
+          ],
+          [
+            "likely",
+            6
+          ],
+          [
+            "later",
+            6
+          ],
+          [
+            "community-based",
+            6
+          ],
+          [
+            "mitigated",
+            6
+          ],
+          [
+            "small",
+            6
+          ],
+          [
+            "does",
+            5
+          ],
+          [
+            "scope",
+            5
+          ],
+          [
+            "outcomes",
+            5
+          ],
+          [
+            "documentation",
+            5
+          ],
+          [
+            "decision-making",
+            5
+          ],
+          [
+            "stage",
+            5
+          ]
+        ],
+        "bigrams": [
+          [
+            "language models",
+            8
+          ],
+          [
+            "knowledge systems",
+            7
+          ],
+          [
+            "language revitalization",
+            7
+          ],
+          [
+            "data governance",
+            6
+          ],
+          [
+            "later phases",
+            5
+          ],
+          [
+            "phases there",
+            5
+          ],
+          [
+            "small language",
+            5
+          ],
+          [
+            "likely require",
+            4
+          ],
+          [
+            "these later",
+            4
+          ],
+          [
+            "cultural knowledge",
+            4
+          ],
+          [
+            "data sovereignty",
+            4
+          ],
+          [
+            "there language",
+            4
+          ],
+          [
+            "defined technical",
+            4
+          ],
+          [
+            "extend beyond",
+            3
+          ],
+          [
+            "closely tied",
+            3
+          ],
+          [
+            "capacity building",
+            3
+          ],
+          [
+            "learning tools",
+            3
+          ],
+          [
+            "connect pods",
+            3
+          ],
+          [
+            "pods exploring",
+            3
+          ],
+          [
+            "community-based data",
+            3
+          ]
+        ]
+      }
+    },
+    {
+      "name": "Jason",
+      "n_projects": 3,
+      "projects": [
+        "Ashley Cordes - CfP01-01",
+        "Ma'ema'eolehua Matsumoto - CfP02-05",
+        "Jackie Rice - CfP01-07"
+      ],
+      "conviction": 0.541,
+      "concern": 0.186,
+      "themes": {
+        "words": [
+          [
+            "book",
+            5
+          ],
+          [
+            "deepen",
+            5
+          ],
+          [
+            "data",
+            4
+          ],
+          [
+            "sovereignty",
+            4
+          ],
+          [
+            "systems",
+            4
+          ],
+          [
+            "community-defined",
+            3
+          ],
+          [
+            "priorities",
+            3
+          ],
+          [
+            "principles",
+            3
+          ],
+          [
+            "builds",
+            3
+          ],
+          [
+            "capacity",
+            3
+          ],
+          [
+            "learners",
+            3
+          ],
+          [
+            "methodologies",
+            3
+          ],
+          [
+            "reading",
+            2
+          ],
+          [
+            "fiiai",
+            2
+          ],
+          [
+            "concrete",
+            2
+          ],
+          [
+            "develop",
+            2
+          ],
+          [
+            "discussion",
+            2
+          ],
+          [
+            "sessions",
+            2
+          ],
+          [
+            "send",
+            2
+          ],
+          [
+            "policy",
+            2
+          ],
+          [
+            "start",
+            2
+          ],
+          [
+            "collection",
+            2
+          ],
+          [
+            "because",
+            2
+          ],
+          [
+            "much",
+            2
+          ],
+          [
+            "ashley",
+            2
+          ],
+          [
+            "getting",
+            2
+          ],
+          [
+            "consultation",
+            2
+          ],
+          [
+            "conceived",
+            2
+          ],
+          [
+            "knowledge",
+            2
+          ],
+          [
+            "co-creation",
+            2
+          ],
+          [
+            "engagement",
+            2
+          ],
+          [
+            "indigenous-centred",
+            2
+          ],
+          [
+            "towards",
+            2
+          ],
+          [
+            "relational",
+            2
+          ],
+          [
+            "accountable",
+            2
+          ],
+          [
+            "co-developed",
+            2
+          ],
+          [
+            "lasting",
+            2
+          ],
+          [
+            "among",
+            2
+          ],
+          [
+            "prototype",
+            2
+          ],
+          [
+            "articulate",
+            2
+          ],
+          [
+            "alignment",
+            2
+          ],
+          [
+            "hard",
+            2
+          ],
+          [
+            "late",
+            2
+          ],
+          [
+            "language",
+            2
+          ],
+          [
+            "ik-ai",
+            1
+          ],
+          [
+            "governance",
+            1
+          ],
+          [
+            "amongst",
+            1
+          ],
+          [
+            "first",
+            1
+          ],
+          [
+            "background",
+            1
+          ],
+          [
+            "prep",
+            1
+          ],
+          [
+            "workshops",
+            1
+          ],
+          [
+            "extract",
+            1
+          ],
+          [
+            "iiai",
+            1
+          ],
+          [
+            "might",
+            1
+          ],
+          [
+            "found",
+            1
+          ],
+          [
+            "second",
+            1
+          ],
+          [
+            "volume",
+            1
+          ],
+          [
+            "methdologies",
+            1
+          ],
+          [
+            "guide",
+            1
+          ],
+          [
+            "technology",
+            1
+          ]
+        ],
+        "bigrams": [
+          [
+            "data sovereignty",
+            4
+          ],
+          [
+            "community-defined priorities",
+            3
+          ],
+          [
+            "priorities principles",
+            3
+          ],
+          [
+            "principles data",
+            3
+          ],
+          [
+            "knowledge systems",
+            2
+          ],
+          [
+            "systems community-defined",
+            2
+          ],
+          [
+            "sovereignty co-creation",
+            2
+          ],
+          [
+            "co-creation methodologies",
+            2
+          ],
+          [
+            "indigenous-centred systems",
+            2
+          ],
+          [
+            "systems towards",
+            2
+          ],
+          [
+            "towards relational",
+            2
+          ],
+          [
+            "relational accountable",
+            2
+          ],
+          [
+            "accountable co-developed",
+            2
+          ],
+          [
+            "co-developed builds",
+            2
+          ],
+          [
+            "builds lasting",
+            2
+          ],
+          [
+            "lasting capacity",
+            2
+          ],
+          [
+            "capacity among",
+            2
+          ],
+          [
+            "among learners",
+            2
+          ],
+          [
+            "ik-ai governance",
+            1
+          ],
+          [
+            "governance community-defined",
+            1
+          ]
+        ]
+      }
+    }
+  ],
+  "emergent_phrases": [
+    {
+      "phrase": "symbolic",
+      "score": 18.421,
+      "polarity": 1,
+      "n_projects": 1,
+      "projects": [
+        "Antoine Bellemare-Pepin - CfP04"
+      ],
+      "doc_freq": 1
+    },
+    {
+      "phrase": "learning",
+      "score": 15.577,
+      "polarity": 1,
+      "n_projects": 4,
+      "projects": [
+        "Darby Herman - CfP02-11",
+        "Kaiya Healy - CfP02-10",
+        "Jackie Rice - CfP01-07",
+        "Shankhalika Srikanth - CfP02-16"
+      ],
+      "doc_freq": 4
+    },
+    {
+      "phrase": "engagement",
+      "score": 14.485,
+      "polarity": 1,
+      "n_projects": 2,
+      "projects": [
+        "Michelle Sylvestre - CfP02-13",
+        "Jackie Rice - CfP01-07"
+      ],
+      "doc_freq": 2
+    },
+    {
+      "phrase": "curriculum",
+      "score": 14.485,
+      "polarity": 1,
+      "n_projects": 2,
+      "projects": [
+        "Shankhalika Srikanth - CfP02-16",
+        "Christine Clark - CfP04"
+      ],
+      "doc_freq": 2
+    },
+    {
+      "phrase": "mentorship",
+      "score": 13.244,
+      "polarity": 1,
+      "n_projects": 3,
+      "projects": [
+        "Darby Herman - CfP02-11",
+        "Kaiya Healy - CfP02-10",
+        "Jackie Rice - CfP01-07"
+      ],
+      "doc_freq": 3
+    },
+    {
+      "phrase": "methodologies",
+      "score": 13.244,
+      "polarity": 1,
+      "n_projects": 3,
+      "projects": [
+        "Jackie Rice - CfP01-07",
+        "Sara Diamond & Archer Pechawis - CfP01-08",
+        "Ma'ema'eolehua Matsumoto - CfP02-05"
+      ],
+      "doc_freq": 3
+    },
+    {
+      "phrase": "governance",
+      "score": 12.477,
+      "polarity": 1,
+      "n_projects": 5,
+      "projects": [
+        "Darby Herman - CfP02-11",
+        "Jackie Rice - CfP01-07",
+        "Sara Diamond & Archer Pechawis - CfP01-08",
+        "Christine Clark - CfP04",
+        "Ashley Cordes - CfP01-01"
+      ],
+      "doc_freq": 5
+    },
+    {
+      "phrase": "language",
+      "score": 12.05,
+      "polarity": 1,
+      "n_projects": 8,
+      "projects": [
+        "Darby Herman - CfP02-11",
+        "Kaiya Healy - CfP02-10",
+        "Jackie Rice - CfP01-07",
+        "Sara Diamond & Archer Pechawis - CfP01-08",
+        "Shankhalika Srikanth - CfP02-16",
+        "Christine Clark - CfP04",
+        "Antoine Bellemare-Pepin - CfP04",
+        "Ma'ema'eolehua Matsumoto - CfP02-05"
+      ],
+      "doc_freq": 8
+    },
+    {
+      "phrase": "language revitalization",
+      "score": 12.04,
+      "polarity": 1,
+      "n_projects": 3,
+      "projects": [
+        "Jackie Rice - CfP01-07",
+        "Shankhalika Srikanth - CfP02-16",
+        "Christine Clark - CfP04"
+      ],
+      "doc_freq": 3
+    },
+    {
+      "phrase": "revitalization",
+      "score": 12.04,
+      "polarity": 1,
+      "n_projects": 3,
+      "projects": [
+        "Jackie Rice - CfP01-07",
+        "Shankhalika Srikanth - CfP02-16",
+        "Christine Clark - CfP04"
+      ],
+      "doc_freq": 3
+    },
+    {
+      "phrase": "conversations",
+      "score": 11.266,
+      "polarity": 1,
+      "n_projects": 2,
+      "projects": [
+        "Michelle Sylvestre - CfP02-13",
+        "Jackie Rice - CfP01-07"
+      ],
+      "doc_freq": 2
+    },
+    {
+      "phrase": "interactive",
+      "score": 10.836,
+      "polarity": 0,
+      "n_projects": 3,
+      "projects": [
+        "Kaiya Healy - CfP02-10",
+        "Jackie Rice - CfP01-07",
+        "Antoine Bellemare-Pepin - CfP04"
+      ],
+      "doc_freq": 3
+    },
+    {
+      "phrase": "sovereignty",
+      "score": 10.397,
+      "polarity": 1,
+      "n_projects": 5,
+      "projects": [
+        "Jackie Rice - CfP01-07",
+        "Sara Diamond & Archer Pechawis - CfP01-08",
+        "Shankhalika Srikanth - CfP02-16",
+        "Ashley Cordes - CfP01-01",
+        "Ma'ema'eolehua Matsumoto - CfP02-05"
+      ],
+      "doc_freq": 5
+    },
+    {
+      "phrase": "indigenous-centred",
+      "score": 9.706,
+      "polarity": 1,
+      "n_projects": 6,
+      "projects": [
+        "Darby Herman - CfP02-11",
+        "Kaiya Healy - CfP02-10",
+        "Jackie Rice - CfP01-07",
+        "Sara Diamond & Archer Pechawis - CfP01-08",
+        "Shankhalika Srikanth - CfP02-16",
+        "Ma'ema'eolehua Matsumoto - CfP02-05"
+      ],
+      "doc_freq": 6
+    },
+    {
+      "phrase": "residencies",
+      "score": 9.21,
+      "polarity": 1,
+      "n_projects": 1,
+      "projects": [
+        "Jackie Rice - CfP01-07"
+      ],
+      "doc_freq": 1
+    },
+    {
+      "phrase": "dialogue-based",
+      "score": 9.21,
+      "polarity": 1,
+      "n_projects": 1,
+      "projects": [
+        "Jackie Rice - CfP01-07"
+      ],
+      "doc_freq": 1
+    },
+    {
+      "phrase": "pedagogy",
+      "score": 9.21,
+      "polarity": 0,
+      "n_projects": 1,
+      "projects": [
+        "Shankhalika Srikanth - CfP02-16"
+      ],
+      "doc_freq": 1
+    },
+    {
+      "phrase": "data sovereignty",
+      "score": 9.011,
+      "polarity": 1,
+      "n_projects": 5,
+      "projects": [
+        "Jackie Rice - CfP01-07",
+        "Sara Diamond & Archer Pechawis - CfP01-08",
+        "Shankhalika Srikanth - CfP02-16",
+        "Ashley Cordes - CfP01-01",
+        "Ma'ema'eolehua Matsumoto - CfP02-05"
+      ],
+      "doc_freq": 5
+    },
+    {
+      "phrase": "community-led",
+      "score": 8.428,
+      "polarity": 1,
+      "n_projects": 3,
+      "projects": [
+        "Jackie Rice - CfP01-07",
+        "Sara Diamond & Archer Pechawis - CfP01-08",
+        "Shankhalika Srikanth - CfP02-16"
+      ],
+      "doc_freq": 3
+    },
+    {
+      "phrase": "frameworks",
+      "score": 8.428,
+      "polarity": 1,
+      "n_projects": 3,
+      "projects": [
+        "Jackie Rice - CfP01-07",
+        "Sara Diamond & Archer Pechawis - CfP01-08",
+        "Christine Clark - CfP04"
+      ],
+      "doc_freq": 3
+    },
+    {
+      "phrase": "capacity",
+      "score": 8.173,
+      "polarity": 1,
+      "n_projects": 6,
+      "projects": [
+        "Darby Herman - CfP02-11",
+        "Jackie Rice - CfP01-07",
+        "Sara Diamond & Archer Pechawis - CfP01-08",
+        "Christine Clark - CfP04",
+        "Ashley Cordes - CfP01-01",
+        "Ma'ema'eolehua Matsumoto - CfP02-05"
+      ],
+      "doc_freq": 6
+    },
+    {
+      "phrase": "culturally",
+      "score": 8.173,
+      "polarity": 1,
+      "n_projects": 6,
+      "projects": [
+        "Darby Herman - CfP02-11",
+        "Kaiya Healy - CfP02-10",
+        "Jackie Rice - CfP01-07",
+        "Shankhalika Srikanth - CfP02-16",
+        "Christine Clark - CfP04",
+        "Antoine Bellemare-Pepin - CfP04"
+      ],
+      "doc_freq": 6
+    },
+    {
+      "phrase": "capacity building",
+      "score": 8.047,
+      "polarity": 1,
+      "n_projects": 2,
+      "projects": [
+        "Darby Herman - CfP02-11",
+        "Sara Diamond & Archer Pechawis - CfP01-08"
+      ],
+      "doc_freq": 2
+    },
+    {
+      "phrase": "workflows",
+      "score": 8.047,
+      "polarity": 1,
+      "n_projects": 2,
+      "projects": [
+        "Kaiya Healy - CfP02-10",
+        "Sara Diamond & Archer Pechawis - CfP01-08"
+      ],
+      "doc_freq": 2
+    },
+    {
+      "phrase": "strengthening",
+      "score": 8.047,
+      "polarity": 0,
+      "n_projects": 2,
+      "projects": [
+        "Jackie Rice - CfP01-07",
+        "Christine Clark - CfP04"
+      ],
+      "doc_freq": 2
+    },
+    {
+      "phrase": "collective",
+      "score": 8.047,
+      "polarity": 1,
+      "n_projects": 2,
+      "projects": [
+        "Jackie Rice - CfP01-07",
+        "Sara Diamond & Archer Pechawis - CfP01-08"
+      ],
+      "doc_freq": 2
+    },
+    {
+      "phrase": "experimentation",
+      "score": 8.047,
+      "polarity": 1,
+      "n_projects": 2,
+      "projects": [
+        "Sara Diamond & Archer Pechawis - CfP01-08",
+        "Christine Clark - CfP04"
+      ],
+      "doc_freq": 2
+    },
+    {
+      "phrase": "computational",
+      "score": 8.047,
+      "polarity": 0,
+      "n_projects": 2,
+      "projects": [
+        "Christine Clark - CfP04",
+        "Antoine Bellemare-Pepin - CfP04"
+      ],
+      "doc_freq": 2
+    },
+    {
+      "phrase": "infrastructure",
+      "score": 7.662,
+      "polarity": 1,
+      "n_projects": 6,
+      "projects": [
+        "Kaiya Healy - CfP02-10",
+        "Jackie Rice - CfP01-07",
+        "Sara Diamond & Archer Pechawis - CfP01-08",
+        "Shankhalika Srikanth - CfP02-16",
+        "Christine Clark - CfP04",
+        "Antoine Bellemare-Pepin - CfP04"
+      ],
+      "doc_freq": 6
+    },
+    {
+      "phrase": "priorities",
+      "score": 7.625,
+      "polarity": 0,
+      "n_projects": 5,
+      "projects": [
+        "Jackie Rice - CfP01-07",
+        "Shankhalika Srikanth - CfP02-16",
+        "Christine Clark - CfP04",
+        "Ashley Cordes - CfP01-01",
+        "Ma'ema'eolehua Matsumoto - CfP02-05"
+      ],
+      "doc_freq": 5
+    },
+    {
+      "phrase": "practices",
+      "score": 7.625,
+      "polarity": 1,
+      "n_projects": 5,
+      "projects": [
+        "Darby Herman - CfP02-11",
+        "Kaiya Healy - CfP02-10",
+        "Sara Diamond & Archer Pechawis - CfP01-08",
+        "Shankhalika Srikanth - CfP02-16",
+        "Christine Clark - CfP04"
+      ],
+      "doc_freq": 5
+    },
+    {
+      "phrase": "knowledge",
+      "score": 7.587,
+      "polarity": 1,
+      "n_projects": 8,
+      "projects": [
+        "Darby Herman - CfP02-11",
+        "Kaiya Healy - CfP02-10",
+        "Jackie Rice - CfP01-07",
+        "Sara Diamond & Archer Pechawis - CfP01-08",
+        "Shankhalika Srikanth - CfP02-16",
+        "Christine Clark - CfP04",
+        "Antoine Bellemare-Pepin - CfP04",
+        "Ma'ema'eolehua Matsumoto - CfP02-05"
+      ],
+      "doc_freq": 8
+    },
+    {
+      "phrase": "technical",
+      "score": 7.587,
+      "polarity": 1,
+      "n_projects": 8,
+      "projects": [
+        "Darby Herman - CfP02-11",
+        "Kaiya Healy - CfP02-10",
+        "Jackie Rice - CfP01-07",
+        "Sara Diamond & Archer Pechawis - CfP01-08",
+        "Shankhalika Srikanth - CfP02-16",
+        "Christine Clark - CfP04",
+        "Antoine Bellemare-Pepin - CfP04",
+        "Ma'ema'eolehua Matsumoto - CfP02-05"
+      ],
+      "doc_freq": 8
+    },
+    {
+      "phrase": "relational",
+      "score": 7.49,
+      "polarity": 1,
+      "n_projects": 7,
+      "projects": [
+        "Kaiya Healy - CfP02-10",
+        "Jackie Rice - CfP01-07",
+        "Sara Diamond & Archer Pechawis - CfP01-08",
+        "Shankhalika Srikanth - CfP02-16",
+        "Christine Clark - CfP04",
+        "Antoine Bellemare-Pepin - CfP04",
+        "Ma'ema'eolehua Matsumoto - CfP02-05"
+      ],
+      "doc_freq": 7
+    },
+    {
+      "phrase": "exploratory",
+      "score": 7.33,
+      "polarity": 0,
+      "n_projects": 4,
+      "projects": [
+        "Darby Herman - CfP02-11",
+        "Sara Diamond & Archer Pechawis - CfP01-08",
+        "Shankhalika Srikanth - CfP02-16",
+        "Antoine Bellemare-Pepin - CfP04"
+      ],
+      "doc_freq": 4
+    },
+    {
+      "phrase": "principles",
+      "score": 7.33,
+      "polarity": 0,
+      "n_projects": 4,
+      "projects": [
+        "Jackie Rice - CfP01-07",
+        "Christine Clark - CfP04",
+        "Ashley Cordes - CfP01-01",
+        "Ma'ema'eolehua Matsumoto - CfP02-05"
+      ],
+      "doc_freq": 4
+    },
+    {
+      "phrase": "relationships",
+      "score": 7.224,
+      "polarity": 1,
+      "n_projects": 3,
+      "projects": [
+        "Michelle Sylvestre - CfP02-13",
+        "Darby Herman - CfP02-11",
+        "Jackie Rice - CfP01-07"
+      ],
+      "doc_freq": 3
+    },
+    {
+      "phrase": "blackfoot",
+      "score": 7.224,
+      "polarity": 1,
+      "n_projects": 3,
+      "projects": [
+        "Darby Herman - CfP02-11",
+        "Kaiya Healy - CfP02-10",
+        "Jackie Rice - CfP01-07"
+      ],
+      "doc_freq": 3
+    },
+    {
+      "phrase": "reflects",
+      "score": 7.224,
+      "polarity": 1,
+      "n_projects": 3,
+      "projects": [
+        "Darby Herman - CfP02-11",
+        "Shankhalika Srikanth - CfP02-16",
+        "Antoine Bellemare-Pepin - CfP04"
+      ],
+      "doc_freq": 3
+    },
+    {
+      "phrase": "creation",
+      "score": 7.224,
+      "polarity": 1,
+      "n_projects": 3,
+      "projects": [
+        "Kaiya Healy - CfP02-10",
+        "Jackie Rice - CfP01-07",
+        "Shankhalika Srikanth - CfP02-16"
+      ],
+      "doc_freq": 3
+    }
+  ],
+  "ts_dimensions": [
+    {
+      "id": "ts_ik",
+      "label": "Indigenous Knowledge Integration",
+      "desc": "IK holders, knowledge systems, and ways of knowing brought into AI"
+    },
+    {
+      "id": "ts_relational",
+      "label": "Relational Practice",
+      "desc": "Relational approaches to knowledge creation and collaboration"
+    },
+    {
+      "id": "ts_community",
+      "label": "Community-Centred",
+      "desc": "Community representation, community-defined priorities, community benefit"
+    },
+    {
+      "id": "ts_technical",
+      "label": "Technical AI Transformation",
+      "desc": "Actively reworking AI systems, architectures, data pipelines"
+    },
+    {
+      "id": "ts_governance",
+      "label": "Data Sovereignty & Governance",
+      "desc": "Data sovereignty, governance frameworks, community-controlled AI"
+    },
+    {
+      "id": "ts_network",
+      "label": "Network & Cross-Project",
+      "desc": "Building the network, bridging projects, cross-community collaboration"
+    },
+    {
+      "id": "ts_imaginaries",
+      "label": "Imaginaries & Speculative",
+      "desc": "Future imaginaries, speculative design, visioning for Phase 2+"
+    }
+  ],
+  "ts_project_scores": {
+    "Michelle Sylvestre - CfP02-13": {
+      "ts_ik": 0.0,
+      "ts_relational": 0.184,
+      "ts_community": 0.184,
+      "ts_technical": 0.0,
+      "ts_governance": 0.0,
+      "ts_network": 0.276,
+      "ts_imaginaries": 0.092
+    },
+    "Darby Herman - CfP02-11": {
+      "ts_ik": 0.228,
+      "ts_relational": 0.457,
+      "ts_community": 0.571,
+      "ts_technical": 0.342,
+      "ts_governance": 0.342,
+      "ts_network": 1.0,
+      "ts_imaginaries": 0.457
+    },
+    "Kaiya Healy - CfP02-10": {
+      "ts_ik": 0.331,
+      "ts_relational": 0.662,
+      "ts_community": 0.552,
+      "ts_technical": 0.883,
+      "ts_governance": 0.0,
+      "ts_network": 1.0,
+      "ts_imaginaries": 0.442
+    },
+    "Jackie Rice - CfP01-07": {
+      "ts_ik": 0.356,
+      "ts_relational": 1.0,
+      "ts_community": 1.0,
+      "ts_technical": 0.801,
+      "ts_governance": 0.623,
+      "ts_network": 1.0,
+      "ts_imaginaries": 0.445
+    },
+    "Sara Diamond & Archer Pechawis - CfP01-08": {
+      "ts_ik": 0.328,
+      "ts_relational": 0.546,
+      "ts_community": 1.0,
+      "ts_technical": 1.0,
+      "ts_governance": 1.0,
+      "ts_network": 1.0,
+      "ts_imaginaries": 0.218
+    },
+    "Shankhalika Srikanth - CfP02-16": {
+      "ts_ik": 0.112,
+      "ts_relational": 0.449,
+      "ts_community": 1.0,
+      "ts_technical": 1.0,
+      "ts_governance": 0.449,
+      "ts_network": 1.0,
+      "ts_imaginaries": 0.562
+    },
+    "Christine Clark - CfP04": {
+      "ts_ik": 0.112,
+      "ts_relational": 0.337,
+      "ts_community": 1.0,
+      "ts_technical": 1.0,
+      "ts_governance": 0.112,
+      "ts_network": 1.0,
+      "ts_imaginaries": 0.674
+    },
+    "Antoine Bellemare-Pepin - CfP04": {
+      "ts_ik": 0.433,
+      "ts_relational": 0.325,
+      "ts_community": 0.433,
+      "ts_technical": 1.0,
+      "ts_governance": 0.0,
+      "ts_network": 1.0,
+      "ts_imaginaries": 0.649
+    },
+    "Ashley Cordes - CfP01-01": {
+      "ts_ik": 0.0,
+      "ts_relational": 0.0,
+      "ts_community": 1.0,
+      "ts_technical": 0.0,
+      "ts_governance": 0.711,
+      "ts_network": 0.0,
+      "ts_imaginaries": 0.948
+    },
+    "Ma'ema'eolehua Matsumoto - CfP02-05": {
+      "ts_ik": 0.61,
+      "ts_relational": 0.305,
+      "ts_community": 0.915,
+      "ts_technical": 0.915,
+      "ts_governance": 0.61,
+      "ts_network": 0.0,
+      "ts_imaginaries": 0.61
+    }
+  },
+  "top_global_phrases": [
+    "symbolic",
+    "learning",
+    "engagement",
+    "curriculum",
+    "mentorship",
+    "methodologies",
+    "governance",
+    "language",
+    "language revitalization",
+    "revitalization",
+    "conversations",
+    "interactive",
+    "sovereignty",
+    "indigenous-centred",
+    "residencies",
+    "dialogue-based",
+    "pedagogy",
+    "data sovereignty",
+    "community-led",
+    "frameworks",
+    "capacity",
+    "culturally",
+    "capacity building",
+    "workflows",
+    "strengthening",
+    "collective",
+    "experimentation",
+    "computational",
+    "infrastructure",
+    "priorities"
+  ]
+}
