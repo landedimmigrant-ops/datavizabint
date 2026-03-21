@@ -320,6 +320,34 @@ function areaColor(name) {
 }
 function areaId(name) { return AREA_NAME_TO_ID[name] || 'other'; }
 
+// ── Display name: last name for people, short title for projects ──────────
+function displayName(p) {
+  var s = (p.short || '').trim();
+  // "Title: subtitle..." → first 1-2 words before colon
+  if (s.indexOf(':') > -1) {
+    return s.split(':')[0].trim().split(' ').slice(0, 2).join(' ');
+  }
+  // "Project Name - Person Name" (space-dash-space = separator) → first 2 words
+  if (s.indexOf(' - ') > -1) {
+    return s.split(' - ')[0].trim().split(' ').slice(0, 2).join(' ');
+  }
+  // "Name, Institution" → last name from name segment
+  if (s.indexOf(',') > -1) {
+    var np = s.split(',')[0].trim().split(' ');
+    return np[np.length - 1];
+  }
+  // "Name1 and Name2" → last names joined
+  if (s.toLowerCase().indexOf(' and ') > -1) {
+    return s.split(/\s+and\s+/i).map(function(n) {
+      var parts = n.trim().split(' ');
+      return parts[parts.length - 1];
+    }).join(' & ');
+  }
+  // Simple person name → last word (handles hyphenated: Bellemare-Pepin)
+  var parts = s.split(' ');
+  return parts[parts.length - 1];
+}
+
 // ── Tooltip helpers ───────────────────────────────────────────────────────
 var ttEl = document.getElementById('tooltip');
 function showTT(html, x, y) {
@@ -437,24 +465,42 @@ function renderLandscape() {
     .domain(['None','Low','Mid','High'])
     .range([9, 12, 16, 20]);
 
-  // Bubbles
+  // Build node objects with target positions for force de-overlap
+  var nodeData = projects.map(function(d) {
+    return Object.assign({}, d, {
+      tx: xScale(d.risk_score),
+      ty: yScale(d.alignment_avg),
+      x:  xScale(d.risk_score),
+      y:  yScale(d.alignment_avg),
+      r:  rScale(d.ai_depth),
+    });
+  });
+
+  // Run force simulation synchronously to resolve overlaps
+  var sim = d3.forceSimulation(nodeData)
+    .force('x', d3.forceX(function(d) { return d.tx; }).strength(0.85))
+    .force('y', d3.forceY(function(d) { return d.ty; }).strength(0.85))
+    .force('collision', d3.forceCollide(function(d) { return d.r + 6; }).strength(1.0))
+    .stop();
+  for (var i = 0; i < 400; i++) sim.tick();
+
   var nodes = g.selectAll('.bubble')
-    .data(projects).enter().append('g').attr('class','bubble')
+    .data(nodeData).enter().append('g').attr('class','bubble')
     .attr('transform', function(d) {
-      return 'translate(' + xScale(d.risk_score) + ',' + yScale(d.alignment_avg) + ')';
+      return 'translate(' + d.x + ',' + d.y + ')';
     });
 
   nodes.append('circle')
-    .attr('r', function(d) { return rScale(d.ai_depth); })
+    .attr('r', function(d) { return d.r; })
     .attr('fill', function(d) { return areaColor(d.primary_area); })
     .attr('fill-opacity', .75)
     .attr('stroke', function(d) { return areaColor(d.primary_area); })
     .attr('stroke-width', 1.5);
 
   nodes.append('text').attr('class','node-label')
-    .attr('y', function(d) { return -(rScale(d.ai_depth) + 5); })
+    .attr('y', function(d) { return -(d.r + 4); })
     .attr('text-anchor','middle')
-    .text(function(d) { return d.code || d.short.split(' ')[0]; });
+    .text(function(d) { return displayName(d); });
 
   nodes.on('mousemove', function(event, d) {
     var phrases = (d.top_phrases || []).slice(0,5)
@@ -465,8 +511,8 @@ function renderLandscape() {
     var neg0 = d.concerns && d.concerns[0]
       ? '<div style="font-size:11px;color:#f87171">\u25B3 ' + d.concerns[0].text.slice(0,90) + '\u2026</div>'
       : '';
-    var html = '<h4>' + d.short + '</h4>'
-      + '<div style="font-size:11px;color:#a78bfa;margin-bottom:4px">' + d.title.slice(0,70) + '</div>'
+    var html = '<h4>' + d.short + (d.code ? ' <span style="color:#64748b;font-weight:400;font-size:11px">' + d.code + '</span>' : '') + '</h4>'
+      + '<div style="font-size:11px;color:#a78bfa;margin-bottom:4px">' + d.title.slice(0,80) + '</div>'
       + '<div class="tt-row"><span class="tt-label">Area</span> <span>' + d.primary_area + '</span></div>'
       + '<div class="tt-row"><span class="tt-label">Status</span> <span>' + d.status + '</span></div>'
       + '<div class="tt-row"><span class="tt-label">AI Depth</span> <span>' + d.ai_depth + '</span></div>'
@@ -609,8 +655,7 @@ function renderCoverage() {
       + '<span title="' + (p.infra_share || 'None') + '" style="display:inline-block;width:11px;height:11px;border-radius:50%;background:' + ic + ';' + infraBorder + '"></span>'
       + '</div>'
       // Code + first name (not rotated — compact)
-      + '<div style="font-size:10px;font-weight:700;text-align:center;color:#e2e8f0;line-height:1.2">' + (p.code || '') + '</div>'
-      + '<div style="font-size:9px;text-align:center;color:#64748b;margin-top:1px">' + p.short.split(' ')[0] + '</div>'
+      + '<div style="font-size:10px;font-weight:700;text-align:center;color:#e2e8f0;line-height:1.2">' + displayName(p) + '</div>'
       + '</th>';
   });
 
@@ -686,7 +731,7 @@ function renderCoverage() {
     + '<th class="ct-row-header" style="border:none;min-width:160px"></th>';
 
   projects.forEach(function(p) {
-    dimHTML += '<th style="font-size:10px;color:#64748b;padding:4px 2px;text-align:center;width:72px">' + p.code + '</th>';
+    dimHTML += '<th style="font-size:10px;color:#64748b;padding:4px 2px;text-align:center;width:72px">' + displayName(p) + '</th>';
   });
   dimHTML += '</tr></thead><tbody>';
 
