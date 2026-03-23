@@ -295,7 +295,6 @@ html, body { height: 100%; font-family: 'Inter', system-ui, sans-serif;
   <button class="nav-tab" data-view="intel">Reviewer Intelligence</button>
   <button class="nav-tab" data-view="aidomain">AI Domain</button>
   <button class="nav-tab" data-view="overview">Project Overview</button>
-  <button class="nav-tab" data-view="transform">Network Transformation</button>
   <button class="nav-tab" data-view="tsrollup">TS Network Rollup</button>
 </nav>
 
@@ -306,7 +305,7 @@ html, body { height: 100%; font-family: 'Inter', system-ui, sans-serif;
 <div id="view-intel"     class="view"></div>
 <div id="view-aidomain"  class="view"></div>
 <div id="view-overview"  class="view"></div>
-<div id="view-transform" class="view"></div>
+<div id="view-transform" class="view" style="display:none"></div>
 <div id="view-tsrollup"  class="view"></div>
 
 <script>
@@ -419,7 +418,6 @@ var VIEWS = {
   intel:      renderIntelligence,
   aidomain:   renderAIDomain,
   overview:   renderOverview,
-  transform:  renderTransform,
   tsrollup:   renderTSRollup
 };
 
