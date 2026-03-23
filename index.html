@@ -294,6 +294,7 @@ html, body { height: 100%; font-family: 'Inter', system-ui, sans-serif;
   <button class="nav-tab" data-view="cards">Signal Cards</button>
   <button class="nav-tab" data-view="intel">Reviewer Intelligence</button>
   <button class="nav-tab" data-view="aidomain">AI Domain</button>
+  <button class="nav-tab" data-view="overview">Project Overview</button>
 </nav>
 
 <div id="view-landscape" class="view active"></div>
@@ -302,6 +303,7 @@ html, body { height: 100%; font-family: 'Inter', system-ui, sans-serif;
 <div id="view-cards"     class="view"></div>
 <div id="view-intel"     class="view"></div>
 <div id="view-aidomain"  class="view"></div>
+<div id="view-overview"  class="view"></div>
 
 <script>
 // ── Data ──────────────────────────────────────────────────────────────────
@@ -411,7 +413,8 @@ var VIEWS = {
   voice:     renderVoice,
   cards:     renderCards,
   intel:     renderIntelligence,
-  aidomain:  renderAIDomain
+  aidomain:  renderAIDomain,
+  overview:  renderOverview
 };
 
 // ── VIEW 1: Polarity Landscape ────────────────────────────────────────────
@@ -1849,6 +1852,250 @@ function renderAIDomain() {
   svg.append('text').attr('x', lx + 12).attr('y', legendY - 1)
     .attr('fill','#64748b').attr('font-size', 10)
     .text('  Bubble size = reviewer alignment score');
+}
+
+// ── VIEW 7: Project Overview ──────────────────────────────────────────────
+var overviewState = { reviewer: 'all', sort: 'alignment' };
+
+function renderOverview() {
+  var el = document.getElementById('view-overview');
+  el.innerHTML = '<div id="ov-root" style="padding:20px 24px"></div>';
+  buildOverview();
+}
+
+function buildOverview() {
+  var el = document.getElementById('ov-root');
+  if (!el) return;
+
+  // ── Filter projects by reviewer ──────────────────────────────────
+  var allProjects = DATA.projects.slice();
+  var projects = overviewState.reviewer === 'all'
+    ? allProjects
+    : allProjects.filter(function(p) {
+        return (p.reviewers || []).indexOf(overviewState.reviewer) >= 0;
+      });
+
+  // ── Sort ─────────────────────────────────────────────────────────
+  projects = projects.slice().sort(function(a, b) {
+    if (overviewState.sort === 'alignment') return b.alignment_avg - a.alignment_avg;
+    if (overviewState.sort === 'pod') return (a.pod||'').localeCompare(b.pod||'');
+    if (overviewState.sort === 'area') return (a.primary_area||'').localeCompare(b.primary_area||'');
+    return 0;
+  });
+
+  // ── All unique reviewers ─────────────────────────────────────────
+  var allReviewers = [];
+  DATA.projects.forEach(function(p) {
+    (p.reviewers||[]).forEach(function(r) {
+      if (allReviewers.indexOf(r) < 0) allReviewers.push(r);
+    });
+  });
+  allReviewers.sort();
+
+  // ── Stat pills ───────────────────────────────────────────────────
+  var visCount  = projects.length;
+  var visEvals  = projects.reduce(function(s,p){ return s + (p.reviewers||[]).length; }, 0);
+  var visAlign  = projects.length
+    ? (projects.reduce(function(s,p){ return s + p.alignment_avg; }, 0) / projects.length).toFixed(1)
+    : '—';
+
+  var statsHTML = '<div style="display:flex;gap:12px;margin-bottom:18px;flex-wrap:wrap">'
+    + pill(visCount + ' projects', '#818cf8')
+    + pill(visEvals + ' evaluations', '#38bdf8')
+    + pill('avg alignment ' + visAlign, '#4ade80')
+    + '</div>';
+
+  function pill(txt, col) {
+    return '<span style="font-size:11px;font-weight:700;padding:4px 12px;border-radius:99px;background:' + col + '22;color:' + col + ';letter-spacing:.03em">' + txt + '</span>';
+  }
+
+  // ── Reviewer toggle row ──────────────────────────────────────────
+  function revBtn(val, label) {
+    var active = overviewState.reviewer === val;
+    return '<button onclick="overviewState.reviewer=\'' + val + '\';buildOverview()" style="'
+      + 'padding:5px 14px;border-radius:6px;border:1.5px solid '
+      + (active ? '#818cf8' : '#1e2535') + ';background:'
+      + (active ? '#818cf822' : 'transparent') + ';color:'
+      + (active ? '#818cf8' : '#94a3b8') + ';font-size:12px;font-weight:' + (active ? '700' : '500') + ';cursor:pointer;margin-right:6px">'
+      + label + '</button>';
+  }
+
+  function sortBtn(val, label) {
+    var active = overviewState.sort === val;
+    return '<button onclick="overviewState.sort=\'' + val + '\';buildOverview()" style="'
+      + 'padding:4px 11px;border-radius:6px;border:1.5px solid '
+      + (active ? '#fbbf24' : '#1e2535') + ';background:'
+      + (active ? '#fbbf2422' : 'transparent') + ';color:'
+      + (active ? '#fbbf24' : '#64748b') + ';font-size:11px;cursor:pointer;margin-right:4px">'
+      + label + '</button>';
+  }
+
+  var controlsHTML = '<div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-bottom:18px">'
+    + '<div style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.06em;margin-right:4px">Reviewer</div>'
+    + revBtn('all', 'All')
+    + allReviewers.map(function(r) { return revBtn(r, r); }).join('')
+    + '<div style="flex:1"></div>'
+    + '<div style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.06em;margin-right:4px">Sort by</div>'
+    + sortBtn('alignment', 'Alignment ↓')
+    + sortBtn('pod', 'Pod')
+    + sortBtn('area', 'Research Area')
+    + '</div>';
+
+  // ── TS dimension labels ─────────────────────────────────────────
+  var dims = DATA.ts_dimensions || [];
+
+  // ── Main table ──────────────────────────────────────────────────
+  var tableHTML = '<div style="overflow-x:auto"><table class="coverage-table"><thead>';
+
+  // Row 1: pod colour strip + project name
+  tableHTML += '<tr><th class="ct-row-header" style="border:none;min-width:170px;vertical-align:bottom;padding-bottom:8px">'
+    + '<span style="font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:.06em">Project</span></th>';
+
+  projects.forEach(function(p) {
+    var pc   = podColor(p.pod || 'Podless');
+    var area = AREA_NAME_TO_ID[p.primary_area] || 'other';
+    var ac   = AREA_COLOR[area] || '#475569';
+    var singleRev = (p.reviewers || []).length < 2;
+    tableHTML += '<th style="width:76px;padding:0 2px 6px;vertical-align:bottom;text-align:center;cursor:default">'
+      + '<div style="height:5px;background:' + pc + ';border-radius:3px 3px 0 0;margin-bottom:4px"></div>'
+      + '<div style="font-size:10px;line-height:1.3;color:#cbd5e1;word-break:break-word;padding:0 2px;text-align:center">'
+      + displayName(p)
+      + '</div>'
+      + '<div style="margin-top:3px">'
+      + '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:' + ac + '" title="' + (p.primary_area||'') + '"></span>'
+      + (singleRev ? '<span style="font-size:9px;color:#f59e0b;margin-left:3px" title="Single reviewer">⚠</span>' : '')
+      + '</div>'
+      + '</th>';
+  });
+  tableHTML += '<th style="width:44px;font-size:10px;color:#64748b;padding:4px 6px;text-align:center;vertical-align:bottom">Align</th>'
+    + '</tr></thead><tbody>';
+
+  // Row: Research Area
+  tableHTML += '<tr><td class="ct-row-header" style="font-size:11px;color:#94a3b8">Research Area</td>';
+  projects.forEach(function(p) {
+    var area = AREA_NAME_TO_ID[p.primary_area] || 'other';
+    var ac   = AREA_COLOR[area] || '#475569';
+    tableHTML += '<td style="text-align:center;padding:5px 2px">'
+      + '<span style="font-size:10px;padding:2px 6px;border-radius:99px;background:' + ac + '22;color:' + ac + ';white-space:nowrap">'
+      + (p.primary_area || 'Other')
+      + '</span></td>';
+  });
+  tableHTML += '<td></td></tr>';
+
+  // Row: Pod
+  tableHTML += '<tr><td class="ct-row-header" style="font-size:11px;color:#94a3b8">Pod</td>';
+  projects.forEach(function(p) {
+    var pc = podColor(p.pod || 'Podless');
+    tableHTML += '<td style="text-align:center;padding:5px 2px">'
+      + '<span style="font-size:10px;padding:2px 6px;border-radius:99px;background:' + pc + '22;color:' + pc + ';white-space:nowrap">'
+      + (p.pod || 'Podless')
+      + '</span></td>';
+  });
+  tableHTML += '<td></td></tr>';
+
+  // Row: AI Depth
+  tableHTML += '<tr><td class="ct-row-header" style="font-size:11px;color:#94a3b8">AI Depth</td>';
+  projects.forEach(function(p) {
+    var depCol = {'High':'#f87171','Mid':'#fb923c','Low':'#fbbf24','None':'#475569'}[p.ai_depth] || '#475569';
+    tableHTML += '<td style="text-align:center;padding:5px 2px">'
+      + '<span style="font-size:10px;padding:2px 6px;border-radius:99px;background:' + depCol + '22;color:' + depCol + '">'
+      + (p.ai_depth || 'None')
+      + '</span></td>';
+  });
+  tableHTML += '<td></td></tr>';
+
+  // Row: Status
+  tableHTML += '<tr><td class="ct-row-header" style="font-size:11px;color:#94a3b8">Status</td>';
+  projects.forEach(function(p) {
+    var stCol = {'Completed':'#4ade80','Mid-Point':'#38bdf8','Beginning':'#818cf8'}[p.status] || '#475569';
+    tableHTML += '<td style="text-align:center;padding:5px 2px">'
+      + '<span style="font-size:10px;padding:2px 6px;border-radius:99px;background:' + stCol + '22;color:' + stCol + '">'
+      + (p.status || '—')
+      + '</span></td>';
+  });
+  tableHTML += '<td></td></tr>';
+
+  // Spacer
+  tableHTML += '<tr><td colspan="' + (projects.length + 2) + '" style="height:6px;background:#0d1117"></td></tr>';
+
+  // TS dimension label header
+  tableHTML += '<tr><td colspan="' + (projects.length + 2) + '" style="padding:10px 0 4px">'
+    + '<span style="font-size:11px;font-weight:700;color:#818cf8;text-transform:uppercase;letter-spacing:.06em">↓ Transformation Statement Coverage</span>'
+    + '<span style="font-size:10px;color:#475569;margin-left:10px">Bar width = reviewer language alignment to each TS dimension</span>'
+    + '</td></tr>';
+
+  // TS dimension rows
+  dims.forEach(function(dim) {
+    tableHTML += '<tr><td class="ct-row-header" style="font-size:11px;color:#94a3b8">' + dim.label + '</td>';
+    projects.forEach(function(p) {
+      var score = (DATA.ts_project_scores[p.id] || {})[dim.id] || 0;
+      var opacity = Math.max(0.08, score * 2);
+      var barW = Math.round(score * 56);
+      tableHTML += '<td style="padding:6px 2px;text-align:center">';
+      if (score > 0.05) {
+        tableHTML += '<div style="background:#818cf8;opacity:' + opacity.toFixed(2)
+          + ';height:8px;border-radius:4px;width:' + barW + 'px;margin:0 auto"></div>';
+      } else {
+        tableHTML += '<div style="background:#1c2235;height:8px;border-radius:4px;width:20px;margin:0 auto"></div>';
+      }
+      tableHTML += '</td>';
+    });
+    tableHTML += '<td></td></tr>';
+  });
+
+  // Spacer
+  tableHTML += '<tr><td colspan="' + (projects.length + 2) + '" style="height:6px;background:#0d1117"></td></tr>';
+
+  // Alignment footer row
+  tableHTML += '<tr><td class="ct-row-header" style="font-size:11px;color:#64748b;font-weight:700">Alignment Score</td>';
+  projects.forEach(function(p) {
+    var sc = p.alignment_avg >= 8.5 ? '#4ade80' : (p.alignment_avg >= 7 ? '#fbbf24' : '#f87171');
+    tableHTML += '<td style="text-align:center;padding:6px 0">'
+      + '<span style="font-size:14px;font-weight:800;color:' + sc + '">' + p.alignment_avg + '</span></td>';
+  });
+  tableHTML += '<td></td></tr>';
+
+  // Reviewer count row
+  tableHTML += '<tr><td class="ct-row-header" style="font-size:11px;color:#64748b">Reviewers</td>';
+  projects.forEach(function(p) {
+    var revs = p.reviewers || [];
+    var chips = revs.map(function(r) {
+      return '<span style="font-size:9px;padding:1px 5px;border-radius:99px;background:#818cf822;color:#818cf8;margin:1px;display:inline-block">' + r + '</span>';
+    }).join('');
+    tableHTML += '<td style="text-align:center;padding:4px 2px">' + chips + '</td>';
+  });
+  tableHTML += '<td></td></tr>';
+
+  tableHTML += '</tbody></table></div>';
+
+  // ── Legend ───────────────────────────────────────────────────────
+  var legendHTML = '<div style="display:flex;flex-wrap:wrap;gap:16px;margin-bottom:20px;padding:12px 16px;background:#0d1520;border-radius:10px;border:1px solid #1e2535">';
+  legendHTML += '<div><div style="font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Pod (top strip colour)</div><div style="display:flex;flex-wrap:wrap;gap:8px">';
+  var podsSeen = {};
+  DATA.projects.forEach(function(p) {
+    var pod = p.pod || 'Podless';
+    if (!podsSeen[pod]) {
+      podsSeen[pod] = true;
+      legendHTML += '<span style="font-size:10px;display:flex;align-items:center;gap:4px;color:#94a3b8">'
+        + '<span style="display:inline-block;width:20px;height:5px;background:' + podColor(pod) + ';border-radius:3px"></span>'
+        + pod.replace(' Pod','') + '</span>';
+    }
+  });
+  legendHTML += '</div></div>';
+
+  legendHTML += '<div><div style="font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Research Area (dot)</div><div style="display:flex;flex-wrap:wrap;gap:8px">';
+  ALL_AREAS.forEach(function(a) {
+    legendHTML += '<span style="font-size:10px;display:flex;align-items:center;gap:4px;color:#94a3b8">'
+      + '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:' + a.color + '"></span>'
+      + a.title + '</span>';
+  });
+  legendHTML += '</div></div>';
+
+  legendHTML += '<div style="font-size:10px;color:#94a3b8;display:flex;align-items:center;gap:6px">'
+    + '<span style="font-size:12px;color:#f59e0b">⚠</span> Single reviewer — treat with caution</div>';
+  legendHTML += '</div>';
+
+  el.innerHTML = statsHTML + controlsHTML + legendHTML + tableHTML;
 }
 
 // ── Init ──────────────────────────────────────────────────────────────────
