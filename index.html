@@ -195,6 +195,34 @@ html, body { height: 100%; font-family: 'Inter', system-ui, sans-serif;
 .asc-align-label { font-size: 10px; color: var(--muted); }
 .asc-gap { opacity: .5; border-style: dashed; }
 
+/* ── Pod Intelligence tab ── */
+.pod-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 14px; padding: 20px 24px; }
+.pod-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+.pod-card-header { padding: 12px 14px 10px; border-bottom: 1px solid var(--border); }
+.pod-card-name { font-size: 13px; font-weight: 800; letter-spacing: .02em; margin-bottom: 2px; }
+.pod-card-meta { font-size: 10px; color: var(--muted); display: flex; gap: 10px; }
+.pod-section { padding: 10px 14px; border-bottom: 1px solid #0e1625; }
+.pod-section-label { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-bottom: 7px; }
+.pod-depth-bar { height: 8px; border-radius: 4px; overflow: hidden; display: flex; gap: 1px; margin-bottom: 4px; }
+.pod-depth-seg { height: 100%; border-radius: 2px; }
+.pod-depth-legend { display: flex; flex-wrap: wrap; gap: 6px; }
+.pod-depth-key { font-size: 9px; display: flex; align-items: center; gap: 3px; color: #94a3b8; }
+.pod-domain-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+.pod-domain-tag { font-size: 9px; padding: 2px 7px; border-radius: 99px; font-weight: 600; }
+.pod-area-row { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+.pod-area-name { font-size: 9.5px; color: #94a3b8; width: 110px; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pod-area-bar-wrap { flex: 1; height: 6px; background: #0e1625; border-radius: 3px; }
+.pod-area-bar { height: 100%; border-radius: 3px; }
+.pod-area-count { font-size: 9px; color: var(--muted); flex-shrink: 0; width: 14px; text-align: right; }
+.pod-ts-row { display: flex; align-items: center; gap: 6px; margin-bottom: 3px; }
+.pod-ts-label { font-size: 9px; color: #64748b; width: 82px; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pod-ts-bar-wrap { flex: 1; height: 5px; background: #0e1625; border-radius: 3px; }
+.pod-ts-bar { height: 100%; border-radius: 3px; }
+.pod-ts-score { font-size: 9px; color: #64748b; width: 28px; text-align: right; flex-shrink: 0; }
+.pod-theme-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+.pod-theme-tag { font-size: 9px; padding: 2px 8px; border-radius: 99px; }
+.pod-align-footer { padding: 8px 14px; display: flex; align-items: baseline; gap: 5px; }
+
 /* ── Reviewer Intelligence ── */
 #intel-layout { display: flex; gap: 20px; align-items: flex-start; }
 #intel-phrases-panel {
@@ -300,18 +328,20 @@ html, body { height: 100%; font-family: 'Inter', system-ui, sans-serif;
   <button class="nav-tab" data-view="intel">Reviewer Intelligence</button>
   <button class="nav-tab" data-view="aidomain">AI Domain</button>
   <button class="nav-tab" data-view="overview">Project Overview</button>
+  <button class="nav-tab" data-view="podprofile">Pod Intelligence</button>
   <button class="nav-tab" data-view="tsrollup">TS Network Rollup</button>
 </nav>
 
-<div id="view-landscape" class="view active"></div>
-<div id="view-coverage"  class="view"></div>
-<div id="view-voice"     class="view"></div>
-<div id="view-cards"     class="view"></div>
-<div id="view-intel"     class="view"></div>
-<div id="view-aidomain"  class="view"></div>
-<div id="view-overview"  class="view"></div>
-<div id="view-transform" class="view" style="display:none"></div>
-<div id="view-tsrollup"  class="view"></div>
+<div id="view-landscape"  class="view active"></div>
+<div id="view-coverage"   class="view"></div>
+<div id="view-voice"      class="view"></div>
+<div id="view-cards"      class="view"></div>
+<div id="view-intel"      class="view"></div>
+<div id="view-aidomain"   class="view"></div>
+<div id="view-overview"    class="view"></div>
+<div id="view-podprofile" class="view"></div>
+<div id="view-transform"  class="view" style="display:none"></div>
+<div id="view-tsrollup"   class="view"></div>
 
 <script>
 // ── Data ──────────────────────────────────────────────────────────────────
@@ -422,8 +452,9 @@ var VIEWS = {
   cards:      renderCards,
   intel:      renderIntelligence,
   aidomain:   renderAIDomain,
-  overview:   renderOverview,
-  tsrollup:   renderTSRollup
+  overview:    renderOverview,
+  podprofile:  renderPodProfile,
+  tsrollup:    renderTSRollup
 };
 
 // ── VIEW 1: Polarity Landscape ────────────────────────────────────────────
@@ -2164,6 +2195,213 @@ function buildOverview() {
   legendHTML += '</div>';
 
   el.innerHTML = statsHTML + controlsHTML + legendHTML + tableHTML;
+}
+
+// ── VIEW 8b: Pod Intelligence ────────────────────────────────────────────
+function renderPodProfile() {
+  var el = document.getElementById('view-podprofile');
+
+  // ── Build pod map from project data ───────────────────────────────────
+  var podMap = {};
+  DATA.projects.forEach(function(p) {
+    var pod = p.pod || 'Podless';
+    if (!podMap[pod]) {
+      podMap[pod] = { name: pod, projects: [], aiDepth: {}, aiDomains: {}, areas: {}, alignVals: [] };
+    }
+    var pm = podMap[pod];
+    pm.projects.push(p);
+    pm.alignVals.push(p.alignment_avg);
+
+    // AI Depth
+    var dep = p.ai_depth || 'None';
+    pm.aiDepth[dep] = (pm.aiDepth[dep] || 0) + 1;
+
+    // AI Domains — split comma-separated multi-domain strings
+    var rawDomains = (p.ai_domain || '').split(',').map(function(d) { return d.trim(); }).filter(Boolean);
+    if (!rawDomains.length) rawDomains = ['No AI'];
+    rawDomains.forEach(function(dom) {
+      pm.aiDomains[dom] = (pm.aiDomains[dom] || 0) + 1;
+    });
+
+    // Primary research area
+    var area = p.primary_area || 'Other';
+    pm.areas[area] = (pm.areas[area] || 0) + 1;
+  });
+
+  // ── Theme membership per pod ───────────────────────────────────────────
+  var podThemes = {};
+  (DATA.research_themes || []).forEach(function(theme) {
+    var podCounts = {};
+    (theme.projects || []).forEach(function(pid) {
+      var proj = DATA.projects.find(function(p) { return p.id === pid; });
+      if (proj) {
+        var pod = proj.pod || 'Podless';
+        podCounts[pod] = (podCounts[pod] || 0) + 1;
+      }
+    });
+    Object.keys(podCounts).forEach(function(pod) {
+      if (!podThemes[pod]) podThemes[pod] = [];
+      podThemes[pod].push({ label: theme.label, count: podCounts[pod], color: theme.color || '#818cf8' });
+    });
+  });
+
+  // ── TS pod scores ─────────────────────────────────────────────────────
+  var tsPodScores = DATA.ts_pod_scores || {};
+  var tsDims = (DATA.ts_dimensions || []);
+
+  // ── AI Depth colour scheme ─────────────────────────────────────────────
+  var depthColors = { 'High': '#f87171', 'Mid': '#fbbf24', 'Low': '#a3e635', 'None': '#475569', 'No AI': '#475569' };
+  var depthOrder  = ['High', 'Mid', 'Low', 'None'];
+
+  // Sort pods: Podless last, rest by project count desc
+  var pods = Object.values(podMap).sort(function(a, b) {
+    if (a.name === 'Podless') return 1;
+    if (b.name === 'Podless') return -1;
+    return b.projects.length - a.projects.length;
+  });
+
+  // ── Render ─────────────────────────────────────────────────────────────
+  var html = '<div class="pod-grid">';
+
+  pods.forEach(function(pm) {
+    var pc      = podColor(pm.name);
+    var n       = pm.projects.length;
+    var avgAlign = pm.alignVals.length
+      ? (pm.alignVals.reduce(function(s,v){return s+v;},0)/pm.alignVals.length).toFixed(1)
+      : '—';
+    var alignCol = parseFloat(avgAlign) >= 8.5 ? '#4ade80' : parseFloat(avgAlign) >= 7 ? '#fbbf24' : '#f87171';
+
+    // ── Header ───────────────────────────────────────────────────────────
+    var card = '<div class="pod-card">';
+    card += '<div style="height:4px;background:' + pc + '"></div>';
+    card += '<div class="pod-card-header">'
+      + '<div class="pod-card-name" style="color:' + pc + '">' + pm.name + '</div>'
+      + '<div class="pod-card-meta">'
+      + '<span>' + n + ' project' + (n!==1?'s':'') + '</span>'
+      + '<span style="color:' + alignCol + ';font-weight:700">' + avgAlign + ' avg alignment</span>'
+      + '</div>'
+      + '</div>';
+
+    // ── AI Depth bar ─────────────────────────────────────────────────────
+    card += '<div class="pod-section">'
+      + '<div class="pod-section-label">AI Depth</div>'
+      + '<div class="pod-depth-bar">';
+    depthOrder.forEach(function(dep) {
+      var cnt = pm.aiDepth[dep] || 0;
+      if (!cnt) return;
+      var pct = Math.round(cnt / n * 100);
+      card += '<div class="pod-depth-seg" style="width:' + pct + '%;background:' + depthColors[dep] + ';opacity:.85"></div>';
+    });
+    card += '</div>';
+    card += '<div class="pod-depth-legend">';
+    depthOrder.forEach(function(dep) {
+      var cnt = pm.aiDepth[dep] || 0;
+      if (!cnt) return;
+      card += '<span class="pod-depth-key">'
+        + '<span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:' + depthColors[dep] + '"></span>'
+        + dep + ' (' + cnt + ')</span>';
+    });
+    card += '</div></div>';
+
+    // ── AI Domains ────────────────────────────────────────────────────────
+    var sortedDomains = Object.entries(pm.aiDomains)
+      .sort(function(a,b){return b[1]-a[1];})
+      .filter(function(e){ return e[0] !== 'No AI' && e[0] !== 'Other'; })
+      .slice(0, 5);
+    var noAI = (pm.aiDomains['No AI']||0) + (pm.aiDomains['Other']||0);
+
+    card += '<div class="pod-section">'
+      + '<div class="pod-section-label">AI Domains</div>'
+      + '<div class="pod-domain-tags">';
+    if (sortedDomains.length) {
+      sortedDomains.forEach(function(e) {
+        card += '<span class="pod-domain-tag" style="background:' + pc + '22;color:' + pc + '">'
+          + e[0] + ' <strong>×' + e[1] + '</strong></span>';
+      });
+    }
+    if (noAI > 0) {
+      card += '<span class="pod-domain-tag" style="background:#1e2535;color:#64748b">No specific AI ×' + noAI + '</span>';
+    }
+    card += '</div></div>';
+
+    // ── Research Areas ────────────────────────────────────────────────────
+    var sortedAreas = Object.entries(pm.areas).sort(function(a,b){return b[1]-a[1];});
+    var maxAreaCnt  = sortedAreas[0] ? sortedAreas[0][1] : 1;
+    card += '<div class="pod-section">'
+      + '<div class="pod-section-label">Research Areas (primary)</div>';
+    sortedAreas.forEach(function(e) {
+      var aId  = AREA_NAME_TO_ID[e[0]] || 'other';
+      var aCol = AREA_COLOR[aId] || '#64748b';
+      var barW = Math.round(e[1] / maxAreaCnt * 100);
+      card += '<div class="pod-area-row">'
+        + '<span class="pod-area-name" style="color:' + aCol + '">' + e[0] + '</span>'
+        + '<div class="pod-area-bar-wrap"><div class="pod-area-bar" style="width:' + barW + '%;background:' + aCol + ';opacity:.7"></div></div>'
+        + '<span class="pod-area-count">' + e[1] + '</span>'
+        + '</div>';
+    });
+    card += '</div>';
+
+    // ── TS Dimensions ─────────────────────────────────────────────────────
+    var podTS = tsPodScores[pm.name];
+    if (podTS && tsDims.length) {
+      var TS_DIM_COL = {
+        ts_ik:'#4ade80', ts_relational:'#22d3ee', ts_community:'#f59e0b',
+        ts_technical:'#f87171', ts_governance:'#818cf8', ts_network:'#60a5fa', ts_imaginaries:'#c084fc'
+      };
+      card += '<div class="pod-section">'
+        + '<div class="pod-section-label">Transformation Statement Dimensions</div>';
+      // Sort dims by score desc so strongest appear first
+      var sortedDims = tsDims.slice().sort(function(a,b){
+        return (podTS[b.id]||0)-(podTS[a.id]||0);
+      });
+      sortedDims.forEach(function(dim) {
+        var sc  = podTS[dim.id] || 0;
+        var col = TS_DIM_COL[dim.id] || '#818cf8';
+        var barW = Math.round(sc * 100);
+        var shortLabel = dim.label.replace('Indigenous Knowledge', 'IK')
+                                  .replace('Integration', '')
+                                  .replace('Community-Centred', 'Community')
+                                  .replace('Technical AI Transformation', 'Technical AI')
+                                  .replace('Data Sovereignty & Governance', 'Data Sovereignty')
+                                  .replace('Network & Cross-Project', 'Network')
+                                  .replace('Imaginaries & Speculative', 'Imaginaries')
+                                  .trim();
+        card += '<div class="pod-ts-row">'
+          + '<span class="pod-ts-label" title="' + dim.label + '">' + shortLabel + '</span>'
+          + '<div class="pod-ts-bar-wrap"><div class="pod-ts-bar" style="width:' + barW + '%;background:' + col + ';opacity:.8"></div></div>'
+          + '<span class="pod-ts-score">' + sc.toFixed(2) + '</span>'
+          + '</div>';
+      });
+      card += '</div>';
+    }
+
+    // ── Themes ────────────────────────────────────────────────────────────
+    var themes = (podThemes[pm.name] || []).sort(function(a,b){return b.count-a.count;}).slice(0,4);
+    if (themes.length) {
+      card += '<div class="pod-section">'
+        + '<div class="pod-section-label">Theme Presence</div>'
+        + '<div class="pod-theme-tags">';
+      themes.forEach(function(t) {
+        card += '<span class="pod-theme-tag" style="background:' + t.color + '22;color:' + t.color + ';border:1px solid ' + t.color + '44">'
+          + t.label + ' <strong>(' + t.count + ')</strong></span>';
+      });
+      card += '</div></div>';
+    }
+
+    card += '</div>'; // close pod-card
+    html += card;
+  });
+
+  html += '</div>'; // close pod-grid
+
+  // ── Page intro ──────────────────────────────────────────────────────────
+  var intro = '<div style="padding:20px 24px 0;border-bottom:1px solid #1e2535;margin-bottom:0">'
+    + '<div style="font-size:15px;font-weight:800;color:#e2e8f0;margin-bottom:4px">Pod Intelligence</div>'
+    + '<div style="font-size:11px;color:#64748b">How each pod clusters across AI depth, domains, research areas, transformation statement dimensions, and network themes.'
+    + ' Sorted by pod size. TS dimensions ranked by pod strength.</div>'
+    + '</div>';
+
+  el.innerHTML = intro + html;
 }
 
 // ── VIEW 8: Network Transformation Map ───────────────────────────────────
