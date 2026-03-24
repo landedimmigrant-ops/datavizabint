@@ -2858,7 +2858,8 @@ function buildFlowView(canvas, mode) {
     var w = 1/themes.length;
     themes.forEach(function(t){
       records.push({pod:pod, area:area, depth:depth, theme:t.label,
-                    weight:w, podColor:podColor(pod), themeColor:t.color});
+                    weight:w, podColor:podColor(pod), themeColor:t.color,
+                    projShort: p.short||p.code||p.id});
     });
   });
 
@@ -2929,6 +2930,7 @@ function buildFlowView(canvas, mode) {
 
       var flows = {};
       var originSets = {};  // [lk][rk] → Set of AXES[0] values
+      var projMap    = {};  // [lk][rk] → Set of project short names
 
       records.forEach(function(r){
         var lk=r[leftKey], rk=r[rightKey], orig=r[AXES[0]];
@@ -2937,6 +2939,9 @@ function buildFlowView(canvas, mode) {
         if (!originSets[lk]) originSets[lk]={};
         if (!originSets[lk][rk]) originSets[lk][rk]=new Set();
         originSets[lk][rk].add(orig);
+        if (!projMap[lk]) projMap[lk]={};
+        if (!projMap[lk][rk]) projMap[lk][rk]=new Set();
+        if (r.projShort) projMap[lk][rk].add(r.projShort);
       });
 
       var rightFillByLeft = {};
@@ -2994,7 +2999,8 @@ function buildFlowView(canvas, mode) {
           allBands.push({
             ai:ai, leftKey:leftKey, lk:lk, rightKey:rightKey, rk:rk,
             path:pathStr, color:bandColor,
-            originSet: originSets[lk][rk] || new Set()
+            originSet: originSets[lk][rk] || new Set(),
+            projects: projMap[lk] && projMap[lk][rk] ? Array.from(projMap[lk][rk]).sort() : []
           });
 
           lBlock.filled += bandH_l;
@@ -3012,47 +3018,109 @@ function buildFlowView(canvas, mode) {
     .attr('fill-opacity', BAND_OP)
     .attr('stroke', 'none');
 
-  // ── Click state + highlight logic ───────────────────────────────────────
-  var activeFilter = null;   // {key, cat}
+  // ── Colour helper — returns the display colour for a given axis block ────
+  var DEPTH_COL = {'High':'#f87171','Mid':'#fbbf24','Low':'#a3e635','None':'#475569'};
+  function nodeColor(key, cat) {
+    if (key==='pod')   return podColor(cat);
+    if (key==='depth') return DEPTH_COL[cat]||'#64748b';
+    if (key==='area')  return AREA_COLOR[AREA_NAME_TO_ID[cat]]||'#64748b';
+    if (key==='theme') {
+      var tm=(DATA.research_themes||[]).find(function(t){ return t.label===cat; });
+      return tm ? tm.color||'#818cf8' : '#818cf8';
+    }
+    return '#818cf8';
+  }
+
+  // ── Click state + highlight logic ────────────────────────────────────────
+  var activeFilter = null;   // {key, cat, color}
 
   function applyFilter(key, cat) {
-    // Build the set of start-axis (AXES[0]) values that pass through (key, cat)
+    var clickColor = nodeColor(key, cat);
+    activeFilter = {key:key, cat:cat, color:clickColor};
+
+    // All records whose axis[key] === cat → gather their start-axis values
     var startVals = new Set();
     if (key === AXES[0]) {
       startVals.add(cat);
     } else {
       records.forEach(function(r){ if (r[key]===cat) startVals.add(r[AXES[0]]); });
     }
-    // Highlight bands whose originSet intersects startVals — traces the full path
-    bandSel.transition().duration(180)
+
+    // Bands on the traced path: recolour to clicked node's colour so the thread
+    // stays visually consistent all the way through all four axes
+    bandSel.transition().duration(200)
+      .attr('fill', function(d){
+        var hit=false;
+        startVals.forEach(function(v){ if (d.originSet.has(v)) hit=true; });
+        return hit ? clickColor : d.color;
+      })
       .attr('fill-opacity', function(d){
-        var hit = false;
+        var hit=false;
         startVals.forEach(function(v){ if (d.originSet.has(v)) hit=true; });
         return hit ? BAND_HI : BAND_DIM;
       });
-    // Dim block rects that are off the path
-    blockRects.transition().duration(180)
+
+    // Block rects + labels: highlight related, dim unrelated
+    blockRects.transition().duration(200)
       .attr('fill-opacity', function(d){
         if (d.key===key && d.cat===cat) return 1;
-        var related = false;
-        startVals.forEach(function(v){ if (records.some(function(r){ return r[AXES[0]]===v && r[d.key]===d.cat; })) related=true; });
-        return related ? 0.90 : 0.25;
+        var rel=false;
+        startVals.forEach(function(v){ if (records.some(function(r){ return r[AXES[0]]===v && r[d.key]===d.cat; })) rel=true; });
+        return rel ? 0.90 : 0.22;
       });
-    blockLabels.transition().duration(180)
+    blockLabels.transition().duration(200)
       .attr('fill-opacity', function(d){
         if (d.key===key && d.cat===cat) return 1;
-        var related = false;
-        startVals.forEach(function(v){ if (records.some(function(r){ return r[AXES[0]]===v && r[d.key]===d.cat; })) related=true; });
-        return related ? 0.90 : 0.22;
+        var rel=false;
+        startVals.forEach(function(v){ if (records.some(function(r){ return r[AXES[0]]===v && r[d.key]===d.cat; })) rel=true; });
+        return rel ? 1 : 0.18;
+      })
+      .attr('fill', function(d){
+        if (d.key===key && d.cat===cat) return clickColor;
+        return d.col;
       });
   }
 
   function clearFilter() {
     activeFilter = null;
-    bandSel.transition().duration(180).attr('fill-opacity', BAND_OP);
-    blockRects.transition().duration(180).attr('fill-opacity', 1);
-    blockLabels.transition().duration(180).attr('fill-opacity', 1);
+    bandSel.transition().duration(200)
+      .attr('fill', function(d){ return d.color; })
+      .attr('fill-opacity', BAND_OP);
+    blockRects.transition().duration(200).attr('fill-opacity', 1);
+    blockLabels.transition().duration(200)
+      .attr('fill-opacity', 1)
+      .attr('fill', function(d){ return d.col; });
   }
+
+  // ── Band hover → project popup ────────────────────────────────────────────
+  bandSel
+    .style('cursor', 'pointer')
+    .on('mouseover', function(ev, d){
+      var projs = d.projects || [];
+      var lLabel = d.lk.length>20 ? d.lk.slice(0,19)+'\u2026' : d.lk;
+      var rLabel = d.rk.length>20 ? d.rk.slice(0,19)+'\u2026' : d.rk;
+      var col = (activeFilter && activeFilter.color) ? activeFilter.color : d.color;
+      var html = '<div style="min-width:180px;max-width:260px">'
+        + '<div style="font-weight:700;color:'+col+';margin-bottom:3px">'
+        +   lLabel+' <span style="color:#475569">\u2192</span> '+rLabel+'</div>'
+        + '<div style="font-size:8px;color:#475569;margin-bottom:6px;letter-spacing:.04em">'
+        +   d.leftKey.toUpperCase()+' \u2192 '+d.rightKey.toUpperCase()+'</div>';
+      if (projs.length) {
+        html += '<div style="font-size:9px;color:#64748b;margin-bottom:4px;font-weight:600">'
+          +projs.length+' project'+(projs.length!==1?'s':'')+'</div>'
+          +'<div style="max-height:130px;overflow-y:auto">';
+        projs.forEach(function(p){
+          html += '<div style="font-size:9px;color:#cbd5e1;padding:2px 0;border-bottom:1px solid #1e293b">'
+            +'\u2022 '+p+'</div>';
+        });
+        html += '</div>';
+      }
+      html += '</div>';
+      showTT(html, ev.clientX, ev.clientY);
+    })
+    .on('mousemove', function(ev){ showTT(null, ev.clientX, ev.clientY); })
+    .on('mouseout', hideTT)
+    .on('click', function(ev){ ev.stopPropagation(); });
 
   svg.on('click', clearFilter);
 
