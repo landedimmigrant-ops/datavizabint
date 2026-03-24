@@ -2466,12 +2466,15 @@ function buildForceView(canvas) {
     nodes.push(nd); nodeById[nd.id] = nd;
   });
 
-  // Theme nodes (skip empty) — sized by project count, large enough to hold inner label
+  // Theme nodes (skip empty) — dark-fill badge: coloured stroke ring + coloured text inside
   var validThemes = (DATA.research_themes||[]).filter(function(t){ return t.projects && t.projects.length>0; });
   validThemes.forEach(function(t){
-    var r = Math.max(20, Math.min(30, 14 + (t.projects||[]).length * 0.55));
-    // Short label that fits inside the circle (≤11 chars)
-    var short = t.label.length > 11 ? t.label.slice(0, 10) + '\u2026' : t.label;
+    // Radius must be wide enough for ~11 chars at font-size 9 (≈5px/char → 55px diameter → r≥28)
+    var r = Math.max(28, Math.min(38, 18 + (t.projects||[]).length * 0.6));
+    // Short label: first two meaningful words, max 11 chars
+    var words = t.label.split(' ');
+    var short = words.length > 1 ? words.slice(0,2).join(' ') : t.label;
+    if (short.length > 12) short = short.slice(0, 11) + '\u2026';
     var nd = {id:'theme|'+t.id, type:'theme', label:t.label, shortLabel:short, color:t.color||'#818cf8', r:r};
     nodes.push(nd); nodeById[nd.id] = nd;
   });
@@ -2549,9 +2552,15 @@ function buildForceView(canvas) {
     .attr('stroke-opacity', function(d){ return d.ltype==='pod' ? 0.40 : 0.25; });
 
   // ── Nodes ───────────────────────────────────────────────────────────────
+  // Themes: dark fill (#0d1525) + coloured stroke ring so text inside is always legible
+  // Pods:   solid colour fill + dark inner border
+  // Projects: translucent fill dot
   var nodeSel = g.append('g').selectAll('circle').data(nodes).enter().append('circle')
     .attr('r', function(d){ return d.r; })
-    .attr('fill', function(d){ return d.color; })
+    .attr('fill', function(d){
+      if (d.type==='theme') return '#0d1525';   // near-black so text colour pops
+      return d.color;
+    })
     .attr('fill-opacity', function(d){ return d.type==='project' ? 0.65 : 1; })
     .attr('stroke', function(d){
       if (d.type==='pod')   return '#080e1a';
@@ -2559,9 +2568,9 @@ function buildForceView(canvas) {
       return 'none';
     })
     .attr('stroke-width', function(d){
-      return d.type==='pod' ? 2.5 : d.type==='theme' ? 1.5 : 0;
+      return d.type==='pod' ? 2.5 : d.type==='theme' ? 2.5 : 0;
     })
-    .attr('stroke-opacity', function(d){ return d.type==='theme' ? 0.55 : 1; })
+    .attr('stroke-opacity', function(d){ return d.type==='theme' ? 0.90 : 1; })
     .style('cursor','pointer')
     .call(d3.drag()
       .on('start', function(ev,d){ if (!ev.active) sim.alphaTarget(0.3).restart(); d.fx=d.x; d.fy=d.y; })
@@ -2579,14 +2588,16 @@ function buildForceView(canvas) {
     .attr('text-anchor','middle').attr('pointer-events','none')
     .attr('dy', function(d){ return d.r + 12; });
 
-  // Theme labels: short text centred INSIDE the circle
+  // Theme labels: short text centred INSIDE the dark circle, coloured to match stroke
+  // font-size 9 + font-weight 700 gives maximum contrast on the #0d1525 background
   var themeLabelSel = g.append('g').selectAll('text')
     .data(nodes.filter(function(d){ return d.type==='theme'; }))
     .enter().append('text')
     .text(function(d){ return d.shortLabel || d.label; })
-    .attr('font-size', 8).attr('font-weight','600')
+    .attr('font-size', 9).attr('font-weight','700')
     .attr('fill', function(d){ return d.color; })
     .attr('text-anchor','middle').attr('dominant-baseline','central')
+    .attr('letter-spacing', '0.3')
     .attr('pointer-events','none');
 
   // Combined reference used for opacity updates
