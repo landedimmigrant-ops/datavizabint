@@ -865,9 +865,14 @@ function renderCoverage() {
   });
   dimHTML += '</tbody></table></div></div>';
 
-  // ── Area summary cards ─────────────────────────────────────────
+  // ── Area summary cards (sorted: most projects first) ───────────
   var cardHTML = '<div class="area-summary-bar" style="margin-top:24px">';
-  ALL_AREAS.forEach(function(area) {
+  var sortedAreas = ALL_AREAS.slice().sort(function(a, b) {
+    var na = areaDataMap[a.id] ? areaDataMap[a.id].n_projects : 0;
+    var nb = areaDataMap[b.id] ? areaDataMap[b.id].n_projects : 0;
+    return nb - na;
+  });
+  sortedAreas.forEach(function(area) {
     var aData = areaDataMap[area.id];
     var isGap = !aData;
     if (isGap) {
