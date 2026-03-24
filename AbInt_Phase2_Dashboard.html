@@ -2450,8 +2450,11 @@ function buildPRView() {
 function buildForceView(canvas) {
   var W = (canvas.parentElement ? canvas.parentElement.clientWidth : 900) - 48;
   var H = Math.max(560, Math.min(680, window.innerHeight - 200));
+  var cx = W / 2, cy = H / 2;
+  var outerR = Math.min(W, H) * 0.42;   // pods orbit radius
+  var midR   = Math.min(W, H) * 0.22;   // projects float zone
 
-  // Build nodes
+  // ── Build nodes ────────────────────────────────────────────────────────
   var nodes = [];
   var nodeById = {};
 
@@ -2463,10 +2466,11 @@ function buildForceView(canvas) {
     nodes.push(nd); nodeById[nd.id] = nd;
   });
 
-  // Theme nodes (skip empty)
+  // Theme nodes (skip empty) — sized by project count
   var validThemes = (DATA.research_themes||[]).filter(function(t){ return t.projects && t.projects.length>0; });
   validThemes.forEach(function(t){
-    var nd = {id:'theme|'+t.id, type:'theme', label:t.label, color:t.color||'#818cf8', r:11};
+    var r = Math.max(9, Math.min(16, 6 + (t.projects||[]).length * 0.6));
+    var nd = {id:'theme|'+t.id, type:'theme', label:t.label, color:t.color||'#818cf8', r:r};
     nodes.push(nd); nodeById[nd.id] = nd;
   });
 
@@ -2478,7 +2482,7 @@ function buildForceView(canvas) {
     nodes.push(nd); nodeById[nd.id] = nd;
   });
 
-  // Build links
+  // ── Build links ─────────────────────────────────────────────────────────
   var links = [];
   DATA.projects.forEach(function(p){
     var src = 'proj|'+p.id, tgt = 'pod|'+(p.pod||'Podless');
@@ -2491,9 +2495,18 @@ function buildForceView(canvas) {
     });
   });
 
+  // ── SVG canvas ──────────────────────────────────────────────────────────
   var svg = d3.select(canvas).append('svg')
     .attr('width', W).attr('height', H)
     .style('background','#080e1a').style('border-radius','10px');
+
+  // Subtle radial grid rings for spatial cue
+  var gridG = svg.append('g');
+  [outerR * 0.38, outerR * 0.72, outerR].forEach(function(r){
+    gridG.append('circle').attr('cx',cx).attr('cy',cy).attr('r',r)
+      .attr('fill','none').attr('stroke','#1e293b').attr('stroke-width',1)
+      .attr('stroke-dasharray','3 5').attr('opacity',0.5);
+  });
 
   var g = svg.append('g');
 
@@ -2501,36 +2514,58 @@ function buildForceView(canvas) {
     g.attr('transform', event.transform);
   }));
 
+  // ── Force simulation — theme-centric layout ──────────────────────────────
+  // Themes converge to centre (forceRadial r=0), pods orbit the outer ring.
+  // Projects float freely, drawn by their pod link (strong) and theme links (gentle).
   var sim = d3.forceSimulation(nodes)
     .force('link', d3.forceLink(links).id(function(d){ return d.id; })
-      .distance(function(l){ return l.ltype==='pod' ? 52 : 95; })
-      .strength(function(l){  return l.ltype==='pod' ? 0.55 : 0.12; }))
+      .distance(function(l){ return l.ltype==='pod' ? 58 : 80; })
+      .strength(function(l){ return l.ltype==='pod' ? 0.6 : 0.14; }))
     .force('charge', d3.forceManyBody().strength(function(d){
-      return d.type==='pod' ? -350 : d.type==='theme' ? -160 : -35;
+      return d.type==='pod' ? -280 : d.type==='theme' ? -90 : -28;
     }))
-    .force('center', d3.forceCenter(W/2, H/2))
-    .force('collide', d3.forceCollide().radius(function(d){ return d.r+5; }));
+    // Pull themes to centre
+    .force('themeGravity', d3.forceRadial(0, cx, cy).strength(function(d){
+      return d.type==='theme' ? 1.1 : 0;
+    }))
+    // Push pods to outer ring
+    .force('podOrbit', d3.forceRadial(outerR, cx, cy).strength(function(d){
+      return d.type==='pod' ? 0.55 : 0;
+    }))
+    // Gentle overall centering so nothing drifts off-canvas
+    .force('center', d3.forceCenter(cx, cy).strength(0.04))
+    .force('collide', d3.forceCollide().radius(function(d){ return d.r + 4; }));
 
+  // ── Links ───────────────────────────────────────────────────────────────
   var linkSel = g.append('g').selectAll('line').data(links).enter().append('line')
     .attr('stroke', function(d){
       var s = typeof d.source==='object' ? d.source : nodeById[d.source];
-      return d.ltype==='pod' ? (s ? s.color : '#334155') : '#2a3a50';
+      return d.ltype==='pod' ? (s ? s.color : '#334155') : '#4a6080';
     })
-    .attr('stroke-width', function(d){ return d.ltype==='pod' ? 1.4 : 0.7; })
-    .attr('stroke-opacity', function(d){ return d.ltype==='pod' ? 0.45 : 0.22; });
+    .attr('stroke-width', function(d){ return d.ltype==='pod' ? 1.4 : 0.8; })
+    .attr('stroke-opacity', function(d){ return d.ltype==='pod' ? 0.40 : 0.25; });
 
+  // ── Nodes ───────────────────────────────────────────────────────────────
   var nodeSel = g.append('g').selectAll('circle').data(nodes).enter().append('circle')
     .attr('r', function(d){ return d.r; })
     .attr('fill', function(d){ return d.color; })
     .attr('fill-opacity', function(d){ return d.type==='project' ? 0.65 : 1; })
-    .attr('stroke', function(d){ return d.type==='pod' ? '#080e1a' : 'none'; })
-    .attr('stroke-width', function(d){ return d.type==='pod' ? 2.5 : 0; })
+    .attr('stroke', function(d){
+      if (d.type==='pod')   return '#080e1a';
+      if (d.type==='theme') return d.color;
+      return 'none';
+    })
+    .attr('stroke-width', function(d){
+      return d.type==='pod' ? 2.5 : d.type==='theme' ? 1.5 : 0;
+    })
+    .attr('stroke-opacity', function(d){ return d.type==='theme' ? 0.55 : 1; })
     .style('cursor','pointer')
     .call(d3.drag()
       .on('start', function(ev,d){ if (!ev.active) sim.alphaTarget(0.3).restart(); d.fx=d.x; d.fy=d.y; })
       .on('drag',  function(ev,d){ d.fx=ev.x; d.fy=ev.y; })
       .on('end',   function(ev,d){ if (!ev.active) sim.alphaTarget(0); d.fx=null; d.fy=null; }));
 
+  // ── Labels ──────────────────────────────────────────────────────────────
   var labelSel = g.append('g').selectAll('text')
     .data(nodes.filter(function(d){ return d.type!=='project'; }))
     .enter().append('text')
@@ -2542,8 +2577,36 @@ function buildForceView(canvas) {
     .attr('pointer-events','none')
     .attr('dy', function(d){ return d.r + 12; });
 
-  // Highlight on click
+  // ── Highlight ring + pulse (Option C) ───────────────────────────────────
+  // A static glow ring that marks the selected node, plus an animated
+  // expanding pulse that radiates outward — emphasis comes from elevation,
+  // not from punishing background nodes.
+  var glowRing = g.append('circle')
+    .attr('fill','none').attr('stroke','#ffffff')
+    .attr('stroke-width', 2.5).attr('stroke-opacity', 0)
+    .attr('r', 0).attr('pointer-events','none');
+
+  var pulseRing = g.append('circle')
+    .attr('fill','none').attr('stroke','#ffffff')
+    .attr('stroke-width', 1.2).attr('stroke-opacity', 0)
+    .attr('r', 0).attr('pointer-events','none');
+
   var highlighted = null;
+  var pulseColor  = '#ffffff';
+
+  function runPulse() {
+    if (!highlighted) return;
+    var hd = nodeById[highlighted];
+    if (!hd || hd.x == null) return;
+    pulseRing
+      .attr('cx', hd.x).attr('cy', hd.y)
+      .attr('stroke', pulseColor)
+      .attr('r', hd.r + 3).attr('stroke-opacity', 0.75)
+      .transition().duration(1400).ease(d3.easeQuadOut)
+      .attr('r', hd.r + 32).attr('stroke-opacity', 0)
+      .on('end', runPulse);
+  }
+
   function getNeighbors(d) {
     var ids = new Set([d.id]);
     links.forEach(function(l){
@@ -2554,38 +2617,75 @@ function buildForceView(canvas) {
     });
     return ids;
   }
+
   function highlightNode(d) {
     var nb = getNeighbors(d);
-    nodeSel.attr('fill-opacity', function(n){ return nb.has(n.id) ? (n.type==='project'?1:1) : 0.06; });
-    linkSel.attr('stroke-opacity', function(l){
+    pulseColor = d.color;
+
+    // Nodes: connected stay vivid, background nodes fade gently to 28% (still readable)
+    nodeSel.attr('fill-opacity', function(n){
+      if (n.id === d.id)     return 1;
+      if (nb.has(n.id))      return n.type==='project' ? 0.82 : 0.90;
+      return n.type==='project' ? 0.22 : 0.28;
+    });
+
+    // Links: active connections get thicker + brighter; rest fade but stay visible
+    linkSel
+      .attr('stroke-opacity', function(l){
+        var s = typeof l.source==='object' ? l.source.id : l.source;
+        var t = typeof l.target==='object' ? l.target.id : l.target;
+        return (nb.has(s) && nb.has(t)) ? (l.ltype==='pod' ? 0.85 : 0.60) : 0.07;
+      })
+      .attr('stroke-width', function(l){
+        var s = typeof l.source==='object' ? l.source.id : l.source;
+        var t = typeof l.target==='object' ? l.target.id : l.target;
+        var active = nb.has(s) && nb.has(t);
+        return active ? (l.ltype==='pod' ? 2.5 : 1.5) : (l.ltype==='pod' ? 1.4 : 0.8);
+      });
+
+    // Labels: connected stay full brightness; background dims but stays legible
+    labelSel.attr('fill-opacity', function(n){
+      return nb.has(n.id) ? 1 : 0.30;
+    });
+
+    // Glow ring on selected node
+    glowRing.attr('stroke', d.color).attr('r', d.r + 7).attr('stroke-opacity', 0.65);
+
+    runPulse();
+  }
+
+  function resetHL() {
+    highlighted = null;
+    nodeSel.attr('fill-opacity', function(d){ return d.type==='project' ? 0.65 : 1; });
+    linkSel
+      .attr('stroke-opacity', function(d){ return d.ltype==='pod' ? 0.40 : 0.25; })
+      .attr('stroke-width',   function(d){ return d.ltype==='pod' ? 1.4 : 0.8; });
+    labelSel.attr('fill-opacity', 1);
+    glowRing.attr('stroke-opacity', 0).attr('r', 0);
+    pulseRing.attr('stroke-opacity', 0).attr('r', 0).interrupt();
+  }
+
+  nodeSel.on('click', function(ev, d){
+    ev.stopPropagation();
+    if (highlighted === d.id){ resetHL(); }
+    else {
+      highlighted = d.id;
+      pulseRing.interrupt();  // stop any in-progress transition first
+      highlightNode(d);
+    }
+  });
+  svg.on('click', function(){ resetHL(); });
+
+  // ── Tooltip ─────────────────────────────────────────────────────────────
+  nodeSel.on('mouseover', function(ev, d){
+    var deg = links.filter(function(l){
       var s = typeof l.source==='object' ? l.source.id : l.source;
       var t = typeof l.target==='object' ? l.target.id : l.target;
-      return (nb.has(s) && nb.has(t)) ? (l.ltype==='pod'?0.9:0.55) : 0.03;
-    });
-    labelSel.attr('fill-opacity', function(n){ return nb.has(n.id) ? 1 : 0.08; });
-  }
-  function resetHL() {
-    nodeSel.attr('fill-opacity', function(d){ return d.type==='project'?0.65:1; });
-    linkSel.attr('stroke-opacity', function(d){ return d.ltype==='pod'?0.45:0.22; });
-    labelSel.attr('fill-opacity',1);
-  }
-  nodeSel.on('click', function(ev,d){
-    ev.stopPropagation();
-    if (highlighted===d.id){ highlighted=null; resetHL(); }
-    else { highlighted=d.id; highlightNode(d); }
-  });
-  svg.on('click', function(){ highlighted=null; resetHL(); });
-
-  // Tooltip
-  nodeSel.on('mouseover', function(ev,d){
-    var deg = links.filter(function(l){
-      var s=typeof l.source==='object'?l.source.id:l.source;
-      var t=typeof l.target==='object'?l.target.id:l.target;
-      return s===d.id||t===d.id;
+      return s===d.id || t===d.id;
     }).length;
     var lines = ['<strong style="color:'+d.color+'">'+d.label+'</strong>'];
-    if (d.type==='pod')   lines.push(deg+' project connections');
-    if (d.type==='theme') lines.push(deg+' projects in this theme');
+    if (d.type==='pod')     lines.push(deg+' project connections');
+    if (d.type==='theme')   lines.push(deg+' projects in this theme');
     if (d.type==='project') {
       lines.push('Pod: '+(d.pod||'Podless'));
       lines.push('Area: '+d.area);
@@ -2593,23 +2693,41 @@ function buildForceView(canvas) {
       lines.push(deg+' theme connections');
     }
     showTT(lines.join('<br>'), ev.clientX, ev.clientY);
-  }).on('mousemove', function(ev){ showTT(null,ev.clientX,ev.clientY); })
+  }).on('mousemove', function(ev){ showTT(null, ev.clientX, ev.clientY); })
     .on('mouseout', hideTT);
 
+  // ── Tick ────────────────────────────────────────────────────────────────
   sim.on('tick', function(){
     linkSel.attr('x1',function(d){return d.source.x;}).attr('y1',function(d){return d.source.y;})
            .attr('x2',function(d){return d.target.x;}).attr('y2',function(d){return d.target.y;});
     nodeSel.attr('cx',function(d){return d.x;}).attr('cy',function(d){return d.y;});
     labelSel.attr('x',function(d){return d.x;}).attr('y',function(d){return d.y;});
+    // Keep glow ring pinned to selected node while simulation runs
+    if (highlighted) {
+      var hd = nodeById[highlighted];
+      if (hd) glowRing.attr('cx', hd.x).attr('cy', hd.y);
+    }
   });
 
-  // Legend
+  // ── Legend ──────────────────────────────────────────────────────────────
   var legG = svg.append('g').attr('transform','translate(14,14)');
-  [{label:'Pod',r:8,op:1},{label:'Theme',r:5,op:1},{label:'Project',r:3,op:0.65}].forEach(function(item,i){
-    legG.append('circle').attr('cx',8).attr('cy',i*18).attr('r',item.r)
-      .attr('fill','#94a3b8').attr('fill-opacity',item.op);
-    legG.append('text').attr('x',20).attr('y',i*18+4).attr('font-size',9).attr('fill','#64748b').text(item.label);
+  [
+    {label:'Theme (centre)',  r:7,  op:1,    stroke:'#818cf8', sw:1.5},
+    {label:'Pod (orbit)',     r:8,  op:1,    stroke:'#080e1a', sw:2},
+    {label:'Project',         r:3,  op:0.65, stroke:'none',    sw:0}
+  ].forEach(function(item, i){
+    legG.append('circle').attr('cx',9).attr('cy',i*20+1).attr('r',item.r)
+      .attr('fill','#94a3b8').attr('fill-opacity',item.op)
+      .attr('stroke',item.stroke).attr('stroke-width',item.sw);
+    legG.append('text').attr('x',22).attr('y',i*20+5)
+      .attr('font-size',9).attr('fill','#64748b').text(item.label);
   });
+
+  // Hint text
+  svg.append('text')
+    .attr('x', W - 10).attr('y', H - 10)
+    .attr('text-anchor','end').attr('font-size',8).attr('fill','#334155')
+    .text('Click node to highlight · scroll to zoom · drag to pan');
 }
 
 // ── Parallel sets / flow ───────────────────────────────────────────────────
