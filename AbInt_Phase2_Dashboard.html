@@ -2441,8 +2441,8 @@ function buildPRView() {
     document.getElementById('pr-hint').textContent = 'Pods \u25CF Themes \u25CB Projects. Click any node to highlight connections. Drag to rearrange. Scroll to zoom.';
     buildForceView(canvas);
   } else {
-    document.getElementById('pr-hint').textContent = 'Flow: Pod \u2192 Research Area \u2192 AI Depth \u2192 Theme. Band width = project count (fractional where projects span multiple themes). Coloured by pod.';
-    buildFlowView(canvas);
+    document.getElementById('pr-hint').textContent = 'Flow: Pod \u2192 Research Area \u2192 AI Depth \u2192 Theme \u2014 click any block or label to trace its full path. Toggle \u201cView from\u201d to flip perspective.';
+    buildFlowView(canvas, 'pod');
   }
 }
 
@@ -2799,15 +2799,48 @@ function buildForceView(canvas) {
 }
 
 // ── Parallel sets / flow ───────────────────────────────────────────────────
-function buildFlowView(canvas) {
+function buildFlowView(canvas, mode) {
+  mode = mode || 'pod';
+
+  // Clear any previous render of this view
+  d3.select(canvas).selectAll('svg').remove();
+  var oldToggle = canvas.querySelector('.flow-toggle-bar');
+  if (oldToggle) oldToggle.parentNode.removeChild(oldToggle);
+
   var W = Math.max(700, (canvas.parentElement ? canvas.parentElement.clientWidth : 960) - 32);
-  var H = Math.max(560, Math.min(700, window.innerHeight - 190));
-  // Generous separate margins so axis labels never clip
+  var H = Math.max(530, Math.min(680, window.innerHeight - 210));
   var PAD_L=152, PAD_R=162, PAD_T=52, PAD_B=28;
-  var AX_W=16, BLOCK_GAP=6, BAND_OP=0.38;
+  var AX_W=16, BLOCK_GAP=6, BAND_OP=0.36;
+  var BAND_HI=0.82, BAND_DIM=0.04;
   var plotH = H - PAD_T - PAD_B;
 
-  // Build theme lookup: projId → [{label, color}]
+  // ── Toggle bar (HTML above SVG) ─────────────────────────────────────────
+  var toggleBar = document.createElement('div');
+  toggleBar.className = 'flow-toggle-bar';
+  toggleBar.style.cssText = 'display:flex;align-items:center;gap:8px;margin-bottom:10px;';
+  var tLabel = document.createElement('span');
+  tLabel.style.cssText = 'font-size:10px;font-weight:700;color:#475569;letter-spacing:.06em;margin-right:2px;';
+  tLabel.textContent = 'VIEW FROM';
+  toggleBar.appendChild(tLabel);
+  [{m:'pod',icon:'\u25cf',text:'Pod'},{m:'theme',icon:'\u25c6',text:'Theme'}].forEach(function(opt){
+    var btn = document.createElement('button');
+    btn.textContent = opt.icon + '  ' + opt.text;
+    var active = mode === opt.m;
+    btn.style.cssText = 'font-size:10px;font-weight:700;padding:4px 14px;border-radius:20px;cursor:pointer;border:1.5px solid;transition:all .15s;outline:none;'
+      + (active ? 'background:#1e3a5f;border-color:#3b82f6;color:#93c5fd;'
+                : 'background:transparent;border-color:#2d3f5a;color:#4a6080;');
+    if (!active) btn.addEventListener('click', function(){
+      buildFlowView(canvas, opt.m);
+      var hint = document.getElementById('pr-hint');
+      if (hint) hint.textContent = opt.m==='pod'
+        ? 'Flow: Pod \u2192 Research Area \u2192 AI Depth \u2192 Theme \u2014 click any block to trace its full path'
+        : 'Flow: Theme \u2192 Research Area \u2192 AI Depth \u2192 Pod \u2014 click any block to trace its full path';
+    });
+    toggleBar.appendChild(btn);
+  });
+  canvas.insertBefore(toggleBar, canvas.firstChild);
+
+  // ── Records ────────────────────────────────────────────────────────────
   var projThemeMap = {};
   (DATA.research_themes||[]).forEach(function(t){
     if (!t.projects||!t.projects.length) return;
@@ -2816,8 +2849,6 @@ function buildFlowView(canvas) {
       projThemeMap[pid].push({label:t.label, color:t.color||'#818cf8'});
     });
   });
-
-  // Build flow records
   var records = [];
   DATA.projects.forEach(function(p){
     var pod   = p.pod||'Podless';
@@ -2831,9 +2862,13 @@ function buildFlowView(canvas) {
     });
   });
 
-  // Axis definitions
-  var AXES = ['pod','area','depth','theme'];
-  var AXIS_LABELS = ['Pod','Research Area','AI Depth','Theme'];
+  // Axis order driven by mode
+  var AXES = mode==='pod'
+    ? ['pod','area','depth','theme']
+    : ['theme','area','depth','pod'];
+  var AXIS_LABELS = mode==='pod'
+    ? ['Pod','Research Area','AI Depth','Theme']
+    : ['Theme','Research Area','AI Depth','Pod'];
 
   // Compute category totals per axis
   function axisCategories(key) {
@@ -2875,100 +2910,161 @@ function buildFlowView(canvas) {
     .style('background','#080e1a').style('border-radius','10px')
     .style('overflow','visible').style('display','block');
 
-  // ── Draw bands between adjacent axis pairs ────────────────────────────
+  // ── Compute band data with originSet (for click tracing) ───────────────
+  // originSet = set of AXES[0] values (pods or themes) that flow through each band.
+  // When a block is clicked, we highlight every band whose originSet overlaps the
+  // clicked category — this traces the FULL path through all four axes.
+  var allBands = [];
+
   for (var ai=0; ai<AXES.length-1; ai++) {
-    var leftKey  = AXES[ai];
-    var rightKey = AXES[ai+1];
-    var leftLay  = layouts[ai];
-    var rightLay = layouts[ai+1];
-    var x1 = axX[ai]+AX_W, x2 = axX[ai+1];
+    (function(ai){
+      var leftKey  = AXES[ai];
+      var rightKey = AXES[ai+1];
+      var leftLay  = layouts[ai];
+      var rightLay = layouts[ai+1];
+      var x1 = axX[ai]+AX_W, x2 = axX[ai+1];
 
-    // Build flow counts: leftCat → rightCat → totalWeight
-    var flows = {};
-    records.forEach(function(r){
-      var lk = r[leftKey], rk = r[rightKey];
-      if (!flows[lk]) flows[lk]={};
-      flows[lk][rk] = (flows[lk][rk]||0) + r.weight;
-    });
+      // Reset fill tracker for this axis pair
+      Object.keys(leftLay).forEach(function(k){ leftLay[k].filled = 0; });
 
-    // Right-side fill tracking (separate per leftCat to stack correctly)
-    var rightFillByLeft = {};
+      var flows = {};
+      var originSets = {};  // [lk][rk] → Set of AXES[0] values
 
-    // Sort left categories by y position for consistent band ordering
-    var leftCatsSorted = axisCats[ai].map(function(c){ return c[0]; })
-      .sort(function(a,b){ return leftLay[a].y - leftLay[b].y; });
-
-    leftCatsSorted.forEach(function(lk){
-      if (!flows[lk]) return;
-      var lBlock = leftLay[lk];
-      if (!lBlock) return;
-      var usableH_left = lBlock.h;
-      var lUnit = usableH_left / lBlock.total;
-
-      // Sort right cats by y position
-      var rightCatsSorted = Object.keys(flows[lk])
-        .sort(function(a,b){ return (rightLay[a]?rightLay[a].y:0)-(rightLay[b]?rightLay[b].y:0); });
-
-      rightCatsSorted.forEach(function(rk){
-        var rBlock = rightLay[rk];
-        if (!rBlock) return;
-        var w = flows[lk][rk];
-        var usableH_right = rBlock.h;
-        var rUnit = usableH_right / rBlock.total;
-
-        // right fill offset for this left category
-        if (!rightFillByLeft[rk]) rightFillByLeft[rk] = {};
-        if (!rightFillByLeft[rk][lk]) rightFillByLeft[rk][lk] = 0;
-
-        var bandH_l = w * lUnit;
-        var bandH_r = w * rUnit;
-
-        var ly0 = lBlock.y + lBlock.filled;
-        var ly1 = ly0 + bandH_l;
-        var ry0 = rBlock.y + rightFillByLeft[rk][lk];
-        var ry1 = ry0 + bandH_r;
-
-        // Get pod colour for this band (use source pod when possible)
-        var bandColor = '#818cf8';
-        if (leftKey === 'pod') {
-          bandColor = podColor(lk);
-        } else {
-          // Find dominant pod for this flow cell
-          var podCounts = {};
-          records.forEach(function(r){
-            if (r[leftKey]===lk && r[rightKey]===rk) podCounts[r.pod]=(podCounts[r.pod]||0)+r.weight;
-          });
-          var topPod = Object.entries(podCounts).sort(function(a,b){return b[1]-a[1];})[0];
-          if (topPod) bandColor = podColor(topPod[0]);
-        }
-
-        // Draw band as filled path
-        var cx = (x1+x2)/2;
-        var path = 'M '+x1+' '+ly0
-          + ' C '+cx+' '+ly0+' '+cx+' '+ry0+' '+x2+' '+ry0
-          + ' L '+x2+' '+ry1
-          + ' C '+cx+' '+ry1+' '+cx+' '+ly1+' '+x1+' '+ly1
-          + ' Z';
-
-        svg.append('path').attr('d', path)
-          .attr('fill', bandColor).attr('fill-opacity', BAND_OP)
-          .attr('stroke','none');
-
-        lBlock.filled += bandH_l;
-        rightFillByLeft[rk][lk] += bandH_r;
-        // Accumulate total right fill
-        rBlock.filledTotal = (rBlock.filledTotal||0) + bandH_r;
+      records.forEach(function(r){
+        var lk=r[leftKey], rk=r[rightKey], orig=r[AXES[0]];
+        if (!flows[lk]) flows[lk]={};
+        flows[lk][rk] = (flows[lk][rk]||0) + r.weight;
+        if (!originSets[lk]) originSets[lk]={};
+        if (!originSets[lk][rk]) originSets[lk][rk]=new Set();
+        originSets[lk][rk].add(orig);
       });
-    });
+
+      var rightFillByLeft = {};
+      var leftCatsSorted = axisCats[ai].map(function(c){ return c[0]; })
+        .sort(function(a,b){ return leftLay[a].y - leftLay[b].y; });
+
+      leftCatsSorted.forEach(function(lk){
+        if (!flows[lk]) return;
+        var lBlock = leftLay[lk];
+        if (!lBlock) return;
+        var lUnit = lBlock.h / lBlock.total;
+
+        var rightCatsSorted = Object.keys(flows[lk])
+          .sort(function(a,b){ return (rightLay[a]?rightLay[a].y:0)-(rightLay[b]?rightLay[b].y:0); });
+
+        rightCatsSorted.forEach(function(rk){
+          var rBlock = rightLay[rk];
+          if (!rBlock) return;
+          var w = flows[lk][rk];
+          var rUnit = rBlock.h / rBlock.total;
+
+          if (!rightFillByLeft[rk]) rightFillByLeft[rk]={};
+          if (!rightFillByLeft[rk][lk]) rightFillByLeft[rk][lk]=0;
+
+          var bandH_l = w * lUnit;
+          var bandH_r = w * rUnit;
+          var ly0 = lBlock.y + lBlock.filled;
+          var ly1 = ly0 + bandH_l;
+          var ry0 = rBlock.y + rightFillByLeft[rk][lk];
+          var ry1 = ry0 + bandH_r;
+
+          // Colour: use pod colour wherever possible (visual consistency)
+          var bandColor = '#818cf8';
+          if (leftKey==='pod') {
+            bandColor = podColor(lk);
+          } else if (leftKey==='theme') {
+            var tmL = (DATA.research_themes||[]).find(function(t){ return t.label===lk; });
+            if (tmL) bandColor = tmL.color || '#818cf8';
+          } else {
+            var podCounts = {};
+            records.forEach(function(r){
+              if (r[leftKey]===lk && r[rightKey]===rk) podCounts[r.pod]=(podCounts[r.pod]||0)+r.weight;
+            });
+            var topPod = Object.entries(podCounts).sort(function(a,b){return b[1]-a[1];})[0];
+            if (topPod) bandColor = podColor(topPod[0]);
+          }
+
+          var midX = (x1+x2)/2;
+          var pathStr = 'M '+x1+' '+ly0
+            +' C '+midX+' '+ly0+' '+midX+' '+ry0+' '+x2+' '+ry0
+            +' L '+x2+' '+ry1
+            +' C '+midX+' '+ry1+' '+midX+' '+ly1+' '+x1+' '+ly1
+            +' Z';
+
+          allBands.push({
+            ai:ai, leftKey:leftKey, lk:lk, rightKey:rightKey, rk:rk,
+            path:pathStr, color:bandColor,
+            originSet: originSets[lk][rk] || new Set()
+          });
+
+          lBlock.filled += bandH_l;
+          rightFillByLeft[rk][lk] += bandH_r;
+        });
+      });
+    })(ai);
   }
 
-  // ── Draw axis blocks ──────────────────────────────────────────────────
+  // ── Render bands via D3 data binding (enables transition on click) ──────
+  var bandSel = svg.selectAll('path.fband')
+    .data(allBands).enter().append('path').attr('class','fband')
+    .attr('d', function(d){ return d.path; })
+    .attr('fill', function(d){ return d.color; })
+    .attr('fill-opacity', BAND_OP)
+    .attr('stroke', 'none');
+
+  // ── Click state + highlight logic ───────────────────────────────────────
+  var activeFilter = null;   // {key, cat}
+
+  function applyFilter(key, cat) {
+    // Build the set of start-axis (AXES[0]) values that pass through (key, cat)
+    var startVals = new Set();
+    if (key === AXES[0]) {
+      startVals.add(cat);
+    } else {
+      records.forEach(function(r){ if (r[key]===cat) startVals.add(r[AXES[0]]); });
+    }
+    // Highlight bands whose originSet intersects startVals — traces the full path
+    bandSel.transition().duration(180)
+      .attr('fill-opacity', function(d){
+        var hit = false;
+        startVals.forEach(function(v){ if (d.originSet.has(v)) hit=true; });
+        return hit ? BAND_HI : BAND_DIM;
+      });
+    // Dim block rects that are off the path
+    blockRects.transition().duration(180)
+      .attr('fill-opacity', function(d){
+        if (d.key===key && d.cat===cat) return 1;
+        var related = false;
+        startVals.forEach(function(v){ if (records.some(function(r){ return r[AXES[0]]===v && r[d.key]===d.cat; })) related=true; });
+        return related ? 0.90 : 0.25;
+      });
+    blockLabels.transition().duration(180)
+      .attr('fill-opacity', function(d){
+        if (d.key===key && d.cat===cat) return 1;
+        var related = false;
+        startVals.forEach(function(v){ if (records.some(function(r){ return r[AXES[0]]===v && r[d.key]===d.cat; })) related=true; });
+        return related ? 0.90 : 0.22;
+      });
+  }
+
+  function clearFilter() {
+    activeFilter = null;
+    bandSel.transition().duration(180).attr('fill-opacity', BAND_OP);
+    blockRects.transition().duration(180).attr('fill-opacity', 1);
+    blockLabels.transition().duration(180).attr('fill-opacity', 1);
+  }
+
+  svg.on('click', clearFilter);
+
+  // ── Draw axis blocks with click handlers ───────────────────────────────
+  var blockData = [];   // accumulate for D3 selections below
+  var labelData = [];
+
   AXES.forEach(function(key, ai){
     var lay = layouts[ai];
     var cats = axisCats[ai];
     var x = axX[ai];
 
-    // Axis column header
     svg.append('text').attr('x', x + AX_W/2).attr('y', PAD_T - 22)
       .attr('text-anchor','middle').attr('font-size',10).attr('font-weight','700')
       .attr('fill','#94a3b8').attr('letter-spacing',1)
@@ -2978,40 +3074,66 @@ function buildFlowView(canvas) {
       var block = lay[c[0]];
       if (!block) return;
 
-      // Colour per axis type
       var col = key==='pod'   ? podColor(c[0]) :
                 key==='depth' ? ({'High':'#f87171','Mid':'#fbbf24','Low':'#a3e635','None':'#475569'}[c[0]]||'#64748b') :
                 key==='area'  ? (AREA_COLOR[AREA_NAME_TO_ID[c[0]]]||'#64748b') : '#818cf8';
-      if (key==='theme') {
+      if (key==='theme'){
         var tm = (DATA.research_themes||[]).find(function(t){ return t.label===c[0]; });
-        if (tm) col = tm.color || '#818cf8';
+        if (tm) col = tm.color||'#818cf8';
       }
 
-      // Block rect
-      svg.append('rect').attr('x',x).attr('y',block.y).attr('width',AX_W).attr('height',Math.max(block.h,2))
-        .attr('fill',col).attr('rx',2);
+      blockData.push({key:key, cat:c[0], ai:ai, x:x, y:block.y,
+                      h:Math.max(block.h,2), col:col});
 
-      // Label position: left-axis goes LEFT, all others go RIGHT
-      var isFirst = ai === 0;
-      var labelX  = isFirst ? x - 6 : x + AX_W + 6;
+      var isFirst = ai===0;
+      var labelX  = isFirst ? x-6 : x+AX_W+6;
       var anchor  = isFirst ? 'end' : 'start';
-
-      // Truncation: left and right axes get more chars; middle axes less
-      var maxLen  = (isFirst || ai===AXES.length-1) ? 22 : 14;
-      var name    = c[0].length > maxLen ? c[0].slice(0, maxLen-1) + '\u2026' : c[0];
-      var fullLbl = name + ' \u00b7 ' + Math.round(c[1]);
-
-      var midY = block.y + block.h/2;
-      // Only show label if block is tall enough (avoid overlapping tiny blocks)
-      if (block.h >= 7) {
-        svg.append('text')
-          .attr('x', labelX).attr('y', midY)
-          .attr('text-anchor', anchor).attr('dominant-baseline', 'middle')
-          .attr('font-size', 9).attr('fill', col).attr('font-weight', '600')
-          .text(fullLbl);
+      var maxLen  = (isFirst||ai===AXES.length-1) ? 22 : 14;
+      var name    = c[0].length>maxLen ? c[0].slice(0,maxLen-1)+'\u2026' : c[0];
+      var fullLbl = name+' \u00b7 '+Math.round(c[1]);
+      if (block.h>=7) {
+        labelData.push({key:key, cat:c[0], ai:ai, x:labelX,
+                        y:block.y+block.h/2, anchor:anchor, col:col, text:fullLbl});
       }
     });
   });
+
+  // Block rects — clickable
+  var blockRects = svg.selectAll('rect.fblock').data(blockData).enter().append('rect')
+    .attr('class','fblock')
+    .attr('x', function(d){ return d.x; }).attr('y', function(d){ return d.y; })
+    .attr('width', AX_W).attr('height', function(d){ return d.h; })
+    .attr('fill', function(d){ return d.col; }).attr('rx', 2)
+    .style('cursor', 'pointer')
+    .on('click', function(ev, d){
+      ev.stopPropagation();
+      if (activeFilter && activeFilter.key===d.key && activeFilter.cat===d.cat) {
+        clearFilter();
+      } else {
+        activeFilter = {key:d.key, cat:d.cat};
+        applyFilter(d.key, d.cat);
+      }
+    });
+
+  // Block labels — also clickable for larger hit target
+  var blockLabels = svg.selectAll('text.fblabel').data(labelData).enter().append('text')
+    .attr('class','fblabel')
+    .attr('x', function(d){ return d.x; }).attr('y', function(d){ return d.y; })
+    .attr('text-anchor', function(d){ return d.anchor; })
+    .attr('dominant-baseline','middle')
+    .attr('font-size', 9).attr('fill', function(d){ return d.col; })
+    .attr('font-weight','600').attr('pointer-events','all')
+    .style('cursor','pointer')
+    .text(function(d){ return d.text; })
+    .on('click', function(ev, d){
+      ev.stopPropagation();
+      if (activeFilter && activeFilter.key===d.key && activeFilter.cat===d.cat) {
+        clearFilter();
+      } else {
+        activeFilter = {key:d.key, cat:d.cat};
+        applyFilter(d.key, d.cat);
+      }
+    });
 }
 
 // ── VIEW 8: Network Transformation Map ───────────────────────────────────
