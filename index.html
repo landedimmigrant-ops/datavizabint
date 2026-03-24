@@ -306,6 +306,14 @@ html, body { height: 100%; font-family: 'Inter', system-ui, sans-serif;
 .intel-filter-btn.f-act.active    { background: #4ade80; border-color: #4ade80; }
 .intel-filter-btn.f-obs.active    { background: #a78bfa; border-color: #a78bfa; }
 
+/* ── Pod Relations tab ── */
+.pr-header { padding: 18px 24px 0; }
+.pr-view-toggle { display:flex; gap:6px; margin:10px 0 6px; }
+.pr-toggle-btn { padding:5px 16px; border-radius:99px; border:1.5px solid #1e2535; background:transparent; color:#64748b; font-size:12px; cursor:pointer; transition:all .15s; }
+.pr-toggle-btn.active { border-color:#818cf8; background:#818cf822; color:#818cf8; font-weight:700; }
+.pr-canvas { padding:0 24px 24px; }
+.pr-legend { display:flex; gap:14px; flex-wrap:wrap; padding:8px 24px 0; }
+.pr-legend-item { font-size:10px; display:flex; align-items:center; gap:5px; color:#94a3b8; }
 /* ── Scrollbar ── */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: var(--bg); }
@@ -329,6 +337,7 @@ html, body { height: 100%; font-family: 'Inter', system-ui, sans-serif;
   <button class="nav-tab" data-view="aidomain">AI Domain</button>
   <button class="nav-tab" data-view="overview">Project Overview</button>
   <button class="nav-tab" data-view="podprofile">Pod Intelligence</button>
+  <button class="nav-tab" data-view="podrelations">Pod Relations</button>
   <button class="nav-tab" data-view="tsrollup">TS Network Rollup</button>
 </nav>
 
@@ -339,8 +348,9 @@ html, body { height: 100%; font-family: 'Inter', system-ui, sans-serif;
 <div id="view-intel"      class="view"></div>
 <div id="view-aidomain"   class="view"></div>
 <div id="view-overview"    class="view"></div>
-<div id="view-podprofile" class="view"></div>
-<div id="view-transform"  class="view" style="display:none"></div>
+<div id="view-podprofile"   class="view"></div>
+<div id="view-podrelations" class="view"></div>
+<div id="view-transform"    class="view" style="display:none"></div>
 <div id="view-tsrollup"   class="view"></div>
 
 <script>
@@ -453,8 +463,9 @@ var VIEWS = {
   intel:      renderIntelligence,
   aidomain:   renderAIDomain,
   overview:    renderOverview,
-  podprofile:  renderPodProfile,
-  tsrollup:    renderTSRollup
+  podprofile:   renderPodProfile,
+  podrelations: renderPodRelations,
+  tsrollup:     renderTSRollup
 };
 
 // ── VIEW 1: Polarity Landscape ────────────────────────────────────────────
@@ -2402,6 +2413,414 @@ function renderPodProfile() {
     + '</div>';
 
   el.innerHTML = intro + html;
+}
+
+// ── VIEW 8c: Pod Relations (Force Network + Parallel Sets) ────────────────
+var podRelView = 'force';
+
+function renderPodRelations() {
+  var el = document.getElementById('view-podrelations');
+  el.innerHTML = ''
+    + '<div class="pr-header">'
+    + '<div style="font-size:15px;font-weight:800;color:#e2e8f0;margin-bottom:2px">Pod Relations</div>'
+    + '<div class="pr-view-toggle">'
+    + '<button class="pr-toggle-btn' + (podRelView==='force'?' active':'') + '" id="pr-btn-force" onclick="podRelView=\'force\';document.getElementById(\'pr-btn-force\').className=\'pr-toggle-btn active\';document.getElementById(\'pr-btn-flow\').className=\'pr-toggle-btn\';buildPRView()">Force Network</button>'
+    + '<button class="pr-toggle-btn' + (podRelView==='flow'?' active':'') + '" id="pr-btn-flow"  onclick="podRelView=\'flow\'; document.getElementById(\'pr-btn-force\').className=\'pr-toggle-btn\';document.getElementById(\'pr-btn-flow\').className=\'pr-toggle-btn active\';buildPRView()">Parallel Flow</button>'
+    + '</div>'
+    + '<div style="font-size:10px;color:#475569;margin-bottom:8px" id="pr-hint"></div>'
+    + '</div>'
+    + '<div class="pr-canvas" id="pr-canvas"></div>';
+  buildPRView();
+}
+
+function buildPRView() {
+  var canvas = document.getElementById('pr-canvas');
+  if (!canvas) return;
+  canvas.innerHTML = '';
+  if (podRelView === 'force') {
+    document.getElementById('pr-hint').textContent = 'Pods \u25CF Themes \u25CB Projects. Click any node to highlight connections. Drag to rearrange. Scroll to zoom.';
+    buildForceView(canvas);
+  } else {
+    document.getElementById('pr-hint').textContent = 'Flow: Pod \u2192 Research Area \u2192 AI Depth \u2192 Theme. Band width = project count (fractional where projects span multiple themes). Coloured by pod.';
+    buildFlowView(canvas);
+  }
+}
+
+// ── Force-directed network ─────────────────────────────────────────────────
+function buildForceView(canvas) {
+  var W = (canvas.parentElement ? canvas.parentElement.clientWidth : 900) - 48;
+  var H = Math.max(560, Math.min(680, window.innerHeight - 200));
+
+  // Build nodes
+  var nodes = [];
+  var nodeById = {};
+
+  // Pod nodes
+  var podSet = {};
+  DATA.projects.forEach(function(p){ podSet[p.pod||'Podless'] = true; });
+  Object.keys(podSet).forEach(function(pod){
+    var nd = {id:'pod|'+pod, type:'pod', label:pod.replace(/ Pod$/,''), fullLabel:pod, color:podColor(pod), r:18};
+    nodes.push(nd); nodeById[nd.id] = nd;
+  });
+
+  // Theme nodes (skip empty)
+  var validThemes = (DATA.research_themes||[]).filter(function(t){ return t.projects && t.projects.length>0; });
+  validThemes.forEach(function(t){
+    var nd = {id:'theme|'+t.id, type:'theme', label:t.label, color:t.color||'#818cf8', r:11};
+    nodes.push(nd); nodeById[nd.id] = nd;
+  });
+
+  // Project nodes
+  DATA.projects.forEach(function(p){
+    var nd = {id:'proj|'+p.id, type:'project', label:p.short||p.code, fullId:p.id,
+              color:podColor(p.pod||'Podless'), pod:p.pod||'Podless',
+              area:p.primary_area||'', align:p.alignment_avg, r:5};
+    nodes.push(nd); nodeById[nd.id] = nd;
+  });
+
+  // Build links
+  var links = [];
+  DATA.projects.forEach(function(p){
+    var src = 'proj|'+p.id, tgt = 'pod|'+(p.pod||'Podless');
+    if (nodeById[tgt]) links.push({source:src, target:tgt, ltype:'pod'});
+  });
+  validThemes.forEach(function(t){
+    (t.projects||[]).forEach(function(pid){
+      var src = 'proj|'+pid;
+      if (nodeById[src]) links.push({source:src, target:'theme|'+t.id, ltype:'theme'});
+    });
+  });
+
+  var svg = d3.select(canvas).append('svg')
+    .attr('width', W).attr('height', H)
+    .style('background','#080e1a').style('border-radius','10px');
+
+  var g = svg.append('g');
+
+  svg.call(d3.zoom().scaleExtent([0.25, 4]).on('zoom', function(event){
+    g.attr('transform', event.transform);
+  }));
+
+  var sim = d3.forceSimulation(nodes)
+    .force('link', d3.forceLink(links).id(function(d){ return d.id; })
+      .distance(function(l){ return l.ltype==='pod' ? 52 : 95; })
+      .strength(function(l){  return l.ltype==='pod' ? 0.55 : 0.12; }))
+    .force('charge', d3.forceManyBody().strength(function(d){
+      return d.type==='pod' ? -350 : d.type==='theme' ? -160 : -35;
+    }))
+    .force('center', d3.forceCenter(W/2, H/2))
+    .force('collide', d3.forceCollide().radius(function(d){ return d.r+5; }));
+
+  var linkSel = g.append('g').selectAll('line').data(links).enter().append('line')
+    .attr('stroke', function(d){
+      var s = typeof d.source==='object' ? d.source : nodeById[d.source];
+      return d.ltype==='pod' ? (s ? s.color : '#334155') : '#2a3a50';
+    })
+    .attr('stroke-width', function(d){ return d.ltype==='pod' ? 1.4 : 0.7; })
+    .attr('stroke-opacity', function(d){ return d.ltype==='pod' ? 0.45 : 0.22; });
+
+  var nodeSel = g.append('g').selectAll('circle').data(nodes).enter().append('circle')
+    .attr('r', function(d){ return d.r; })
+    .attr('fill', function(d){ return d.color; })
+    .attr('fill-opacity', function(d){ return d.type==='project' ? 0.65 : 1; })
+    .attr('stroke', function(d){ return d.type==='pod' ? '#080e1a' : 'none'; })
+    .attr('stroke-width', function(d){ return d.type==='pod' ? 2.5 : 0; })
+    .style('cursor','pointer')
+    .call(d3.drag()
+      .on('start', function(ev,d){ if (!ev.active) sim.alphaTarget(0.3).restart(); d.fx=d.x; d.fy=d.y; })
+      .on('drag',  function(ev,d){ d.fx=ev.x; d.fy=ev.y; })
+      .on('end',   function(ev,d){ if (!ev.active) sim.alphaTarget(0); d.fx=null; d.fy=null; }));
+
+  var labelSel = g.append('g').selectAll('text')
+    .data(nodes.filter(function(d){ return d.type!=='project'; }))
+    .enter().append('text')
+    .text(function(d){ return d.label; })
+    .attr('font-size', function(d){ return d.type==='pod' ? 11 : 9; })
+    .attr('font-weight', function(d){ return d.type==='pod' ? '700' : '500'; })
+    .attr('fill', function(d){ return d.color; })
+    .attr('text-anchor','middle')
+    .attr('pointer-events','none')
+    .attr('dy', function(d){ return d.r + 12; });
+
+  // Highlight on click
+  var highlighted = null;
+  function getNeighbors(d) {
+    var ids = new Set([d.id]);
+    links.forEach(function(l){
+      var s = typeof l.source==='object' ? l.source.id : l.source;
+      var t = typeof l.target==='object' ? l.target.id : l.target;
+      if (s===d.id) ids.add(t);
+      if (t===d.id) ids.add(s);
+    });
+    return ids;
+  }
+  function highlightNode(d) {
+    var nb = getNeighbors(d);
+    nodeSel.attr('fill-opacity', function(n){ return nb.has(n.id) ? (n.type==='project'?1:1) : 0.06; });
+    linkSel.attr('stroke-opacity', function(l){
+      var s = typeof l.source==='object' ? l.source.id : l.source;
+      var t = typeof l.target==='object' ? l.target.id : l.target;
+      return (nb.has(s) && nb.has(t)) ? (l.ltype==='pod'?0.9:0.55) : 0.03;
+    });
+    labelSel.attr('fill-opacity', function(n){ return nb.has(n.id) ? 1 : 0.08; });
+  }
+  function resetHL() {
+    nodeSel.attr('fill-opacity', function(d){ return d.type==='project'?0.65:1; });
+    linkSel.attr('stroke-opacity', function(d){ return d.ltype==='pod'?0.45:0.22; });
+    labelSel.attr('fill-opacity',1);
+  }
+  nodeSel.on('click', function(ev,d){
+    ev.stopPropagation();
+    if (highlighted===d.id){ highlighted=null; resetHL(); }
+    else { highlighted=d.id; highlightNode(d); }
+  });
+  svg.on('click', function(){ highlighted=null; resetHL(); });
+
+  // Tooltip
+  nodeSel.on('mouseover', function(ev,d){
+    var deg = links.filter(function(l){
+      var s=typeof l.source==='object'?l.source.id:l.source;
+      var t=typeof l.target==='object'?l.target.id:l.target;
+      return s===d.id||t===d.id;
+    }).length;
+    var lines = ['<strong style="color:'+d.color+'">'+d.label+'</strong>'];
+    if (d.type==='pod')   lines.push(deg+' project connections');
+    if (d.type==='theme') lines.push(deg+' projects in this theme');
+    if (d.type==='project') {
+      lines.push('Pod: '+(d.pod||'Podless'));
+      lines.push('Area: '+d.area);
+      lines.push('Alignment: '+d.align);
+      lines.push(deg+' theme connections');
+    }
+    showTT(lines.join('<br>'), ev.clientX, ev.clientY);
+  }).on('mousemove', function(ev){ showTT(null,ev.clientX,ev.clientY); })
+    .on('mouseout', hideTT);
+
+  sim.on('tick', function(){
+    linkSel.attr('x1',function(d){return d.source.x;}).attr('y1',function(d){return d.source.y;})
+           .attr('x2',function(d){return d.target.x;}).attr('y2',function(d){return d.target.y;});
+    nodeSel.attr('cx',function(d){return d.x;}).attr('cy',function(d){return d.y;});
+    labelSel.attr('x',function(d){return d.x;}).attr('y',function(d){return d.y;});
+  });
+
+  // Legend
+  var legG = svg.append('g').attr('transform','translate(14,14)');
+  [{label:'Pod',r:8,op:1},{label:'Theme',r:5,op:1},{label:'Project',r:3,op:0.65}].forEach(function(item,i){
+    legG.append('circle').attr('cx',8).attr('cy',i*18).attr('r',item.r)
+      .attr('fill','#94a3b8').attr('fill-opacity',item.op);
+    legG.append('text').attr('x',20).attr('y',i*18+4).attr('font-size',9).attr('fill','#64748b').text(item.label);
+  });
+}
+
+// ── Parallel sets / flow ───────────────────────────────────────────────────
+function buildFlowView(canvas) {
+  var W = (canvas.parentElement ? canvas.parentElement.clientWidth : 900) - 48;
+  var H = 620;
+  var PAD_L=14, PAD_T=48, PAD_B=30;
+  var AX_W=16, BLOCK_GAP=6, BAND_OP=0.38;
+  var plotH = H - PAD_T - PAD_B;
+
+  // Build theme lookup: projId → [{label, color}]
+  var projThemeMap = {};
+  (DATA.research_themes||[]).forEach(function(t){
+    if (!t.projects||!t.projects.length) return;
+    t.projects.forEach(function(pid){
+      if (!projThemeMap[pid]) projThemeMap[pid]=[];
+      projThemeMap[pid].push({label:t.label, color:t.color||'#818cf8'});
+    });
+  });
+
+  // Build flow records
+  var records = [];
+  DATA.projects.forEach(function(p){
+    var pod   = p.pod||'Podless';
+    var area  = p.primary_area||'Other';
+    var depth = p.ai_depth||'None';
+    var themes = projThemeMap[p.id] || [{label:'Unthemed',color:'#475569'}];
+    var w = 1/themes.length;
+    themes.forEach(function(t){
+      records.push({pod:pod, area:area, depth:depth, theme:t.label,
+                    weight:w, podColor:podColor(pod), themeColor:t.color});
+    });
+  });
+
+  // Axis definitions
+  var AXES = ['pod','area','depth','theme'];
+  var AXIS_LABELS = ['Pod','Research Area','AI Depth','Theme'];
+
+  // Compute category totals per axis
+  function axisCategories(key) {
+    var cats = {};
+    records.forEach(function(r){ cats[r[key]]=(cats[r[key]]||0)+r.weight; });
+    return Object.entries(cats).sort(function(a,b){ return b[1]-a[1]; });
+  }
+  var axisCats = AXES.map(axisCategories);
+
+  // Layout: compute y position and height for each category block
+  var totalWeight = records.reduce(function(s,r){return s+r.weight;},0);
+  var unitH = plotH / totalWeight;  // px per project unit
+
+  function layoutAxis(cats) {
+    var layoutMap = {};
+    var y = PAD_T;
+    // Recompute accounting for gaps
+    var usableH = plotH - (cats.length-1)*BLOCK_GAP;
+    var uH = usableH / totalWeight;
+    cats.forEach(function(c){
+      var h = Math.max(2, c[1]*uH);
+      layoutMap[c[0]] = {y:y, h:h, total:c[1], filled:0};
+      y += h + BLOCK_GAP;
+    });
+    return layoutMap;
+  }
+
+  var layouts = axisCats.map(layoutAxis);
+
+  // Axis x positions
+  var usableW = W - PAD_L*2 - AXES.length*AX_W;
+  var axGap = usableW / (AXES.length-1);
+  var axX = AXES.map(function(_,i){ return PAD_L + i*(axGap+AX_W); });
+
+  // Build SVG
+  var svg = d3.select(canvas).append('svg')
+    .attr('width', W).attr('height', H)
+    .style('background','#080e1a').style('border-radius','10px').style('overflow','visible');
+
+  // ── Draw bands between adjacent axis pairs ────────────────────────────
+  for (var ai=0; ai<AXES.length-1; ai++) {
+    var leftKey  = AXES[ai];
+    var rightKey = AXES[ai+1];
+    var leftLay  = layouts[ai];
+    var rightLay = layouts[ai+1];
+    var x1 = axX[ai]+AX_W, x2 = axX[ai+1];
+
+    // Build flow counts: leftCat → rightCat → totalWeight
+    var flows = {};
+    records.forEach(function(r){
+      var lk = r[leftKey], rk = r[rightKey];
+      if (!flows[lk]) flows[lk]={};
+      flows[lk][rk] = (flows[lk][rk]||0) + r.weight;
+    });
+
+    // Right-side fill tracking (separate per leftCat to stack correctly)
+    var rightFillByLeft = {};
+
+    // Sort left categories by y position for consistent band ordering
+    var leftCatsSorted = axisCats[ai].map(function(c){ return c[0]; })
+      .sort(function(a,b){ return leftLay[a].y - leftLay[b].y; });
+
+    leftCatsSorted.forEach(function(lk){
+      if (!flows[lk]) return;
+      var lBlock = leftLay[lk];
+      if (!lBlock) return;
+      var usableH_left = lBlock.h;
+      var lUnit = usableH_left / lBlock.total;
+
+      // Sort right cats by y position
+      var rightCatsSorted = Object.keys(flows[lk])
+        .sort(function(a,b){ return (rightLay[a]?rightLay[a].y:0)-(rightLay[b]?rightLay[b].y:0); });
+
+      rightCatsSorted.forEach(function(rk){
+        var rBlock = rightLay[rk];
+        if (!rBlock) return;
+        var w = flows[lk][rk];
+        var usableH_right = rBlock.h;
+        var rUnit = usableH_right / rBlock.total;
+
+        // right fill offset for this left category
+        if (!rightFillByLeft[rk]) rightFillByLeft[rk] = {};
+        if (!rightFillByLeft[rk][lk]) rightFillByLeft[rk][lk] = 0;
+
+        var bandH_l = w * lUnit;
+        var bandH_r = w * rUnit;
+
+        var ly0 = lBlock.y + lBlock.filled;
+        var ly1 = ly0 + bandH_l;
+        var ry0 = rBlock.y + rightFillByLeft[rk][lk];
+        var ry1 = ry0 + bandH_r;
+
+        // Get pod colour for this band (use source pod when possible)
+        var bandColor = '#818cf8';
+        if (leftKey === 'pod') {
+          bandColor = podColor(lk);
+        } else {
+          // Find dominant pod for this flow cell
+          var podCounts = {};
+          records.forEach(function(r){
+            if (r[leftKey]===lk && r[rightKey]===rk) podCounts[r.pod]=(podCounts[r.pod]||0)+r.weight;
+          });
+          var topPod = Object.entries(podCounts).sort(function(a,b){return b[1]-a[1];})[0];
+          if (topPod) bandColor = podColor(topPod[0]);
+        }
+
+        // Draw band as filled path
+        var cx = (x1+x2)/2;
+        var path = 'M '+x1+' '+ly0
+          + ' C '+cx+' '+ly0+' '+cx+' '+ry0+' '+x2+' '+ry0
+          + ' L '+x2+' '+ry1
+          + ' C '+cx+' '+ry1+' '+cx+' '+ly1+' '+x1+' '+ly1
+          + ' Z';
+
+        svg.append('path').attr('d', path)
+          .attr('fill', bandColor).attr('fill-opacity', BAND_OP)
+          .attr('stroke','none');
+
+        lBlock.filled += bandH_l;
+        rightFillByLeft[rk][lk] += bandH_r;
+        // Accumulate total right fill
+        rBlock.filledTotal = (rBlock.filledTotal||0) + bandH_r;
+      });
+    });
+  }
+
+  // ── Draw axis blocks ──────────────────────────────────────────────────
+  AXES.forEach(function(key, ai){
+    var lay = layouts[ai];
+    var cats = axisCats[ai];
+    var x = axX[ai];
+
+    // Axis label
+    svg.append('text').attr('x', x+AX_W/2).attr('y', PAD_T-18)
+      .attr('text-anchor','middle').attr('font-size',10).attr('font-weight','700')
+      .attr('fill','#94a3b8').attr('letter-spacing',1)
+      .text(AXIS_LABELS[ai].toUpperCase());
+
+    cats.forEach(function(c){
+      var block = lay[c[0]];
+      if (!block) return;
+      var col = key==='pod' ? podColor(c[0]) :
+                key==='depth' ? ({'High':'#f87171','Mid':'#fbbf24','Low':'#a3e635','None':'#475569'}[c[0]]||'#64748b') :
+                key==='area' ? (AREA_COLOR[AREA_NAME_TO_ID[c[0]]]||'#64748b') :
+                '#818cf8'; // themes — single colour, label has colour
+
+      // If theme axis, try to get theme colour
+      if (key==='theme') {
+        var tm = (DATA.research_themes||[]).find(function(t){return t.label===c[0];});
+        if (tm) col = tm.color||'#818cf8';
+      }
+
+      svg.append('rect').attr('x',x).attr('y',block.y).attr('width',AX_W).attr('height',block.h)
+        .attr('fill',col).attr('rx',2);
+
+      // Label on right side of last axis, left side of first, outside for others
+      var labelX = (ai===0) ? x-4 : x+AX_W+4;
+      var anchor = (ai===0) ? 'end' : 'start';
+      if (ai===AXES.length-1) { labelX=x+AX_W+4; anchor='start'; }
+
+      var label = c[0].length > 22 ? c[0].slice(0,20)+'…' : c[0];
+      var countLabel = '('+Math.round(c[1])+')';
+
+      svg.append('text').attr('x',labelX).attr('y',block.y+block.h/2+1)
+        .attr('text-anchor',anchor).attr('dominant-baseline','middle')
+        .attr('font-size',9).attr('fill',col).attr('font-weight','600')
+        .text(label);
+      svg.append('text').attr('x',labelX).attr('y',block.y+block.h/2+1)
+        .attr('text-anchor',anchor).attr('dominant-baseline','middle')
+        .attr('font-size',8).attr('fill','#475569')
+        .attr('dx', (anchor==='end'?-1:1) * (svg.select('text:last-of-type').node() ? label.length*5.2+4 : 60))
+        .text(countLabel);
+    });
+  });
 }
 
 // ── VIEW 8: Network Transformation Map ───────────────────────────────────
