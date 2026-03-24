@@ -177,18 +177,23 @@ html, body { height: 100%; font-family: 'Inter', system-ui, sans-serif;
 
 /* ── Area summaries in Coverage tab ── */
 .area-summary-bar {
-  display: flex; gap: 12px; flex-wrap: wrap; margin-top: 20px;
+  display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px;
 }
 .area-summary-card {
-  flex: 1; min-width: 150px; background: var(--surface);
-  border: 1px solid var(--border); border-radius: 10px; padding: 12px;
+  flex: 1; min-width: 160px; background: var(--surface);
+  border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px;
 }
-.asc-name { font-size: 12px; font-weight: 700; margin-bottom: 4px; }
-.asc-meta { font-size: 11px; color: var(--muted); margin-bottom: 6px; }
-.asc-align { font-size: 22px; font-weight: 800; }
-.asc-phrases { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 8px; }
+.asc-name { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 8px; }
+.asc-count { font-size: 36px; font-weight: 900; line-height: 1; margin-bottom: 2px; }
+.asc-split { font-size: 10px; color: var(--muted); margin-bottom: 8px; display: flex; gap: 6px; flex-wrap: wrap; }
+.asc-split-pill { padding: 2px 7px; border-radius: 99px; font-weight: 600; }
+.asc-proj-list { display: flex; flex-direction: column; gap: 3px; margin-bottom: 8px; }
+.asc-proj-row { font-size: 10px; display: flex; align-items: center; gap: 5px; color: #94a3b8; }
+.asc-proj-badge { font-size: 9px; padding: 1px 5px; border-radius: 3px; font-weight: 700; flex-shrink: 0; }
+.asc-align-row { display: flex; align-items: baseline; gap: 4px; margin-top: 6px; border-top: 1px solid var(--border); padding-top: 6px; }
+.asc-align-num { font-size: 13px; font-weight: 800; }
+.asc-align-label { font-size: 10px; color: var(--muted); }
 .asc-gap { opacity: .5; border-style: dashed; }
-.asc-gap .asc-align { color: var(--neg); }
 
 /* ── Reviewer Intelligence ── */
 #intel-layout { display: flex; gap: 20px; align-items: flex-start; }
@@ -864,16 +869,56 @@ function renderCoverage() {
   var cardHTML = '<div class="area-summary-bar" style="margin-top:24px">';
   ALL_AREAS.forEach(function(area) {
     var aData = areaDataMap[area.id];
-    var phrases = aData ? (aData.top_phrases || []).slice(0,3) : [];
     var isGap = !aData;
-    cardHTML += '<div class="area-summary-card' + (isGap ? ' asc-gap' : '') + '" style="border-color:' + area.color + '40">'
+    if (isGap) {
+      cardHTML += '<div class="area-summary-card asc-gap" style="border-color:' + area.color + '40">'
+        + '<div class="asc-name" style="color:' + area.color + '">' + area.title + '</div>'
+        + '<div class="asc-count" style="color:#334155">0</div>'
+        + '<div class="asc-split" style="color:#475569">Not yet reviewed</div>'
+        + '</div>';
+      return;
+    }
+
+    var projects  = aData.projects || [];
+    var primary   = projects.filter(function(p){ return p.is_primary; });
+    var secondary = projects.filter(function(p){ return !p.is_primary; });
+    var total     = projects.length;
+    var alignSc   = aData.alignment_avg;
+    var alignCol  = alignSc >= 8.5 ? '#4ade80' : (alignSc >= 7 ? '#fbbf24' : '#f87171');
+
+    // Split pills
+    var splitHTML = '';
+    if (primary.length)
+      splitHTML += '<span class="asc-split-pill" style="background:' + area.color + '25;color:' + area.color + '">'
+        + primary.length + ' primary</span>';
+    if (secondary.length)
+      splitHTML += '<span class="asc-split-pill" style="background:#1e2535;color:#64748b">'
+        + secondary.length + ' secondary</span>';
+
+    // Project list (primary first, then secondary, cap at 6)
+    var projRows = '';
+    var shown = primary.concat(secondary).slice(0, 6);
+    shown.forEach(function(p) {
+      var badgeColor = p.is_primary ? area.color : '#475569';
+      var badgeBg    = p.is_primary ? area.color + '22' : '#1e2535';
+      projRows += '<div class="asc-proj-row">'
+        + '<span class="asc-proj-badge" style="background:' + badgeBg + ';color:' + badgeColor + '">'
+        + (p.is_primary ? '1°' : '2°') + '</span>'
+        + '<span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + (p.short || p.id.split(' - ')[0]) + '</span>'
+        + '</div>';
+    });
+    if (projects.length > 6) {
+      projRows += '<div style="font-size:9px;color:#475569;margin-top:1px">+' + (projects.length - 6) + ' more</div>';
+    }
+
+    cardHTML += '<div class="area-summary-card" style="border-color:' + area.color + '40">'
       + '<div class="asc-name" style="color:' + area.color + '">' + area.title + '</div>'
-      + '<div class="asc-meta">' + (aData ? aData.n_projects + ' reviewed project' + (aData.n_projects > 1 ? 's' : '') : '&#9650; Not reviewed') + '</div>'
-      + '<div class="asc-align" style="color:' + area.color + '">' + (aData ? aData.alignment_avg + '<small style="font-size:12px;color:#64748b">/10</small>' : '&mdash;') + '</div>'
-      + '<div class="asc-phrases">'
-      + phrases.map(function(ph) {
-          return '<span style="font-size:10px;padding:2px 7px;border-radius:99px;background:rgba(' + hexToRgb(area.color) + ',.15);color:' + area.color + '">' + ph + '</span>';
-        }).join('')
+      + '<div class="asc-count" style="color:' + area.color + '">' + total + '</div>'
+      + '<div class="asc-split">' + splitHTML + '</div>'
+      + '<div class="asc-proj-list">' + projRows + '</div>'
+      + '<div class="asc-align-row">'
+      + '<span class="asc-align-num" style="color:' + alignCol + '">' + alignSc + '</span>'
+      + '<span class="asc-align-label">/ 10 avg alignment</span>'
       + '</div>'
       + '</div>';
   });
