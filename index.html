@@ -2451,14 +2451,12 @@ function buildForceView(canvas) {
   var W = (canvas.parentElement ? canvas.parentElement.clientWidth : 900) - 48;
   var H = Math.max(560, Math.min(680, window.innerHeight - 200));
   var cx = W / 2, cy = H / 2;
-  var outerR = Math.min(W, H) * 0.42;   // pods orbit radius
-  var midR   = Math.min(W, H) * 0.22;   // projects float zone
+  var outerR = Math.min(W, H) * 0.42;
 
   // ── Build nodes ────────────────────────────────────────────────────────
   var nodes = [];
   var nodeById = {};
 
-  // Pod nodes
   var podSet = {};
   DATA.projects.forEach(function(p){ podSet[p.pod||'Podless'] = true; });
   Object.keys(podSet).forEach(function(pod){
@@ -2466,20 +2464,19 @@ function buildForceView(canvas) {
     nodes.push(nd); nodeById[nd.id] = nd;
   });
 
-  // Theme nodes (skip empty) — dark-fill badge: coloured stroke ring + coloured text inside
+  // Theme nodes — radius is PURELY data-driven now; identity lives in the pill label
   var validThemes = (DATA.research_themes||[]).filter(function(t){ return t.projects && t.projects.length>0; });
   validThemes.forEach(function(t){
-    // Radius must be wide enough for ~11 chars at font-size 9 (≈5px/char → 55px diameter → r≥28)
-    var r = Math.max(28, Math.min(38, 18 + (t.projects||[]).length * 0.6));
-    // Short label: first two meaningful words, max 11 chars
-    var words = t.label.split(' ');
-    var short = words.length > 1 ? words.slice(0,2).join(' ') : t.label;
-    if (short.length > 12) short = short.slice(0, 11) + '\u2026';
-    var nd = {id:'theme|'+t.id, type:'theme', label:t.label, shortLabel:short, color:t.color||'#818cf8', r:r};
+    var r = Math.max(8, Math.min(18, 5 + (t.projects||[]).length * 0.75));
+    // Pill label: full theme name, truncated to 18 chars
+    var pill = t.label.length > 18 ? t.label.slice(0, 17) + '\u2026' : t.label;
+    var nd = {id:'theme|'+t.id, type:'theme', label:t.label, pillLabel:pill,
+              color:t.color||'#818cf8', r:r,
+              _pw: pill.length * 5.5 + 18,  // pill width pre-computed
+              _ph: 18};                       // pill height
     nodes.push(nd); nodeById[nd.id] = nd;
   });
 
-  // Project nodes
   DATA.projects.forEach(function(p){
     var nd = {id:'proj|'+p.id, type:'project', label:p.short||p.code, fullId:p.id,
               color:podColor(p.pod||'Podless'), pod:p.pod||'Podless',
@@ -2495,17 +2492,17 @@ function buildForceView(canvas) {
   });
   validThemes.forEach(function(t){
     (t.projects||[]).forEach(function(pid){
-      var src = 'proj|'+pid;
-      if (nodeById[src]) links.push({source:src, target:'theme|'+t.id, ltype:'theme'});
+      var src = 'proj|'+pid, tgt = 'theme|'+t.id;
+      if (nodeById[src]) links.push({source:src, target:tgt, ltype:'theme',
+                                     themeColor: t.color||'#818cf8'});
     });
   });
 
-  // ── SVG canvas ──────────────────────────────────────────────────────────
+  // ── SVG + zoom ───────────────────────────────────────────────────────────
   var svg = d3.select(canvas).append('svg')
     .attr('width', W).attr('height', H)
     .style('background','#080e1a').style('border-radius','10px');
 
-  // Subtle radial grid rings for spatial cue
   var gridG = svg.append('g');
   [outerR * 0.38, outerR * 0.72, outerR].forEach(function(r){
     gridG.append('circle').attr('cx',cx).attr('cy',cy).attr('r',r)
@@ -2515,70 +2512,75 @@ function buildForceView(canvas) {
 
   var g = svg.append('g');
 
-  svg.call(d3.zoom().scaleExtent([0.25, 4]).on('zoom', function(event){
+  var zoomBeh = d3.zoom().scaleExtent([0.2, 5]).on('zoom', function(event){
     g.attr('transform', event.transform);
-  }));
+  });
+  svg.call(zoomBeh);
 
-  // ── Force simulation — theme-centric layout ──────────────────────────────
-  // Themes converge to centre (forceRadial r=0), pods orbit the outer ring.
-  // Projects float freely, drawn by their pod link (strong) and theme links (gentle).
+  // ── Zoom control buttons (top-right corner) ──────────────────────────────
+  var zBtns = [{sym:'+', fn:function(){ svg.transition().duration(300).call(zoomBeh.scaleBy, 1.45); }},
+               {sym:'\u2212', fn:function(){ svg.transition().duration(300).call(zoomBeh.scaleBy, 1/1.45); }},
+               {sym:'\u25a1', fn:function(){ svg.transition().duration(400).call(zoomBeh.transform, d3.zoomIdentity); }}];
+  var zCtrl = svg.append('g').attr('transform','translate('+(W-42)+',14)');
+  zBtns.forEach(function(b, i){
+    var bg = zCtrl.append('rect').attr('x',0).attr('y',i*26)
+      .attr('width',26).attr('height',22).attr('rx',5)
+      .attr('fill','#141c2e').attr('stroke','#2d3f5a').attr('stroke-width',1)
+      .style('cursor','pointer');
+    zCtrl.append('text').attr('x',13).attr('y',i*26+15)
+      .attr('text-anchor','middle').attr('font-size',13).attr('fill','#7c96b8')
+      .attr('pointer-events','none').text(b.sym);
+    bg.on('click', function(ev){ ev.stopPropagation(); b.fn(); });
+  });
+
+  // ── Force simulation ─────────────────────────────────────────────────────
   var sim = d3.forceSimulation(nodes)
     .force('link', d3.forceLink(links).id(function(d){ return d.id; })
-      .distance(function(l){ return l.ltype==='pod' ? 58 : 80; })
-      .strength(function(l){ return l.ltype==='pod' ? 0.6 : 0.14; }))
+      .distance(function(l){ return l.ltype==='pod' ? 58 : 85; })
+      .strength(function(l){ return l.ltype==='pod' ? 0.6 : 0.13; }))
     .force('charge', d3.forceManyBody().strength(function(d){
-      // Themes get much stronger repulsion so they spread apart and stay readable
-      return d.type==='pod' ? -280 : d.type==='theme' ? -320 : -28;
+      return d.type==='pod' ? -280 : d.type==='theme' ? -260 : -28;
     }))
-    // Pull themes toward centre — gentler strength so repulsion can spread them
     .force('themeGravity', d3.forceRadial(0, cx, cy).strength(function(d){
-      return d.type==='theme' ? 0.55 : 0;
+      return d.type==='theme' ? 0.6 : 0;
     }))
-    // Push pods to outer ring
     .force('podOrbit', d3.forceRadial(outerR, cx, cy).strength(function(d){
       return d.type==='pod' ? 0.55 : 0;
     }))
-    // Gentle overall centering so nothing drifts off-canvas
     .force('center', d3.forceCenter(cx, cy).strength(0.04))
     .force('collide', d3.forceCollide().radius(function(d){ return d.r + 4; }));
 
-  // ── Links ───────────────────────────────────────────────────────────────
+  // ── Links — theme links coloured by TARGET theme colour ───────────────────
+  // This lets you visually trace which projects connect to which themes:
+  // each coloured thread leads back to its same-coloured theme node + pill.
   var linkSel = g.append('g').selectAll('line').data(links).enter().append('line')
     .attr('stroke', function(d){
+      if (d.ltype === 'theme') return d.themeColor;
       var s = typeof d.source==='object' ? d.source : nodeById[d.source];
-      return d.ltype==='pod' ? (s ? s.color : '#334155') : '#4a6080';
+      return s ? s.color : '#334155';
     })
-    .attr('stroke-width', function(d){ return d.ltype==='pod' ? 1.4 : 0.8; })
-    .attr('stroke-opacity', function(d){ return d.ltype==='pod' ? 0.40 : 0.25; });
+    .attr('stroke-width', function(d){ return d.ltype==='pod' ? 1.4 : 0.9; })
+    .attr('stroke-opacity', function(d){ return d.ltype==='pod' ? 0.38 : 0.20; });
 
-  // ── Nodes ───────────────────────────────────────────────────────────────
-  // Themes: dark fill (#0d1525) + coloured stroke ring so text inside is always legible
-  // Pods:   solid colour fill + dark inner border
-  // Projects: translucent fill dot
+  // ── Nodes ────────────────────────────────────────────────────────────────
   var nodeSel = g.append('g').selectAll('circle').data(nodes).enter().append('circle')
     .attr('r', function(d){ return d.r; })
-    .attr('fill', function(d){
-      if (d.type==='theme') return '#0d1525';   // near-black so text colour pops
-      return d.color;
-    })
-    .attr('fill-opacity', function(d){ return d.type==='project' ? 0.65 : 1; })
+    .attr('fill', function(d){ return d.color; })
+    .attr('fill-opacity', function(d){ return d.type==='project' ? 0.65 : d.type==='theme' ? 0.80 : 1; })
     .attr('stroke', function(d){
       if (d.type==='pod')   return '#080e1a';
       if (d.type==='theme') return d.color;
       return 'none';
     })
-    .attr('stroke-width', function(d){
-      return d.type==='pod' ? 2.5 : d.type==='theme' ? 2.5 : 0;
-    })
-    .attr('stroke-opacity', function(d){ return d.type==='theme' ? 0.90 : 1; })
+    .attr('stroke-width', function(d){ return d.type==='pod' ? 2.5 : d.type==='theme' ? 2 : 0; })
+    .attr('stroke-opacity', function(d){ return d.type==='theme' ? 0.50 : 1; })
     .style('cursor','pointer')
     .call(d3.drag()
       .on('start', function(ev,d){ if (!ev.active) sim.alphaTarget(0.3).restart(); d.fx=d.x; d.fy=d.y; })
       .on('drag',  function(ev,d){ d.fx=ev.x; d.fy=ev.y; })
       .on('end',   function(ev,d){ if (!ev.active) sim.alphaTarget(0); d.fx=null; d.fy=null; }));
 
-  // ── Labels ──────────────────────────────────────────────────────────────
-  // Pod labels: below the circle as before
+  // ── Pod labels (below circle) ─────────────────────────────────────────────
   var podLabelSel = g.append('g').selectAll('text')
     .data(nodes.filter(function(d){ return d.type==='pod'; }))
     .enter().append('text')
@@ -2588,25 +2590,46 @@ function buildForceView(canvas) {
     .attr('text-anchor','middle').attr('pointer-events','none')
     .attr('dy', function(d){ return d.r + 12; });
 
-  // Theme labels: short text centred INSIDE the dark circle, coloured to match stroke
-  // font-size 9 + font-weight 700 gives maximum contrast on the #0d1525 background
-  var themeLabelSel = g.append('g').selectAll('text')
-    .data(nodes.filter(function(d){ return d.type==='theme'; }))
-    .enter().append('text')
-    .text(function(d){ return d.shortLabel || d.label; })
+  // ── Theme pill labels ─────────────────────────────────────────────────────
+  // Each theme gets: a rounded-rect pill (dark bg + coloured border) floating
+  // above its circle, connected by a thin hairline.
+  // Pill size fits the text; circle size stays purely data-driven.
+  var themeNodes = nodes.filter(function(d){ return d.type==='theme'; });
+  var pillG = g.append('g');
+  var pills = pillG.selectAll('g.pill').data(themeNodes).enter().append('g').attr('class','pill');
+
+  // Connector hairline: pill bottom → circle top
+  var pillConn = pills.append('line')
+    .attr('stroke', function(d){ return d.color; })
+    .attr('stroke-width', 1).attr('stroke-opacity', 0.50)
+    .attr('pointer-events','none');
+
+  // Pill background rect
+  var pillRect = pills.append('rect')
+    .attr('width', function(d){ return d._pw; })
+    .attr('height', function(d){ return d._ph; })
+    .attr('rx', 5).attr('ry', 5)
+    .attr('fill', '#0d1525')
+    .attr('stroke', function(d){ return d.color; })
+    .attr('stroke-width', 1.5).attr('stroke-opacity', 0.80)
+    .style('cursor','pointer');
+
+  // Pill text
+  var pillText = pills.append('text')
+    .text(function(d){ return d.pillLabel; })
     .attr('font-size', 9).attr('font-weight','700')
     .attr('fill', function(d){ return d.color; })
     .attr('text-anchor','middle').attr('dominant-baseline','central')
-    .attr('letter-spacing', '0.3')
     .attr('pointer-events','none');
 
-  // Combined reference used for opacity updates
-  var labelSel = podLabelSel.merge ? podLabelSel.merge(themeLabelSel) : podLabelSel;
+  // Pills are also clickable (same as clicking the circle)
+  pills.style('cursor','pointer').on('click', function(ev, d){
+    ev.stopPropagation();
+    if (highlighted === d.id) resetHL();
+    else { highlighted = d.id; pulseRing.interrupt(); highlightNode(d); }
+  });
 
-  // ── Highlight ring + pulse (Option C) ───────────────────────────────────
-  // A static glow ring that marks the selected node, plus an animated
-  // expanding pulse that radiates outward — emphasis comes from elevation,
-  // not from punishing background nodes.
+  // ── Glow ring + pulse ────────────────────────────────────────────────────
   var glowRing = g.append('circle')
     .attr('fill','none').attr('stroke','#ffffff')
     .attr('stroke-width', 2.5).attr('stroke-opacity', 0)
@@ -2648,61 +2671,59 @@ function buildForceView(canvas) {
     var nb = getNeighbors(d);
     pulseColor = d.color;
 
-    // Nodes: connected stay vivid, background nodes fade gently to 45% (still readable)
     nodeSel.attr('fill-opacity', function(n){
-      if (n.id === d.id)     return 1;
-      if (nb.has(n.id))      return n.type==='project' ? 0.85 : 0.92;
-      return n.type==='project' ? 0.45 : 0.45;
+      if (n.id === d.id)   return 1;
+      if (nb.has(n.id))    return n.type==='project' ? 0.85 : n.type==='theme' ? 0.88 : 0.92;
+      return n.type==='project' ? 0.45 : n.type==='theme' ? 0.40 : 0.45;
     });
 
-    // Links: active connections get thicker + brighter; rest fade but stay visible
     linkSel
       .attr('stroke-opacity', function(l){
         var s = typeof l.source==='object' ? l.source.id : l.source;
         var t = typeof l.target==='object' ? l.target.id : l.target;
-        return (nb.has(s) && nb.has(t)) ? (l.ltype==='pod' ? 0.85 : 0.60) : 0.10;
+        return (nb.has(s) && nb.has(t)) ? (l.ltype==='pod' ? 0.85 : 0.65) : 0.08;
       })
       .attr('stroke-width', function(l){
         var s = typeof l.source==='object' ? l.source.id : l.source;
         var t = typeof l.target==='object' ? l.target.id : l.target;
         var active = nb.has(s) && nb.has(t);
-        return active ? (l.ltype==='pod' ? 2.5 : 1.5) : (l.ltype==='pod' ? 1.4 : 0.8);
+        return active ? (l.ltype==='pod' ? 2.5 : 1.8) : (l.ltype==='pod' ? 1.4 : 0.9);
       });
 
-    // Labels: connected stay full brightness; background dims but stays legible at 45%
-    podLabelSel.attr('fill-opacity', function(n){ return nb.has(n.id) ? 1 : 0.40; });
-    themeLabelSel.attr('fill-opacity', function(n){ return nb.has(n.id) ? 1 : 0.45; });
+    podLabelSel.attr('fill-opacity', function(n){ return nb.has(n.id) ? 1 : 0.35; });
+    // Pills: connected ones stay full; background ones dim
+    pills.attr('opacity', function(n){ return nb.has(n.id) ? 1 : 0.30; });
+    pillConn.attr('stroke-opacity', function(n){ return nb.has(n.id) ? 0.55 : 0.15; });
 
-    // Glow ring on selected node
     glowRing.attr('stroke', d.color).attr('r', d.r + 7).attr('stroke-opacity', 0.65);
-
     runPulse();
   }
 
   function resetHL() {
     highlighted = null;
-    nodeSel.attr('fill-opacity', function(d){ return d.type==='project' ? 0.65 : 1; });
+    nodeSel.attr('fill-opacity', function(d){
+      return d.type==='project' ? 0.65 : d.type==='theme' ? 0.80 : 1;
+    });
     linkSel
-      .attr('stroke-opacity', function(d){ return d.ltype==='pod' ? 0.40 : 0.25; })
-      .attr('stroke-width',   function(d){ return d.ltype==='pod' ? 1.4 : 0.8; });
+      .attr('stroke-opacity', function(d){ return d.ltype==='pod' ? 0.38 : 0.20; })
+      .attr('stroke-width',   function(d){ return d.ltype==='pod' ? 1.4 : 0.9; });
     podLabelSel.attr('fill-opacity', 1);
-    themeLabelSel.attr('fill-opacity', 1);
+    pills.attr('opacity', 1);
+    pillConn.attr('stroke-opacity', 0.50);
     glowRing.attr('stroke-opacity', 0).attr('r', 0);
     pulseRing.attr('stroke-opacity', 0).attr('r', 0).interrupt();
   }
 
+  // Click handlers on circles
   nodeSel.on('click', function(ev, d){
     ev.stopPropagation();
-    if (highlighted === d.id){ resetHL(); }
-    else {
-      highlighted = d.id;
-      pulseRing.interrupt();  // stop any in-progress transition first
-      highlightNode(d);
-    }
+    if (highlighted === d.id) resetHL();
+    else { highlighted = d.id; pulseRing.interrupt(); highlightNode(d); }
   });
   svg.on('click', function(){ resetHL(); });
 
-  // ── Tooltip ─────────────────────────────────────────────────────────────
+  // ── Tooltip ───────────────────────────────────────────────────────────────
+  var ttTarget = nodeSel.merge ? nodeSel.merge(pills) : nodeSel;
   nodeSel.on('mouseover', function(ev, d){
     var deg = links.filter(function(l){
       var s = typeof l.source==='object' ? l.source.id : l.source;
@@ -2722,26 +2743,46 @@ function buildForceView(canvas) {
   }).on('mousemove', function(ev){ showTT(null, ev.clientX, ev.clientY); })
     .on('mouseout', hideTT);
 
-  // ── Tick ────────────────────────────────────────────────────────────────
+  // Pills also show tooltip (full name, not truncated pillLabel)
+  pillRect.on('mouseover', function(ev, d){
+    showTT('<strong style="color:'+d.color+'">'+d.label+'</strong><br>'+
+      links.filter(function(l){
+        var t = typeof l.target==='object' ? l.target.id : l.target;
+        return t === d.id;
+      }).length+' projects in this theme', ev.clientX, ev.clientY);
+  }).on('mousemove', function(ev){ showTT(null, ev.clientX, ev.clientY); })
+    .on('mouseout', hideTT);
+
+  // ── Tick ──────────────────────────────────────────────────────────────────
   sim.on('tick', function(){
     linkSel.attr('x1',function(d){return d.source.x;}).attr('y1',function(d){return d.source.y;})
            .attr('x2',function(d){return d.target.x;}).attr('y2',function(d){return d.target.y;});
     nodeSel.attr('cx',function(d){return d.x;}).attr('cy',function(d){return d.y;});
     podLabelSel.attr('x',function(d){return d.x;}).attr('y',function(d){return d.y;});
-    // Theme labels sit at the node centre (dominant-baseline:central handles vertical centring)
-    themeLabelSel.attr('x',function(d){return d.x;}).attr('y',function(d){return d.y;});
-    // Keep glow ring pinned to selected node while simulation runs
+
+    // Reposition each pill above its theme node
+    pills.each(function(d){
+      if (d.x == null) return;
+      var px = d.x - d._pw / 2;
+      var py = d.y - d.r - 8 - d._ph;
+      d3.select(this).select('line')
+        .attr('x1', d.x).attr('y1', py + d._ph)
+        .attr('x2', d.x).attr('y2', d.y - d.r);
+      d3.select(this).select('rect').attr('x', px).attr('y', py);
+      d3.select(this).select('text').attr('x', d.x).attr('y', py + d._ph / 2);
+    });
+
     if (highlighted) {
       var hd = nodeById[highlighted];
       if (hd) glowRing.attr('cx', hd.x).attr('cy', hd.y);
     }
   });
 
-  // ── Legend ──────────────────────────────────────────────────────────────
+  // ── Legend ────────────────────────────────────────────────────────────────
   var legG = svg.append('g').attr('transform','translate(14,14)');
   [
-    {label:'Theme (centre)',  r:7,  op:1,    stroke:'#818cf8', sw:1.5},
-    {label:'Pod (orbit)',     r:8,  op:1,    stroke:'#080e1a', sw:2},
+    {label:'Theme (centre)',  r:6,  op:0.80, stroke:'#818cf8', sw:2},
+    {label:'Pod (outer ring)',r:8,  op:1,    stroke:'#080e1a', sw:2.5},
     {label:'Project',         r:3,  op:0.65, stroke:'none',    sw:0}
   ].forEach(function(item, i){
     legG.append('circle').attr('cx',9).attr('cy',i*20+1).attr('r',item.r)
@@ -2751,11 +2792,10 @@ function buildForceView(canvas) {
       .attr('font-size',9).attr('fill','#64748b').text(item.label);
   });
 
-  // Hint text
   svg.append('text')
-    .attr('x', W - 10).attr('y', H - 10)
+    .attr('x', W - 52).attr('y', H - 10)
     .attr('text-anchor','end').attr('font-size',8).attr('fill','#334155')
-    .text('Click node to highlight · scroll to zoom · drag to pan');
+    .text('Click to highlight · +/\u2212 zoom · drag to pan');
 }
 
 // ── Parallel sets / flow ───────────────────────────────────────────────────
