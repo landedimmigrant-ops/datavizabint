@@ -885,11 +885,20 @@ function renderCoverage() {
     }
 
     var projects  = aData.projects || [];
+    var total     = projects.length;
     var primary   = projects.filter(function(p){ return p.is_primary; });
     var secondary = projects.filter(function(p){ return !p.is_primary; });
-    var total     = projects.length;
     var alignSc   = aData.alignment_avg;
     var alignCol  = alignSc >= 8.5 ? '#4ade80' : (alignSc >= 7 ? '#fbbf24' : '#f87171');
+
+    // Build lookup: project id → alignment_avg from full project list
+    var alignLookup = {};
+    DATA.projects.forEach(function(fp) { alignLookup[fp.id] = fp.alignment_avg; });
+
+    // Attach alignment score to each area project entry, then sort high→low
+    var rankedProjects = projects.map(function(p) {
+      return Object.assign({}, p, { alignment_avg: alignLookup[p.id] || 0 });
+    }).sort(function(a, b) { return b.alignment_avg - a.alignment_avg; });
 
     // Split pills
     var splitHTML = '';
@@ -900,16 +909,21 @@ function renderCoverage() {
       splitHTML += '<span class="asc-split-pill" style="background:#1e2535;color:#64748b">'
         + secondary.length + ' secondary</span>';
 
-    // Project list (primary first, then secondary, cap at 6)
+    // Project list: sorted by alignment, cap at 6, show score + 1°/2° badge
     var projRows = '';
-    var shown = primary.concat(secondary).slice(0, 6);
+    var shown = rankedProjects.slice(0, 6);
     shown.forEach(function(p) {
       var badgeColor = p.is_primary ? area.color : '#475569';
       var badgeBg    = p.is_primary ? area.color + '22' : '#1e2535';
-      projRows += '<div class="asc-proj-row">'
+      var sc = p.alignment_avg;
+      var scCol = sc >= 8.5 ? '#4ade80' : (sc >= 7 ? '#fbbf24' : '#f87171');
+      projRows += '<div class="asc-proj-row" style="justify-content:space-between">'
+        + '<div style="display:flex;align-items:center;gap:5px;min-width:0">'
         + '<span class="asc-proj-badge" style="background:' + badgeBg + ';color:' + badgeColor + '">'
         + (p.is_primary ? '1°' : '2°') + '</span>'
         + '<span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + (p.short || p.id.split(' - ')[0]) + '</span>'
+        + '</div>'
+        + '<span style="font-size:10px;font-weight:700;color:' + scCol + ';flex-shrink:0;margin-left:4px">' + sc + '</span>'
         + '</div>';
     });
     if (projects.length > 6) {
