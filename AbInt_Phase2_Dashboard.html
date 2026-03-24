@@ -2614,9 +2614,10 @@ function buildForceView(canvas) {
 
 // ── Parallel sets / flow ───────────────────────────────────────────────────
 function buildFlowView(canvas) {
-  var W = (canvas.parentElement ? canvas.parentElement.clientWidth : 900) - 48;
-  var H = 620;
-  var PAD_L=14, PAD_T=48, PAD_B=30;
+  var W = Math.max(700, (canvas.parentElement ? canvas.parentElement.clientWidth : 960) - 32);
+  var H = Math.max(560, Math.min(700, window.innerHeight - 190));
+  // Generous separate margins so axis labels never clip
+  var PAD_L=152, PAD_R=162, PAD_T=52, PAD_B=28;
   var AX_W=16, BLOCK_GAP=6, BAND_OP=0.38;
   var plotH = H - PAD_T - PAD_B;
 
@@ -2676,15 +2677,17 @@ function buildFlowView(canvas) {
 
   var layouts = axisCats.map(layoutAxis);
 
-  // Axis x positions
-  var usableW = W - PAD_L*2 - AXES.length*AX_W;
-  var axGap = usableW / (AXES.length-1);
-  var axX = AXES.map(function(_,i){ return PAD_L + i*(axGap+AX_W); });
+  // Axis x positions: spread evenly within the inner band area
+  var innerW = W - PAD_L - PAD_R;
+  var axStep = (innerW - AXES.length * AX_W) / (AXES.length - 1);
+  var axX = AXES.map(function(_,i){ return PAD_L + i*(axStep + AX_W); });
 
-  // Build SVG
+  // Build SVG — overflow:visible so labels beyond edges are never clipped
   var svg = d3.select(canvas).append('svg')
-    .attr('width', W).attr('height', H)
-    .style('background','#080e1a').style('border-radius','10px').style('overflow','visible');
+    .attr('viewBox', '0 0 ' + W + ' ' + H)
+    .attr('width', '100%').attr('height', H)
+    .style('background','#080e1a').style('border-radius','10px')
+    .style('overflow','visible').style('display','block');
 
   // ── Draw bands between adjacent axis pairs ────────────────────────────
   for (var ai=0; ai<AXES.length-1; ai++) {
@@ -2779,8 +2782,8 @@ function buildFlowView(canvas) {
     var cats = axisCats[ai];
     var x = axX[ai];
 
-    // Axis label
-    svg.append('text').attr('x', x+AX_W/2).attr('y', PAD_T-18)
+    // Axis column header
+    svg.append('text').attr('x', x + AX_W/2).attr('y', PAD_T - 22)
       .attr('text-anchor','middle').attr('font-size',10).attr('font-weight','700')
       .attr('fill','#94a3b8').attr('letter-spacing',1)
       .text(AXIS_LABELS[ai].toUpperCase());
@@ -2788,37 +2791,39 @@ function buildFlowView(canvas) {
     cats.forEach(function(c){
       var block = lay[c[0]];
       if (!block) return;
-      var col = key==='pod' ? podColor(c[0]) :
-                key==='depth' ? ({'High':'#f87171','Mid':'#fbbf24','Low':'#a3e635','None':'#475569'}[c[0]]||'#64748b') :
-                key==='area' ? (AREA_COLOR[AREA_NAME_TO_ID[c[0]]]||'#64748b') :
-                '#818cf8'; // themes — single colour, label has colour
 
-      // If theme axis, try to get theme colour
+      // Colour per axis type
+      var col = key==='pod'   ? podColor(c[0]) :
+                key==='depth' ? ({'High':'#f87171','Mid':'#fbbf24','Low':'#a3e635','None':'#475569'}[c[0]]||'#64748b') :
+                key==='area'  ? (AREA_COLOR[AREA_NAME_TO_ID[c[0]]]||'#64748b') : '#818cf8';
       if (key==='theme') {
-        var tm = (DATA.research_themes||[]).find(function(t){return t.label===c[0];});
-        if (tm) col = tm.color||'#818cf8';
+        var tm = (DATA.research_themes||[]).find(function(t){ return t.label===c[0]; });
+        if (tm) col = tm.color || '#818cf8';
       }
 
-      svg.append('rect').attr('x',x).attr('y',block.y).attr('width',AX_W).attr('height',block.h)
+      // Block rect
+      svg.append('rect').attr('x',x).attr('y',block.y).attr('width',AX_W).attr('height',Math.max(block.h,2))
         .attr('fill',col).attr('rx',2);
 
-      // Label on right side of last axis, left side of first, outside for others
-      var labelX = (ai===0) ? x-4 : x+AX_W+4;
-      var anchor = (ai===0) ? 'end' : 'start';
-      if (ai===AXES.length-1) { labelX=x+AX_W+4; anchor='start'; }
+      // Label position: left-axis goes LEFT, all others go RIGHT
+      var isFirst = ai === 0;
+      var labelX  = isFirst ? x - 6 : x + AX_W + 6;
+      var anchor  = isFirst ? 'end' : 'start';
 
-      var label = c[0].length > 22 ? c[0].slice(0,20)+'…' : c[0];
-      var countLabel = '('+Math.round(c[1])+')';
+      // Truncation: left and right axes get more chars; middle axes less
+      var maxLen  = (isFirst || ai===AXES.length-1) ? 22 : 14;
+      var name    = c[0].length > maxLen ? c[0].slice(0, maxLen-1) + '\u2026' : c[0];
+      var fullLbl = name + ' \u00b7 ' + Math.round(c[1]);
 
-      svg.append('text').attr('x',labelX).attr('y',block.y+block.h/2+1)
-        .attr('text-anchor',anchor).attr('dominant-baseline','middle')
-        .attr('font-size',9).attr('fill',col).attr('font-weight','600')
-        .text(label);
-      svg.append('text').attr('x',labelX).attr('y',block.y+block.h/2+1)
-        .attr('text-anchor',anchor).attr('dominant-baseline','middle')
-        .attr('font-size',8).attr('fill','#475569')
-        .attr('dx', (anchor==='end'?-1:1) * (svg.select('text:last-of-type').node() ? label.length*5.2+4 : 60))
-        .text(countLabel);
+      var midY = block.y + block.h/2;
+      // Only show label if block is tall enough (avoid overlapping tiny blocks)
+      if (block.h >= 7) {
+        svg.append('text')
+          .attr('x', labelX).attr('y', midY)
+          .attr('text-anchor', anchor).attr('dominant-baseline', 'middle')
+          .attr('font-size', 9).attr('fill', col).attr('font-weight', '600')
+          .text(fullLbl);
+      }
     });
   });
 }
