@@ -425,6 +425,66 @@ function displayName(p) {
   return parts[parts.length - 1];
 }
 
+// ── Radar chart utility ────────────────────────────────────────────────────
+function drawRadar(opts) {
+  var s = opts.size || 160;
+  var cx = s / 2, cy = s / 2;
+  var r = s / 2 - 32;
+  var n = opts.axes.length;
+  var color = opts.color || '#99ee81';
+  var svg = '<svg width="' + s + '" height="' + s + '" style="display:block;margin:0 auto">';
+
+  // Grid rings
+  [0.25, 0.5, 0.75, 1.0].forEach(function(pct) {
+    var pr = r * pct;
+    var pts = [];
+    for (var i = 0; i < n; i++) {
+      var angle = (Math.PI * 2 / n) * i - Math.PI / 2;
+      pts.push((cx + pr * Math.cos(angle)).toFixed(1) + ',' + (cy + pr * Math.sin(angle)).toFixed(1));
+    }
+    svg += '<polygon points="' + pts.join(' ') + '" fill="none" stroke="#3a2060" stroke-width="0.5"/>';
+  });
+
+  // Axis lines
+  for (var i = 0; i < n; i++) {
+    var angle = (Math.PI * 2 / n) * i - Math.PI / 2;
+    var x2 = cx + r * Math.cos(angle);
+    var y2 = cy + r * Math.sin(angle);
+    svg += '<line x1="' + cx + '" y1="' + cy + '" x2="' + x2.toFixed(1) + '" y2="' + y2.toFixed(1) + '" stroke="#3a2060" stroke-width="0.5"/>';
+  }
+
+  // Data polygon
+  var pts = [];
+  for (var i = 0; i < n; i++) {
+    var angle = (Math.PI * 2 / n) * i - Math.PI / 2;
+    var v = Math.max(0, Math.min(1, opts.axes[i].value));
+    pts.push((cx + r * v * Math.cos(angle)).toFixed(1) + ',' + (cy + r * v * Math.sin(angle)).toFixed(1));
+  }
+  svg += '<polygon points="' + pts.join(' ') + '" fill="' + color + '" fill-opacity="0.18" stroke="' + color + '" stroke-width="1.8"/>';
+
+  // Data points
+  for (var i = 0; i < n; i++) {
+    var angle = (Math.PI * 2 / n) * i - Math.PI / 2;
+    var v = Math.max(0, Math.min(1, opts.axes[i].value));
+    var px = cx + r * v * Math.cos(angle);
+    var py = cy + r * v * Math.sin(angle);
+    svg += '<circle cx="' + px.toFixed(1) + '" cy="' + py.toFixed(1) + '" r="3" fill="' + color + '" stroke="#110820" stroke-width="1.2"/>';
+  }
+
+  // Labels
+  for (var i = 0; i < n; i++) {
+    var angle = (Math.PI * 2 / n) * i - Math.PI / 2;
+    var lx = cx + (r + 16) * Math.cos(angle);
+    var ly = cy + (r + 16) * Math.sin(angle);
+    var anchor = lx < cx - 5 ? 'end' : lx > cx + 5 ? 'start' : 'middle';
+    var dy = Math.abs(ly - cy) < 5 ? 4 : (ly < cy ? 0 : 8);
+    svg += '<text x="' + lx.toFixed(1) + '" y="' + (ly + dy).toFixed(1) + '" text-anchor="' + anchor + '" font-size="8" fill="#a898c0" font-family="Inter,system-ui,sans-serif">' + opts.axes[i].label + '</text>';
+  }
+
+  svg += '</svg>';
+  return svg;
+}
+
 // ── Tooltip helpers ───────────────────────────────────────────────────────
 var ttEl = document.getElementById('tooltip');
 function showTT(html, x, y) {
@@ -908,6 +968,59 @@ function renderCoverage() {
   });
   dimHTML += '</tbody></table></div></div>';
 
+  // ── Area vitality radar: compute per-area metrics ──────────────
+  var projLookup = {};
+  DATA.projects.forEach(function(p) { projLookup[p.id] = p; });
+  var tsDimsC = DATA.ts_dimensions || [];
+  var tsScoresC = DATA.ts_project_scores || {};
+  var allPodNames = {};
+  DATA.projects.forEach(function(p) { if (p.pod) allPodNames[p.pod] = 1; });
+  var totalPodsC = Object.keys(allPodNames).length || 1;
+
+  var areaVitality = {};
+  var maxAreaProj = 1;
+  DATA.research_areas.forEach(function(a) {
+    if (!a.projects || !a.projects.length) return;
+    var n = a.projects.length;
+    if (n > maxAreaProj) maxAreaProj = n;
+
+    // Pod diversity
+    var podSet = {};
+    a.projects.forEach(function(ap) {
+      var fp = projLookup[ap.id];
+      if (fp && fp.pod) podSet[fp.pod] = 1;
+    });
+
+    // AI depth mix
+    var depthSet = {};
+    a.projects.forEach(function(ap) {
+      var fp = projLookup[ap.id];
+      if (fp && fp.ai_depth) depthSet[fp.ai_depth] = 1;
+    });
+
+    // TS breadth: avg TS score across all projects in this area
+    var tsSum = 0, tsCount = 0;
+    a.projects.forEach(function(ap) {
+      var scores = tsScoresC[ap.id];
+      if (!scores) return;
+      tsDimsC.forEach(function(d) {
+        if (scores[d.id]) { tsSum += scores[d.id]; tsCount++; }
+      });
+    });
+
+    areaVitality[a.id] = {
+      projects:  n,
+      podDiv:    Object.keys(podSet).length,
+      depthMix:  Object.keys(depthSet).length,
+      align:     a.alignment_avg || 0,
+      tsBreadth: tsCount > 0 ? tsSum / tsCount : 0
+    };
+  });
+  var maxTsB = 0.01;
+  Object.values(areaVitality).forEach(function(v) {
+    if (v.tsBreadth > maxTsB) maxTsB = v.tsBreadth;
+  });
+
   // ── Area summary cards (sorted: most projects first) ───────────
   var cardHTML = '<div class="area-summary-bar" style="margin-top:24px">';
   var sortedAreas = ALL_AREAS.slice().sort(function(a, b) {
@@ -973,6 +1086,26 @@ function renderCoverage() {
       projRows += '<div style="font-size:9px;color:#475569;margin-top:1px">+' + (projects.length - 6) + ' more</div>';
     }
 
+    // Area vitality radar
+    var vit = areaVitality[area.id];
+    var radarHTML = '';
+    if (vit) {
+      radarHTML = '<div style="margin-top:10px;padding-top:8px;border-top:1px solid ' + area.color + '22">'
+        + '<div style="font-size:8px;font-weight:700;color:#a898c0;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;text-align:center">Area Vitality</div>'
+        + drawRadar({
+            size: 170,
+            color: area.color,
+            axes: [
+              { label: 'Projects',    value: vit.projects / maxAreaProj },
+              { label: 'Pod Diversity', value: vit.podDiv / totalPodsC },
+              { label: 'AI Mix',       value: vit.depthMix / 4 },
+              { label: 'Alignment',    value: vit.align / 10 },
+              { label: 'TS Breadth',   value: vit.tsBreadth / maxTsB }
+            ]
+          })
+        + '</div>';
+    }
+
     cardHTML += '<div class="area-summary-card" style="border-color:' + area.color + '40">'
       + '<div class="asc-name" style="color:' + area.color + '">' + area.title + '</div>'
       + '<div class="asc-count" style="color:' + area.color + '">' + total + '</div>'
@@ -982,6 +1115,7 @@ function renderCoverage() {
       + '<span class="asc-align-num" style="color:' + alignCol + '">' + alignSc + '</span>'
       + '<span class="asc-align-label">/ 10 avg alignment</span>'
       + '</div>'
+      + radarHTML
       + '</div>';
   });
   cardHTML += '</div>';
@@ -2272,6 +2406,64 @@ function renderPodProfile() {
     return b.projects.length - a.projects.length;
   });
 
+  // ── Pod DNA radar: compute normalised axes ────────────────────────────
+  var totalAreas = ALL_AREAS.length || 1;
+  var totalDims  = tsDims.length || 1;
+  var totalPods  = pods.length || 1;
+
+  // Pre-compute per-pod raw metrics for normalisation
+  var podDNA = {};
+  pods.forEach(function(pm) {
+    var n = pm.projects.length || 1;
+
+    // 1. AI Depth concentration → fraction at High
+    var aiHigh = (pm.aiDepth['High'] || 0) / n;
+
+    // 2. Theme breadth → number of distinct themes
+    var nThemes = (podThemes[pm.name] || []).length;
+
+    // 3. Avg alignment (0–10 → 0–1)
+    var avgA = pm.alignVals.length
+      ? pm.alignVals.reduce(function(s,v){return s+v;},0) / pm.alignVals.length / 10
+      : 0;
+
+    // 4. Area span → distinct research areas
+    var nAreas = Object.keys(pm.areas).length;
+
+    // 5. TS coverage → dims above 0.20 threshold
+    var podTS = tsPodScores[pm.name] || {};
+    var tsCov = 0;
+    tsDims.forEach(function(d) { if ((podTS[d.id]||0) >= 0.20) tsCov++; });
+
+    // 6. Network connectivity → shared themes with other pods
+    var myThemes = new Set((podThemes[pm.name]||[]).map(function(t){return t.label;}));
+    var sharedPods = 0;
+    pods.forEach(function(other) {
+      if (other.name === pm.name) return;
+      var otherThemes = (podThemes[other.name]||[]).map(function(t){return t.label;});
+      var shared = false;
+      otherThemes.forEach(function(t){ if(myThemes.has(t)) shared = true; });
+      if (shared) sharedPods++;
+    });
+
+    podDNA[pm.name] = {
+      aiDepth: aiHigh,
+      themes:  nThemes,
+      align:   avgA,
+      areas:   nAreas,
+      tsCov:   tsCov,
+      connect: sharedPods
+    };
+  });
+
+  // Find max values for normalisation
+  var maxThemes  = 1, maxAreas = 1, maxConnect = 1;
+  Object.values(podDNA).forEach(function(d) {
+    if (d.themes  > maxThemes)  maxThemes  = d.themes;
+    if (d.areas   > maxAreas)   maxAreas   = d.areas;
+    if (d.connect > maxConnect) maxConnect = d.connect;
+  });
+
   // ── Render ─────────────────────────────────────────────────────────────
   var html = '<div class="pod-grid">';
 
@@ -2293,6 +2485,26 @@ function renderPodProfile() {
       + '<span style="color:' + alignCol + ';font-weight:700">' + avgAlign + ' avg alignment</span>'
       + '</div>'
       + '</div>';
+
+    // ── Pod DNA radar ────────────────────────────────────────────────────
+    var dna = podDNA[pm.name];
+    if (dna) {
+      card += '<div class="pod-section" style="padding:8px 14px;text-align:center">'
+        + '<div class="pod-section-label" style="text-align:left">Strategic Profile</div>'
+        + drawRadar({
+            size: 180,
+            color: pc,
+            axes: [
+              { label: 'AI Depth',      value: dna.aiDepth },
+              { label: 'Themes',        value: dna.themes / maxThemes },
+              { label: 'Alignment',     value: dna.align },
+              { label: 'Area Span',     value: dna.areas / maxAreas },
+              { label: 'TS Coverage',   value: dna.tsCov / totalDims },
+              { label: 'Connectivity',  value: dna.connect / maxConnect }
+            ]
+          })
+        + '</div>';
+    }
 
     // ── AI Depth bar ─────────────────────────────────────────────────────
     card += '<div class="pod-section">'
