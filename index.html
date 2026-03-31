@@ -10,8 +10,8 @@
   --surface: #1c1030;
   --surface2:#261540;
   --border:  #3a2060;
-  --text:    #ede8f5;
-  --muted:   #8b7aac;
+  --text:    #f0ecf8;
+  --muted:   #a898c0;
   --pos:     #4ade80;
   --neg:     #f87171;
   --warn:    #fbbf24;
@@ -310,11 +310,11 @@ html, body { height: 100%; font-family: 'Inter', system-ui, sans-serif;
 /* ── Pod Relations tab ── */
 .pr-header { padding: 18px 24px 0; }
 .pr-view-toggle { display:flex; gap:6px; margin:10px 0 6px; }
-.pr-toggle-btn { padding:5px 16px; border-radius:99px; border:1.5px solid #1c1030; background:transparent; color:#8b7aac; font-size:12px; cursor:pointer; transition:all .15s; }
+.pr-toggle-btn { padding:5px 16px; border-radius:99px; border:1.5px solid #1c1030; background:transparent; color:#a898c0; font-size:12px; cursor:pointer; transition:all .15s; }
 .pr-toggle-btn.active { border-color:#99ee81; background:#99ee8122; color:#99ee81; font-weight:700; }
 .pr-canvas { padding:0 24px 24px; }
 .pr-legend { display:flex; gap:14px; flex-wrap:wrap; padding:8px 24px 0; }
-.pr-legend-item { font-size:10px; display:flex; align-items:center; gap:5px; color:#8b7aac; }
+.pr-legend-item { font-size:10px; display:flex; align-items:center; gap:5px; color:#a898c0; }
 /* ── Scrollbar ── */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: var(--bg); }
@@ -369,7 +369,7 @@ const AREA_NAME_TO_ID = {
 };
 function areaColor(name) {
   var id = AREA_NAME_TO_ID[name] || 'other';
-  return AREA_COLOR[id] || '#8b7aac';
+  return AREA_COLOR[id] || '#a898c0';
 }
 function areaId(name) { return AREA_NAME_TO_ID[name] || 'other'; }
 
@@ -492,17 +492,17 @@ function renderLandscape() {
 
   // ── Colour-by toggle ────────────────────────────────────────────────────
   var ctrl = document.createElement('div');
-  ctrl.style.cssText = 'display:flex;align-items:center;gap:8px;margin-bottom:10px;font-size:12px;color:#8b7aac';
+  ctrl.style.cssText = 'display:flex;align-items:center;gap:8px;margin-bottom:10px;font-size:12px;color:#a898c0';
   ctrl.innerHTML = '<span>Colour by</span>'
-    + '<button id="ls-btn-area"   style="padding:3px 10px;border-radius:6px;border:1px solid #3a2060;background:#261540;color:#ede8f5;cursor:pointer;font-size:11px">Research Area</button>'
-    + '<button id="ls-btn-domain" style="padding:3px 10px;border-radius:6px;border:1px solid #3a2060;background:transparent;color:#8b7aac;cursor:pointer;font-size:11px">AI Domain</button>';
+    + '<button id="ls-btn-area"   style="padding:3px 10px;border-radius:6px;border:1px solid #3a2060;background:#261540;color:#f0ecf8;cursor:pointer;font-size:11px">Research Area</button>'
+    + '<button id="ls-btn-domain" style="padding:3px 10px;border-radius:6px;border:1px solid #3a2060;background:transparent;color:#a898c0;cursor:pointer;font-size:11px">AI Domain</button>';
   el.appendChild(ctrl);
 
   function setActiveBtn(mode) {
     document.getElementById('ls-btn-area').style.background   = mode === 'area'   ? '#261540' : 'transparent';
-    document.getElementById('ls-btn-area').style.color        = mode === 'area'   ? '#ede8f5' : '#8b7aac';
+    document.getElementById('ls-btn-area').style.color        = mode === 'area'   ? '#f0ecf8' : '#a898c0';
     document.getElementById('ls-btn-domain').style.background = mode === 'domain' ? '#261540' : 'transparent';
-    document.getElementById('ls-btn-domain').style.color      = mode === 'domain' ? '#ede8f5' : '#8b7aac';
+    document.getElementById('ls-btn-domain').style.color      = mode === 'domain' ? '#f0ecf8' : '#a898c0';
   }
 
   var svg = d3.select(el).append('svg')
@@ -541,13 +541,13 @@ function renderLandscape() {
     .call(d3.axisBottom(xScale).ticks(5).tickFormat(d3.format('.2f')))
     .call(function(a) {
       a.selectAll('path,line').attr('stroke','#3a2060');
-      a.selectAll('text').attr('fill','#8b7aac').attr('font-size','11');
+      a.selectAll('text').attr('fill','#a898c0').attr('font-size','11');
     });
   g.append('g')
     .call(d3.axisLeft(yScale).ticks(5))
     .call(function(a) {
       a.selectAll('path,line').attr('stroke','#3a2060');
-      a.selectAll('text').attr('fill','#8b7aac').attr('font-size','11');
+      a.selectAll('text').attr('fill','#a898c0').attr('font-size','11');
     });
 
   // Axis labels
@@ -616,7 +616,7 @@ function renderLandscape() {
     var neg0 = d.concerns && d.concerns[0]
       ? '<div style="font-size:11px;color:#f87171">\u25B3 ' + d.concerns[0].text.slice(0,90) + '\u2026</div>'
       : '';
-    var html = '<h4>' + d.short + (d.code ? ' <span style="color:#8b7aac;font-weight:400;font-size:11px">' + d.code + '</span>' : '') + '</h4>'
+    var html = '<h4>' + d.short + (d.code ? ' <span style="color:#a898c0;font-weight:400;font-size:11px">' + d.code + '</span>' : '') + '</h4>'
       + '<div style="font-size:11px;color:#a78bfa;margin-bottom:4px">' + d.title.slice(0,80) + '</div>'
       + '<div class="tt-row"><span class="tt-label">Area</span> <span>' + d.primary_area + '</span></div>'
       + '<div class="tt-row"><span class="tt-label">Status</span> <span>' + d.status + '</span></div>'
@@ -634,7 +634,7 @@ function renderLandscape() {
 
   // — Research Area legend —
   var legArea = legG.append('g').attr('id','leg-area');
-  legArea.append('text').attr('y',-4).attr('fill','#8b7aac').attr('font-size','11').text('Research Area');
+  legArea.append('text').attr('y',-4).attr('fill','#a898c0').attr('font-size','11').text('Research Area');
   var legData = DATA.research_areas.concat(
     ALL_AREAS.filter(function(a) {
       return !DATA.research_areas.find(function(ra) { return ra.id === a.id; });
@@ -645,36 +645,36 @@ function renderLandscape() {
     legArea.append('circle').attr('cx', 7).attr('cy', ly).attr('r', 7)
       .attr('fill', a.color).attr('fill-opacity', a._gap ? 0.2 : 0.75);
     legArea.append('text').attr('x', 18).attr('y', ly + 4)
-      .attr('fill', a._gap ? '#f87171' : '#ede8f5').attr('font-size', '11')
+      .attr('fill', a._gap ? '#f87171' : '#f0ecf8').attr('font-size', '11')
       .text(a.title + (a._gap ? ' (not reviewed)' : ''));
   });
 
   // — AI Domain legend —
   var legDomain = legG.append('g').attr('id','leg-domain').attr('display','none');
-  legDomain.append('text').attr('y',-4).attr('fill','#8b7aac').attr('font-size','11').text('AI Domain');
+  legDomain.append('text').attr('y',-4).attr('fill','#a898c0').attr('font-size','11').text('AI Domain');
   AI_DOMAIN_LIST.forEach(function(d, i) {
     var ly = 12 + i * 22;
     legDomain.append('circle').attr('cx', 7).attr('cy', ly).attr('r', 7)
       .attr('fill', d.color).attr('fill-opacity', d.id === 'unknown' ? 0.25 : 0.75);
     legDomain.append('text').attr('x', 18).attr('y', ly + 4)
-      .attr('fill', d.id === 'unknown' ? '#8b7aac' : '#ede8f5').attr('font-size', '11')
+      .attr('fill', d.id === 'unknown' ? '#a898c0' : '#f0ecf8').attr('font-size', '11')
       .text(d.label);
   });
 
   // — AI Depth size legend (shared) —
   var depthY = 12 + Math.max(legData.length, AI_DOMAIN_LIST.length) * 22 + 14;
-  legG.append('text').attr('y', depthY - 4).attr('fill','#8b7aac').attr('font-size','11').text('AI Depth');
+  legG.append('text').attr('y', depthY - 4).attr('fill','#a898c0').attr('font-size','11').text('AI Depth');
   [['None',9],['Low',12],['Mid',16],['High',20]].forEach(function(pair, i) {
     var lly = depthY + 12 + i * 22;
     legG.append('circle').attr('cx', pair[1]).attr('cy', lly).attr('r', pair[1])
-      .attr('fill','#8b7aac').attr('fill-opacity', .4);
+      .attr('fill','#a898c0').attr('fill-opacity', .4);
     legG.append('text').attr('x', 26).attr('y', lly + 4)
-      .attr('fill','#8b7aac').attr('font-size','11').text(pair[0]);
+      .attr('fill','#a898c0').attr('font-size','11').text(pair[0]);
   });
 
   // — Review depth indicator —
   var revY = depthY + 12 + 4 * 22 + 14;
-  legG.append('text').attr('y', revY - 4).attr('fill','#8b7aac').attr('font-size','11').text('Review Depth');
+  legG.append('text').attr('y', revY - 4).attr('fill','#a898c0').attr('font-size','11').text('Review Depth');
   var revLeg = [
     {label: 'Multi-reviewer', dash: 'none'},
     {label: 'Single reviewer', dash: '3,2'},
@@ -682,10 +682,10 @@ function renderLandscape() {
   revLeg.forEach(function(rl, i) {
     var rly = revY + 12 + i * 22;
     legG.append('circle').attr('cx', 10).attr('cy', rly).attr('r', 9)
-      .attr('fill','none').attr('stroke','#8b7aac').attr('stroke-width',1.5)
+      .attr('fill','none').attr('stroke','#a898c0').attr('stroke-width',1.5)
       .attr('stroke-dasharray', rl.dash);
     legG.append('text').attr('x', 26).attr('y', rly + 4)
-      .attr('fill','#8b7aac').attr('font-size','11').text(rl.label);
+      .attr('fill','#a898c0').attr('font-size','11').text(rl.label);
   });
 
   // ── Toggle button handlers ────────────────────────────────────────────────
@@ -748,7 +748,7 @@ function renderCoverage() {
   var legendHTML = '<div style="display:flex;flex-wrap:wrap;gap:24px;margin-bottom:14px;align-items:flex-start">';
 
   // Coverage circles
-  legendHTML += '<div><div style="font-size:11px;font-weight:700;color:#8b7aac;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">Circle type</div>'
+  legendHTML += '<div><div style="font-size:11px;font-weight:700;color:#a898c0;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">Circle type</div>'
     + '<div style="display:flex;flex-direction:column;gap:6px">'
     + '<span style="display:flex;align-items:center;gap:7px;font-size:12px">'
     + '<svg width="22" height="22"><circle cx="11" cy="11" r="9" fill="#a78bfa" fill-opacity=".7"/><text x="11" y="15" text-anchor="middle" fill="#fff" font-size="9" font-weight="700">9</text></svg>'
@@ -769,19 +769,19 @@ function renderCoverage() {
     if (!seenPods[pod]) { seenPods[pod] = true; usedPods.push(pod); }
   });
 
-  legendHTML += '<div><div style="font-size:11px;font-weight:700;color:#8b7aac;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">Pod (column top strip)</div>'
+  legendHTML += '<div><div style="font-size:11px;font-weight:700;color:#a898c0;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">Pod (column top strip)</div>'
     + '<div style="display:flex;flex-direction:column;gap:5px">';
   usedPods.forEach(function(pod) {
     var count = projects.filter(function(p) { return p.pod === pod; }).length;
     if (!count) return;
     legendHTML += '<span style="display:flex;align-items:center;gap:7px;font-size:12px">'
       + '<span style="display:inline-block;width:28px;height:6px;background:' + podColor(pod) + ';border-radius:3px"></span>'
-      + pod + ' <span style="color:#8b7aac">(' + count + ')</span></span>';
+      + pod + ' <span style="color:#a898c0">(' + count + ')</span></span>';
   });
   legendHTML += '</div></div>';
 
   // Infra sharability legend
-  legendHTML += '<div><div style="font-size:11px;font-weight:700;color:#8b7aac;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">Infrastructure sharability (coloured dot)</div>'
+  legendHTML += '<div><div style="font-size:11px;font-weight:700;color:#a898c0;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">Infrastructure sharability (coloured dot)</div>'
     + '<div style="display:flex;flex-direction:column;gap:5px">';
   ['Public','AbInt Network','Pod','None'].forEach(function(v) {
     var border = v === 'None' ? 'border:1.5px solid #334155;' : '';
@@ -809,12 +809,12 @@ function renderCoverage() {
       + '<span title="' + (p.infra_share || 'None') + '" style="display:inline-block;width:11px;height:11px;border-radius:50%;background:' + ic + ';' + infraBorder + '"></span>'
       + '</div>'
       // Code + first name (not rotated — compact)
-      + '<div style="font-size:10px;font-weight:700;text-align:center;color:#ede8f5;line-height:1.2">' + displayName(p) + '</div>'
+      + '<div style="font-size:10px;font-weight:700;text-align:center;color:#f0ecf8;line-height:1.2">' + displayName(p) + '</div>'
       + '</th>';
   });
 
-  tableHTML += '<th style="width:36px;font-size:11px;color:#8b7aac;padding:4px 6px;text-align:left;vertical-align:bottom">n</th>'
-    + '<th style="width:76px;font-size:11px;color:#8b7aac;padding:4px 6px;text-align:left;vertical-align:bottom">Avg&nbsp;Align</th>'
+  tableHTML += '<th style="width:36px;font-size:11px;color:#a898c0;padding:4px 6px;text-align:left;vertical-align:bottom">n</th>'
+    + '<th style="width:76px;font-size:11px;color:#a898c0;padding:4px 6px;text-align:left;vertical-align:bottom">Avg&nbsp;Align</th>'
     + '</tr></thead><tbody>';
 
   // ── Area rows ──────────────────────────────────────────────────
@@ -855,7 +855,7 @@ function renderCoverage() {
     var aData = areaDataMap[area.id];
     if (aData) {
       var barW = Math.round((aData.alignment_avg / 10) * 60);
-      tableHTML += '<td style="padding:4px 6px;font-size:12px;color:#8b7aac">' + aData.n_projects + '</td>'
+      tableHTML += '<td style="padding:4px 6px;font-size:12px;color:#a898c0">' + aData.n_projects + '</td>'
         + '<td style="padding:4px 6px"><div style="font-size:13px;font-weight:700;color:' + area.color + '">'
         + aData.alignment_avg + '</div>'
         + '<div style="width:' + barW + 'px;height:3px;background:' + area.color + ';border-radius:2px;opacity:.5;margin-top:3px"></div>'
@@ -867,7 +867,7 @@ function renderCoverage() {
   });
 
   // Alignment score footer row
-  tableHTML += '<tr><td class="ct-row-header" style="color:#8b7aac;font-size:11px">Alignment</td>';
+  tableHTML += '<tr><td class="ct-row-header" style="color:#a898c0;font-size:11px">Alignment</td>';
   projects.forEach(function(p) {
     var sc = p.alignment_avg >= 8.5 ? '#4ade80' : (p.alignment_avg >= 7 ? '#fbbf24' : '#f87171');
     tableHTML += '<td style="text-align:center;padding:5px 0">'
@@ -880,17 +880,17 @@ function renderCoverage() {
   // ── TS Dimensions table ────────────────────────────────────────
   var dimHTML = '<div style="margin-top:28px"><h3 style="font-size:13px;font-weight:700;margin-bottom:10px;color:#99ee81">'
     + 'Transformation Statement Coverage</h3>'
-    + '<p style="font-size:11px;color:#8b7aac;margin-bottom:12px">Bar width = how strongly reviewer language maps onto each TS dimension.</p>'
+    + '<p style="font-size:11px;color:#a898c0;margin-bottom:12px">Bar width = how strongly reviewer language maps onto each TS dimension.</p>'
     + '<div style="overflow-x:auto"><table class="coverage-table"><thead><tr>'
     + '<th class="ct-row-header" style="border:none;min-width:160px"></th>';
 
   projects.forEach(function(p) {
-    dimHTML += '<th style="font-size:10px;color:#8b7aac;padding:4px 2px;text-align:center;width:72px">' + displayName(p) + '</th>';
+    dimHTML += '<th style="font-size:10px;color:#a898c0;padding:4px 2px;text-align:center;width:72px">' + displayName(p) + '</th>';
   });
   dimHTML += '</tr></thead><tbody>';
 
   DATA.ts_dimensions.forEach(function(dim) {
-    dimHTML += '<tr><td class="ct-row-header" style="font-size:11px;color:#8b7aac">' + dim.label + '</td>';
+    dimHTML += '<tr><td class="ct-row-header" style="font-size:11px;color:#a898c0">' + dim.label + '</td>';
     projects.forEach(function(p) {
       var score = (DATA.ts_project_scores[p.id] || {})[dim.id] || 0;
       var opacity = Math.max(0.07, score * 2);
@@ -949,7 +949,7 @@ function renderCoverage() {
       splitHTML += '<span class="asc-split-pill" style="background:' + area.color + '25;color:' + area.color + '">'
         + primary.length + ' primary</span>';
     if (secondary.length)
-      splitHTML += '<span class="asc-split-pill" style="background:#1c1030;color:#8b7aac">'
+      splitHTML += '<span class="asc-split-pill" style="background:#1c1030;color:#a898c0">'
         + secondary.length + ' secondary</span>';
 
     // Project list: sorted by alignment, cap at 6, show score + 1°/2° badge
@@ -1005,7 +1005,7 @@ function renderCoverage() {
         .map(function(ph) { return '<span class="ph-chip">' + ph + '</span>'; }).join('');
 
       var html = '<h4 style="line-height:1.35">' + proj.title + '</h4>'
-        + '<div style="font-size:11px;color:#8b7aac;margin-bottom:8px">' + proj.short + ' &middot; ' + proj.code + '</div>'
+        + '<div style="font-size:11px;color:#a898c0;margin-bottom:8px">' + proj.short + ' &middot; ' + proj.code + '</div>'
         + '<div class="tt-row"><span class="tt-label">Pod</span>'
         + '<span style="display:inline-flex;align-items:center;gap:5px">'
         + '<span style="width:10px;height:10px;border-radius:50%;background:' + pc + ';display:inline-block"></span>'
@@ -1058,7 +1058,7 @@ function renderVoice() {
 
   el.innerHTML =
     '<div style="margin-bottom:10px">'
-    + '<h3 style="font-size:13px;font-weight:700;color:#8b7aac;margin-bottom:3px">'
+    + '<h3 style="font-size:13px;font-weight:700;color:#a898c0;margin-bottom:3px">'
     + 'Emergent Voice &mdash; what the network is saying, interpreted for Phase 2 strategy'
     + '</h3>'
     + '<p style="font-size:11px;color:#475569;line-height:1.5">'
@@ -1068,7 +1068,7 @@ function renderVoice() {
     + '<div id="voice-wrap">'
     + '<div id="voice-svg-wrap"></div>'
     + '<div id="voice-detail">'
-    + '<div style="font-size:12px;color:#8b7aac;line-height:1.7;padding-top:8px">'
+    + '<div style="font-size:12px;color:#a898c0;line-height:1.7;padding-top:8px">'
     + 'Select a theme to see the full analytical read, network question, Phase 2 implications, and evidence.'
     + '</div></div></div>'
     + '<div id="voice-actions" style="margin-top:18px"></div>';
@@ -1154,7 +1154,7 @@ function renderVoice() {
     var phraseTags = (d.phrases || []).map(function(ph) {
       return '<span style="display:inline-block;font-size:10px;padding:2px 8px;border-radius:99px;'
         + 'background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);'
-        + 'margin:2px;color:#8b7aac">' + ph + '</span>';
+        + 'margin:2px;color:#a898c0">' + ph + '</span>';
     }).join('');
 
     var revList = (d.reviewers || []).map(function(rv) {
@@ -1163,25 +1163,25 @@ function renderVoice() {
     }).join('');
 
     var sentHTML = (d.sentences || []).slice(0, 4).map(function(s) {
-      var polColor = s.polarity === 'positive' ? '#4ade80' : s.polarity === 'concern' ? '#f87171' : '#8b7aac';
+      var polColor = s.polarity === 'positive' ? '#4ade80' : s.polarity === 'concern' ? '#f87171' : '#a898c0';
       var polIcon  = s.polarity === 'positive' ? '\u25B2' : s.polarity === 'concern' ? '\u25BC' : '\u25CF';
       return '<div style="padding:8px 10px;border-radius:8px;background:rgba(255,255,255,.04);'
         + 'border-left:3px solid ' + d.color + ';margin-bottom:6px;font-size:11px;line-height:1.5;">'
         + '<div style="color:var(--text)">' + s.text + '</div>'
-        + '<div style="font-size:10px;color:#8b7aac;margin-top:4px">'
+        + '<div style="font-size:10px;color:#a898c0;margin-top:4px">'
         + '<span style="color:' + polColor + '">' + polIcon + '</span> '
-        + s.reviewer + ' &middot; <strong style="color:#8b7aac">' + s.code + '</strong>'
+        + s.reviewer + ' &middot; <strong style="color:#a898c0">' + s.code + '</strong>'
         + '</div></div>';
     }).join('');
 
     var emBadge = d.emerging
-      ? '<span style="font-size:10px;padding:2px 8px;border-radius:99px;border:1px dashed #8b7aac;color:#8b7aac;margin-left:6px">auto-detected</span>'
+      ? '<span style="font-size:10px;padding:2px 8px;border-radius:99px;border:1px dashed #a898c0;color:#a898c0;margin-left:6px">auto-detected</span>'
       : '';
 
     // ── Build the rich detail panel ──
     var html = '<div style="border-left:3px solid ' + d.color + ';padding-left:10px;margin-bottom:12px">'
       + '<div style="font-size:15px;font-weight:700;color:' + d.color + '">' + d.label + emBadge + '</div>'
-      + '<div style="font-size:11px;color:#8b7aac;margin-top:3px">'
+      + '<div style="font-size:11px;color:#a898c0;margin-top:3px">'
       + d.n_reviewers + ' reviewers &middot; ' + d.n_projects + ' projects'
       + '</div></div>';
 
@@ -1189,7 +1189,7 @@ function renderVoice() {
     if (d.interpretation) {
       html += '<div style="background:rgba(153,238,129,.06);border-radius:10px;padding:12px 14px;margin-bottom:12px;border:1px solid rgba(153,238,129,.15)">'
         + '<div style="font-size:10px;font-weight:700;color:#99ee81;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Analytical Read</div>'
-        + '<div style="font-size:12px;color:#ede8f5;line-height:1.6">' + d.interpretation + '</div>'
+        + '<div style="font-size:12px;color:#f0ecf8;line-height:1.6">' + d.interpretation + '</div>'
         + '</div>';
     }
 
@@ -1197,7 +1197,7 @@ function renderVoice() {
     if (d.network_question) {
       html += '<div style="background:rgba(251,191,36,.06);border-radius:10px;padding:12px 14px;margin-bottom:12px;border:1px solid rgba(251,191,36,.12)">'
         + '<div style="font-size:10px;font-weight:700;color:#fbbf24;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Strategic Question for Phase 2</div>'
-        + '<div style="font-size:12px;color:#ede8f5;line-height:1.6;font-style:italic">' + d.network_question + '</div>'
+        + '<div style="font-size:12px;color:#f0ecf8;line-height:1.6;font-style:italic">' + d.network_question + '</div>'
         + '</div>';
     }
 
@@ -1205,7 +1205,7 @@ function renderVoice() {
     if (d.phase2) {
       html += '<div style="background:rgba(74,222,128,.06);border-radius:10px;padding:12px 14px;margin-bottom:12px;border:1px solid rgba(74,222,128,.12)">'
         + '<div style="font-size:10px;font-weight:700;color:#4ade80;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Phase 2 Implication</div>'
-        + '<div style="font-size:12px;color:#ede8f5;line-height:1.6">' + d.phase2 + '</div>'
+        + '<div style="font-size:12px;color:#f0ecf8;line-height:1.6">' + d.phase2 + '</div>'
         + '</div>';
     }
 
@@ -1218,16 +1218,16 @@ function renderVoice() {
     }
 
     // ── Reviewers + Phrases ──
-    html += '<div style="font-size:10px;color:#8b7aac;margin-bottom:4px;text-transform:uppercase;letter-spacing:.05em">Reviewers</div>'
+    html += '<div style="font-size:10px;color:#a898c0;margin-bottom:4px;text-transform:uppercase;letter-spacing:.05em">Reviewers</div>'
       + '<div style="margin-bottom:10px">' + revList + '</div>';
     if (phraseTags) {
-      html += '<div style="font-size:10px;color:#8b7aac;margin-bottom:4px;text-transform:uppercase;letter-spacing:.05em">Key Phrases</div>'
+      html += '<div style="font-size:10px;color:#a898c0;margin-bottom:4px;text-transform:uppercase;letter-spacing:.05em">Key Phrases</div>'
         + '<div style="margin-bottom:10px">' + phraseTags + '</div>';
     }
 
     // ── Evidence: reviewer sentences ──
     if (sentHTML) {
-      html += '<div style="font-size:10px;color:#8b7aac;margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em">Evidence from Reviewer Sentences</div>'
+      html += '<div style="font-size:10px;color:#a898c0;margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em">Evidence from Reviewer Sentences</div>'
         + sentHTML;
     }
 
@@ -1249,9 +1249,9 @@ function renderVoice() {
       var polColor = a.polarity === 'positive' ? '#4ade80' : a.polarity === 'concern' ? '#f87171' : '#fbbf24';
       actHTML += '<div style="padding:10px 12px;border-radius:8px;background:rgba(251,191,36,.04);'
         + 'border-left:3px solid #fbbf24;font-size:11px;line-height:1.5">'
-        + '<div style="color:#ede8f5">' + a.text + '</div>'
-        + '<div style="font-size:10px;color:#8b7aac;margin-top:4px">'
-        + a.reviewer + ' &middot; ' + (a.project || '') + (a.code ? ' <strong style="color:#8b7aac">' + a.code + '</strong>' : '')
+        + '<div style="color:#f0ecf8">' + a.text + '</div>'
+        + '<div style="font-size:10px;color:#a898c0;margin-top:4px">'
+        + a.reviewer + ' &middot; ' + (a.project || '') + (a.code ? ' <strong style="color:#a898c0">' + a.code + '</strong>' : '')
         + '</div></div>';
     });
     actHTML += '</div></div>';
@@ -1301,7 +1301,7 @@ function renderCards() {
 
     var singleRev = (p.reviewers || []).length < 2;
     var singleStyle = singleRev ? ';border-style:dashed;border-width:1px;border-color:#3a2060' : '';
-    var singleBadge = singleRev ? '<span style="font-size:9px;color:#8b7aac;background:#261540;padding:1px 6px;border-radius:4px;margin-left:6px">single reviewer</span>' : '';
+    var singleBadge = singleRev ? '<span style="font-size:9px;color:#a898c0;background:#261540;padding:1px 6px;border-radius:4px;margin-left:6px">single reviewer</span>' : '';
 
     html += '<div class="signal-card" style="border-top:3px solid ' + acolor + singleStyle + '">'
       + '<div class="sc-header">'
@@ -1316,7 +1316,7 @@ function renderCards() {
       + '<div class="sc-title" title="' + p.title + '">' + p.title.slice(0, 65) + (p.title.length > 65 ? '\u2026' : '') + '</div>'
       + '<div class="sc-meta">' + areaChip + statusChip + aiChip + ikChip + '</div>'
       + (phrases ? '<div class="sc-phrases">' + phrases + '</div>' : '')
-      + '<div style="font-size:10px;color:#8b7aac;margin-bottom:6px">Reviewed by: ' + reviewers + '</div>'
+      + '<div style="font-size:10px;color:#a898c0;margin-bottom:6px">Reviewed by: ' + reviewers + '</div>'
       + pos0 + neg0
       + '</div>';
   });
@@ -1349,7 +1349,7 @@ function renderIntelligence() {
     'Language': '#facc15', 'Storytelling': '#a78bfa',
     'Environmental Stewardship': '#4ade80', 'Env Stewardship': '#4ade80',
     'Socio-Neuro AI': '#f97316', 'Multi-Agent Systems': '#60a5fa',
-    'Other': '#8b7aac'
+    'Other': '#a898c0'
   };
 
   var TYPE_COLOR = {recommendation:'#f59e0b', question:'#22d3ee', action:'#4ade80', observation:'#a78bfa'};
@@ -1401,7 +1401,7 @@ function renderIntelligence() {
 
     // ── Stacked bar: sentence type distribution ──
     var barY = 14, barH = 22, barX = 140, barW = 280;
-    svg += '<text x="8" y="' + (barY+15) + '" fill="#8b7aac" font-size="10" font-weight="700">REVIEW STYLE</text>';
+    svg += '<text x="8" y="' + (barY+15) + '" fill="#a898c0" font-size="10" font-weight="700">REVIEW STYLE</text>';
     var bx = barX;
     TYPE_KEYS.forEach(function(t) {
       var w = st.total > 0 ? (st.typeCounts[t] / st.total) * barW : 0;
@@ -1418,20 +1418,20 @@ function renderIntelligence() {
     TYPE_KEYS.forEach(function(t, i) {
       var ly = barY + i * 14;
       svg += '<circle cx="' + (legX+5) + '" cy="' + (ly+5) + '" r="4" fill="' + TYPE_COLOR[t] + '" fill-opacity=".75"/>';
-      svg += '<text x="' + (legX+14) + '" y="' + (ly+9) + '" fill="#8b7aac" font-size="9">' + TYPE_LABEL[t] + '</text>';
+      svg += '<text x="' + (legX+14) + '" y="' + (ly+9) + '" fill="#a898c0" font-size="9">' + TYPE_LABEL[t] + '</text>';
     });
 
     // ── Alignment dot vs global average ──
     var dotY = 62, dotBarX = barX, dotBarW = barW;
-    svg += '<text x="8" y="' + (dotY+12) + '" fill="#8b7aac" font-size="10" font-weight="700">ALIGNMENT</text>';
+    svg += '<text x="8" y="' + (dotY+12) + '" fill="#a898c0" font-size="10" font-weight="700">ALIGNMENT</text>';
     var alignMin = 4, alignMax = 10;
     var scaleX = function(v) { return dotBarX + ((v - alignMin) / (alignMax - alignMin)) * dotBarW; };
     // track line
     svg += '<line x1="' + dotBarX + '" x2="' + (dotBarX+dotBarW) + '" y1="' + (dotY+8) + '" y2="' + (dotY+8) + '" stroke="#3a2060" stroke-width="2"/>';
     // global avg marker
     var gx = scaleX(globalAvg);
-    svg += '<line x1="' + gx + '" x2="' + gx + '" y1="' + (dotY) + '" y2="' + (dotY+16) + '" stroke="#8b7aac" stroke-width="1.5" stroke-dasharray="3,2"/>';
-    svg += '<text x="' + gx + '" y="' + (dotY+28) + '" text-anchor="middle" fill="#8b7aac" font-size="9">avg ' + globalAvg.toFixed(1) + '</text>';
+    svg += '<line x1="' + gx + '" x2="' + gx + '" y1="' + (dotY) + '" y2="' + (dotY+16) + '" stroke="#a898c0" stroke-width="1.5" stroke-dasharray="3,2"/>';
+    svg += '<text x="' + gx + '" y="' + (dotY+28) + '" text-anchor="middle" fill="#a898c0" font-size="9">avg ' + globalAvg.toFixed(1) + '</text>';
     // reviewer dot
     var rx = scaleX(st.avgAlign);
     var dotCol = st.avgAlign >= globalAvg ? '#4ade80' : '#fbbf24';
@@ -1443,11 +1443,11 @@ function renderIntelligence() {
 
     // ── Polarity lean: pos / neutral / concern ──
     var polY = 100, polBarW = barW;
-    svg += '<text x="8" y="' + (polY+12) + '" fill="#8b7aac" font-size="10" font-weight="700">POLARITY LEAN</text>';
+    svg += '<text x="8" y="' + (polY+12) + '" fill="#a898c0" font-size="10" font-weight="700">POLARITY LEAN</text>';
     var px = barX;
     var polData = [
       {label:'Positive', count:st.posCount, color:'#4ade80'},
-      {label:'Neutral',  count:st.neutralCount, color:'#8b7aac'},
+      {label:'Neutral',  count:st.neutralCount, color:'#a898c0'},
       {label:'Concern',  count:st.negCount, color:'#f87171'},
     ];
     polData.forEach(function(pd) {
@@ -1464,7 +1464,7 @@ function renderIntelligence() {
     polData.forEach(function(pd, i) {
       var ly = polY + i * 14;
       svg += '<circle cx="' + (legX+5) + '" cy="' + (ly+5) + '" r="4" fill="' + pd.color + '" fill-opacity=".6"/>';
-      svg += '<text x="' + (legX+14) + '" y="' + (ly+9) + '" fill="#8b7aac" font-size="9">' + pd.label + '</text>';
+      svg += '<text x="' + (legX+14) + '" y="' + (ly+9) + '" fill="#a898c0" font-size="9">' + pd.label + '</text>';
     });
 
     // ── Summary stats ──
@@ -1483,14 +1483,14 @@ function renderIntelligence() {
     var svg = '<svg width="' + cW + '" height="' + cH + '" style="display:block;margin-bottom:12px">';
 
     // Headers
-    svg += '<text x="' + barX + '" y="16" fill="#8b7aac" font-size="10" font-weight="700">SENTENCE TYPE MIX</text>';
-    svg += '<text x="' + dotX + '" y="16" fill="#8b7aac" font-size="10" font-weight="700">ALIGNMENT TENDENCY</text>';
+    svg += '<text x="' + barX + '" y="16" fill="#a898c0" font-size="10" font-weight="700">SENTENCE TYPE MIX</text>';
+    svg += '<text x="' + dotX + '" y="16" fill="#a898c0" font-size="10" font-weight="700">ALIGNMENT TENDENCY</text>';
 
     reviewerNames.forEach(function(rev, i) {
       var st = revStats[rev];
       var ry = headH + i * rowH + 12;
       // Reviewer name
-      svg += '<text x="8" y="' + (ry+14) + '" fill="#ede8f5" font-size="12" font-weight="600">' + rev + '</text>';
+      svg += '<text x="8" y="' + (ry+14) + '" fill="#f0ecf8" font-size="12" font-weight="600">' + rev + '</text>';
       svg += '<text x="8" y="' + (ry+26) + '" fill="#475569" font-size="9">' + st.nProjects + ' projects · ' + st.total + ' sents</text>';
 
       // Stacked bar
@@ -1525,7 +1525,7 @@ function renderIntelligence() {
     var lx = barX;
     TYPE_KEYS.forEach(function(t) {
       svg += '<circle cx="' + (lx+4) + '" cy="' + (ly+4) + '" r="4" fill="' + TYPE_COLOR[t] + '" fill-opacity=".7"/>';
-      svg += '<text x="' + (lx+12) + '" y="' + (ly+8) + '" fill="#8b7aac" font-size="9">' + TYPE_LABEL[t] + '</text>';
+      svg += '<text x="' + (lx+12) + '" y="' + (ly+8) + '" fill="#a898c0" font-size="9">' + TYPE_LABEL[t] + '</text>';
       lx += 82;
     });
     svg += '<text x="' + dotX + '" y="' + (ly+8) + '" fill="#475569" font-size="9">Dashed line = global avg (' + globalAvg.toFixed(1) + ')</text>';
@@ -1547,16 +1547,16 @@ function renderIntelligence() {
 
   // ── Build a sentence card ──
   function makeCard(s) {
-    var aColor = AREA_COL[s.area] || '#8b7aac';
+    var aColor = AREA_COL[s.area] || '#a898c0';
     var polIcon = s.polarity === 'positive' ? '\u25B2' : s.polarity === 'concern' ? '\u25BC' : '\u25CF';
-    var polColor = s.polarity === 'positive' ? '#4ade80' : s.polarity === 'concern' ? '#f87171' : '#8b7aac';
+    var polColor = s.polarity === 'positive' ? '#4ade80' : s.polarity === 'concern' ? '#f87171' : '#a898c0';
     return '<div class="intel-card ' + s.type + '" data-reviewer="' + s.reviewer + '" data-project="' + (s.project||'') + '" data-type="' + s.type + '" data-polarity="' + (s.polarity||'neutral') + '">'
       + '<div class="intel-card-text">' + s.text + '</div>'
       + '<div class="intel-card-meta">'
       + '<span class="intel-area-dot" style="background:' + aColor + '"></span>'
       + '<span class="intel-code">' + s.code + '</span>'
-      + '<span style="color:#8b7aac">' + s.reviewer + '</span>'
-      + '<span class="intel-card-type-chip" style="background:' + (TYPE_COLOR[s.type]||'#8b7aac') + ';color:#2A1040;padding:1px 6px;border-radius:4px;font-size:9px;font-weight:600;margin-left:6px">' + s.type + '</span>'
+      + '<span style="color:#a898c0">' + s.reviewer + '</span>'
+      + '<span class="intel-card-type-chip" style="background:' + (TYPE_COLOR[s.type]||'#a898c0') + ';color:#2A1040;padding:1px 6px;border-radius:4px;font-size:9px;font-weight:600;margin-left:6px">' + s.type + '</span>'
       + '<span style="color:' + polColor + ';margin-left:auto">' + polIcon + ' ' + s.polarity + '</span>'
       + '</div></div>';
   }
@@ -1599,8 +1599,8 @@ function renderIntelligence() {
   // ── Reviewer dropdown + Group-by toggle ──
   var controlHTML = '<div style="display:flex;align-items:center;gap:16px;margin-bottom:12px;flex-wrap:wrap">'
     + '<div style="display:flex;align-items:center;gap:8px">'
-    + '<label style="font-size:11px;color:#8b7aac;font-weight:700;text-transform:uppercase;letter-spacing:.5px">Reviewer</label>'
-    + '<select id="intel-rev-select" style="background:#1c1030;color:#ede8f5;border:1px solid #3a2060;border-radius:8px;padding:5px 10px;font-size:12px;cursor:pointer">'
+    + '<label style="font-size:11px;color:#a898c0;font-weight:700;text-transform:uppercase;letter-spacing:.5px">Reviewer</label>'
+    + '<select id="intel-rev-select" style="background:#1c1030;color:#f0ecf8;border:1px solid #3a2060;border-radius:8px;padding:5px 10px;font-size:12px;cursor:pointer">'
     + '<option value="all">All Reviewers</option>';
   reviewerNames.forEach(function(r) {
     var st = revStats[r];
@@ -1608,9 +1608,9 @@ function renderIntelligence() {
   });
   controlHTML += '</select></div>'
     + '<div style="display:flex;align-items:center;gap:8px">'
-    + '<label style="font-size:11px;color:#8b7aac;font-weight:700;text-transform:uppercase;letter-spacing:.5px">Group by</label>'
-    + '<button id="intel-grp-type" class="intel-filter-btn" style="padding:3px 10px;font-size:11px;background:#261540;color:#ede8f5;border:1px solid #3a2060;border-radius:6px;cursor:pointer">Type</button>'
-    + '<button id="intel-grp-proj" class="intel-filter-btn" style="padding:3px 10px;font-size:11px;background:transparent;color:#8b7aac;border:1px solid #3a2060;border-radius:6px;cursor:pointer">Project</button>'
+    + '<label style="font-size:11px;color:#a898c0;font-weight:700;text-transform:uppercase;letter-spacing:.5px">Group by</label>'
+    + '<button id="intel-grp-type" class="intel-filter-btn" style="padding:3px 10px;font-size:11px;background:#261540;color:#f0ecf8;border:1px solid #3a2060;border-radius:6px;cursor:pointer">Type</button>'
+    + '<button id="intel-grp-proj" class="intel-filter-btn" style="padding:3px 10px;font-size:11px;background:transparent;color:#a898c0;border:1px solid #3a2060;border-radius:6px;cursor:pointer">Project</button>'
     + '</div>'
     + '</div>';
 
@@ -1634,7 +1634,7 @@ function renderIntelligence() {
         + '<div class="intel-bucket-header">'
         + '<span class="intel-bucket-icon">' + b.icon + '</span>'
         + '<div><div class="intel-bucket-title">' + b.label + '</div>'
-        + '<div style="font-size:11px;color:#8b7aac;margin-top:2px">' + b.desc + '</div></div>'
+        + '<div style="font-size:11px;color:#a898c0;margin-top:2px">' + b.desc + '</div></div>'
         + '<span class="intel-bucket-count">' + items.length + ' signals</span>'
         + '</div>'
         + '<div class="intel-cards">' + cards + '</div>'
@@ -1665,15 +1665,15 @@ function renderIntelligence() {
       var items = projGroups[projKey];
       var pObj = DATA.projects.find(function(p) { return p.short === projKey || p.id.indexOf(projKey) > -1; });
       var dName = projDisplayName(projKey);
-      var aColor = pObj ? areaColor(pObj.primary_area) : '#8b7aac';
+      var aColor = pObj ? areaColor(pObj.primary_area) : '#a898c0';
       var code = pObj ? pObj.code : '';
       var alignStr = pObj ? ' · Align: ' + pObj.alignment_avg.toFixed(1) : '';
       var cards = items.map(makeCard).join('');
       return '<div class="intel-bucket" data-bucket="project" data-project-group="' + projKey + '">'
         + '<div class="intel-bucket-header">'
         + '<span style="width:6px;height:28px;border-radius:3px;background:' + aColor + ';flex-shrink:0"></span>'
-        + '<div><div class="intel-bucket-title">' + dName + (code ? ' <span style="font-weight:400;color:#8b7aac;font-size:11px">' + code + '</span>' : '') + '</div>'
-        + '<div style="font-size:11px;color:#8b7aac;margin-top:2px">'
+        + '<div><div class="intel-bucket-title">' + dName + (code ? ' <span style="font-weight:400;color:#a898c0;font-size:11px">' + code + '</span>' : '') + '</div>'
+        + '<div style="font-size:11px;color:#a898c0;margin-top:2px">'
         + items.length + ' sentences' + alignStr
         + '</div></div>'
         + '</div>'
@@ -1684,7 +1684,7 @@ function renderIntelligence() {
 
   el.innerHTML =
     '<div style="margin-bottom:16px">'
-    + '<h3 style="font-size:13px;font-weight:700;color:#8b7aac;margin-bottom:4px">'
+    + '<h3 style="font-size:13px;font-weight:700;color:#a898c0;margin-bottom:4px">'
     + 'Reviewer Intelligence &mdash; what the reviewers are actually saying, in their own words.'
     + '</h3>'
     + '<p style="font-size:11px;color:#475569;line-height:1.5">'
@@ -1712,9 +1712,9 @@ function renderIntelligence() {
   // ── Wire up group-by toggle ──
   function setGroupBtn(mode) {
     document.getElementById('intel-grp-type').style.background = mode === 'type' ? '#261540' : 'transparent';
-    document.getElementById('intel-grp-type').style.color      = mode === 'type' ? '#ede8f5' : '#8b7aac';
+    document.getElementById('intel-grp-type').style.color      = mode === 'type' ? '#f0ecf8' : '#a898c0';
     document.getElementById('intel-grp-proj').style.background = mode === 'project' ? '#261540' : 'transparent';
-    document.getElementById('intel-grp-proj').style.color      = mode === 'project' ? '#ede8f5' : '#8b7aac';
+    document.getElementById('intel-grp-proj').style.color      = mode === 'project' ? '#f0ecf8' : '#a898c0';
     // In project mode, hide the type filter bar (grouping replaces it), or keep it for sub-filtering
     var filterBar = document.getElementById('intel-filter-bar');
     if (mode === 'project') {
@@ -1942,7 +1942,7 @@ function renderAIDomain() {
       svg.append('text')
         .attr('x', nd.x).attr('y', nd.y + nd.r + 11)
         .attr('text-anchor', 'middle').attr('font-size', 9)
-        .attr('fill', '#8b7aac').attr('pointer-events', 'none')
+        .attr('fill', '#a898c0').attr('pointer-events', 'none')
         .text(displayName(nd.p));
     }
   });
@@ -1950,18 +1950,18 @@ function renderAIDomain() {
   // ── Legend row: AI Depth ──────────────────────────────────────────────────
   var legendY = H - 32;
   svg.append('text').attr('x', 16).attr('y', legendY - 4)
-    .attr('fill','#8b7aac').attr('font-size', 10).attr('font-weight', 700)
+    .attr('fill','#a898c0').attr('font-size', 10).attr('font-weight', 700)
     .attr('text-transform','uppercase').text('AI Depth →');
   var lx = 90;
   DEPTH_ORDER.forEach(function(dep) {
     svg.append('circle').attr('cx', lx).attr('cy', legendY - 5).attr('r', 7)
       .attr('fill', DEPTH_COLOR[dep]).attr('fill-opacity', 0.78);
     svg.append('text').attr('x', lx + 11).attr('y', legendY - 1)
-      .attr('fill','#8b7aac').attr('font-size', 11).text(dep);
+      .attr('fill','#a898c0').attr('font-size', 11).text(dep);
     lx += 72;
   });
   svg.append('text').attr('x', lx + 12).attr('y', legendY - 1)
-    .attr('fill','#8b7aac').attr('font-size', 10)
+    .attr('fill','#a898c0').attr('font-size', 10)
     .text('  Bubble size = reviewer alignment score');
 }
 
@@ -2027,7 +2027,7 @@ function buildOverview() {
       + 'padding:5px 14px;border-radius:6px;border:1.5px solid '
       + (active ? '#99ee81' : '#1c1030') + ';background:'
       + (active ? '#99ee8122' : 'transparent') + ';color:'
-      + (active ? '#99ee81' : '#8b7aac') + ';font-size:12px;font-weight:' + (active ? '700' : '500') + ';cursor:pointer;margin-right:6px">'
+      + (active ? '#99ee81' : '#a898c0') + ';font-size:12px;font-weight:' + (active ? '700' : '500') + ';cursor:pointer;margin-right:6px">'
       + label + '</button>';
   }
 
@@ -2037,16 +2037,16 @@ function buildOverview() {
       + 'padding:4px 11px;border-radius:6px;border:1.5px solid '
       + (active ? '#fbbf24' : '#1c1030') + ';background:'
       + (active ? '#fbbf2422' : 'transparent') + ';color:'
-      + (active ? '#fbbf24' : '#8b7aac') + ';font-size:11px;cursor:pointer;margin-right:4px">'
+      + (active ? '#fbbf24' : '#a898c0') + ';font-size:11px;cursor:pointer;margin-right:4px">'
       + label + '</button>';
   }
 
   var controlsHTML = '<div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-bottom:18px">'
-    + '<div style="font-size:11px;font-weight:700;color:#8b7aac;text-transform:uppercase;letter-spacing:.06em;margin-right:4px">Reviewer</div>'
+    + '<div style="font-size:11px;font-weight:700;color:#a898c0;text-transform:uppercase;letter-spacing:.06em;margin-right:4px">Reviewer</div>'
     + revBtn('all', 'All')
     + allReviewers.map(function(r) { return revBtn(r, r); }).join('')
     + '<div style="flex:1"></div>'
-    + '<div style="font-size:11px;font-weight:700;color:#8b7aac;text-transform:uppercase;letter-spacing:.06em;margin-right:4px">Sort by</div>'
+    + '<div style="font-size:11px;font-weight:700;color:#a898c0;text-transform:uppercase;letter-spacing:.06em;margin-right:4px">Sort by</div>'
     + sortBtn('alignment', 'Alignment ↓')
     + sortBtn('pod', 'Pod')
     + sortBtn('area', 'Research Area')
@@ -2060,7 +2060,7 @@ function buildOverview() {
 
   // Row 1: pod colour strip + project name
   tableHTML += '<tr><th class="ct-row-header" style="border:none;min-width:170px;vertical-align:bottom;padding-bottom:8px">'
-    + '<span style="font-size:10px;color:#8b7aac;text-transform:uppercase;letter-spacing:.06em">Project</span></th>';
+    + '<span style="font-size:10px;color:#a898c0;text-transform:uppercase;letter-spacing:.06em">Project</span></th>';
 
   projects.forEach(function(p) {
     var pc   = podColor(p.pod || 'Podless');
@@ -2078,11 +2078,11 @@ function buildOverview() {
       + '</div>'
       + '</th>';
   });
-  tableHTML += '<th style="width:44px;font-size:10px;color:#8b7aac;padding:4px 6px;text-align:center;vertical-align:bottom">Align</th>'
+  tableHTML += '<th style="width:44px;font-size:10px;color:#a898c0;padding:4px 6px;text-align:center;vertical-align:bottom">Align</th>'
     + '</tr></thead><tbody>';
 
   // Row: Research Area
-  tableHTML += '<tr><td class="ct-row-header" style="font-size:11px;color:#8b7aac">Research Area</td>';
+  tableHTML += '<tr><td class="ct-row-header" style="font-size:11px;color:#a898c0">Research Area</td>';
   projects.forEach(function(p) {
     var area = AREA_NAME_TO_ID[p.primary_area] || 'other';
     var ac   = AREA_COLOR[area] || '#475569';
@@ -2094,7 +2094,7 @@ function buildOverview() {
   tableHTML += '<td></td></tr>';
 
   // Row: Pod
-  tableHTML += '<tr><td class="ct-row-header" style="font-size:11px;color:#8b7aac">Pod</td>';
+  tableHTML += '<tr><td class="ct-row-header" style="font-size:11px;color:#a898c0">Pod</td>';
   projects.forEach(function(p) {
     var pc = podColor(p.pod || 'Podless');
     tableHTML += '<td style="text-align:center;padding:5px 2px">'
@@ -2105,7 +2105,7 @@ function buildOverview() {
   tableHTML += '<td></td></tr>';
 
   // Row: AI Depth
-  tableHTML += '<tr><td class="ct-row-header" style="font-size:11px;color:#8b7aac">AI Depth</td>';
+  tableHTML += '<tr><td class="ct-row-header" style="font-size:11px;color:#a898c0">AI Depth</td>';
   projects.forEach(function(p) {
     var depCol = {'High':'#f87171','Mid':'#fb923c','Low':'#fbbf24','None':'#475569'}[p.ai_depth] || '#475569';
     tableHTML += '<td style="text-align:center;padding:5px 2px">'
@@ -2116,7 +2116,7 @@ function buildOverview() {
   tableHTML += '<td></td></tr>';
 
   // Row: Status
-  tableHTML += '<tr><td class="ct-row-header" style="font-size:11px;color:#8b7aac">Status</td>';
+  tableHTML += '<tr><td class="ct-row-header" style="font-size:11px;color:#a898c0">Status</td>';
   projects.forEach(function(p) {
     var stCol = {'Completed':'#4ade80','Mid-Point':'#38bdf8','Beginning':'#99ee81'}[p.status] || '#475569';
     tableHTML += '<td style="text-align:center;padding:5px 2px">'
@@ -2137,7 +2137,7 @@ function buildOverview() {
 
   // TS dimension rows
   dims.forEach(function(dim) {
-    tableHTML += '<tr><td class="ct-row-header" style="font-size:11px;color:#8b7aac">' + dim.label + '</td>';
+    tableHTML += '<tr><td class="ct-row-header" style="font-size:11px;color:#a898c0">' + dim.label + '</td>';
     projects.forEach(function(p) {
       var score = (DATA.ts_project_scores[p.id] || {})[dim.id] || 0;
       var opacity = Math.max(0.08, score * 2);
@@ -2158,7 +2158,7 @@ function buildOverview() {
   tableHTML += '<tr><td colspan="' + (projects.length + 2) + '" style="height:6px;background:#0d1117"></td></tr>';
 
   // Alignment footer row
-  tableHTML += '<tr><td class="ct-row-header" style="font-size:11px;color:#8b7aac;font-weight:700">Alignment Score</td>';
+  tableHTML += '<tr><td class="ct-row-header" style="font-size:11px;color:#a898c0;font-weight:700">Alignment Score</td>';
   projects.forEach(function(p) {
     var sc = p.alignment_avg >= 8.5 ? '#4ade80' : (p.alignment_avg >= 7 ? '#fbbf24' : '#f87171');
     tableHTML += '<td style="text-align:center;padding:6px 0">'
@@ -2167,7 +2167,7 @@ function buildOverview() {
   tableHTML += '<td></td></tr>';
 
   // Reviewer count row
-  tableHTML += '<tr><td class="ct-row-header" style="font-size:11px;color:#8b7aac">Reviewers</td>';
+  tableHTML += '<tr><td class="ct-row-header" style="font-size:11px;color:#a898c0">Reviewers</td>';
   projects.forEach(function(p) {
     var revs = p.reviewers || [];
     var chips = revs.map(function(r) {
@@ -2181,28 +2181,28 @@ function buildOverview() {
 
   // ── Legend ───────────────────────────────────────────────────────
   var legendHTML = '<div style="display:flex;flex-wrap:wrap;gap:16px;margin-bottom:20px;padding:12px 16px;background:#1c1030;border-radius:10px;border:1px solid #1c1030">';
-  legendHTML += '<div><div style="font-size:10px;font-weight:700;color:#8b7aac;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Pod (top strip colour)</div><div style="display:flex;flex-wrap:wrap;gap:8px">';
+  legendHTML += '<div><div style="font-size:10px;font-weight:700;color:#a898c0;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Pod (top strip colour)</div><div style="display:flex;flex-wrap:wrap;gap:8px">';
   var podsSeen = {};
   DATA.projects.forEach(function(p) {
     var pod = p.pod || 'Podless';
     if (!podsSeen[pod]) {
       podsSeen[pod] = true;
-      legendHTML += '<span style="font-size:10px;display:flex;align-items:center;gap:4px;color:#8b7aac">'
+      legendHTML += '<span style="font-size:10px;display:flex;align-items:center;gap:4px;color:#a898c0">'
         + '<span style="display:inline-block;width:20px;height:5px;background:' + podColor(pod) + ';border-radius:3px"></span>'
         + pod.replace(' Pod','') + '</span>';
     }
   });
   legendHTML += '</div></div>';
 
-  legendHTML += '<div><div style="font-size:10px;font-weight:700;color:#8b7aac;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Research Area (dot)</div><div style="display:flex;flex-wrap:wrap;gap:8px">';
+  legendHTML += '<div><div style="font-size:10px;font-weight:700;color:#a898c0;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Research Area (dot)</div><div style="display:flex;flex-wrap:wrap;gap:8px">';
   ALL_AREAS.forEach(function(a) {
-    legendHTML += '<span style="font-size:10px;display:flex;align-items:center;gap:4px;color:#8b7aac">'
+    legendHTML += '<span style="font-size:10px;display:flex;align-items:center;gap:4px;color:#a898c0">'
       + '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:' + a.color + '"></span>'
       + a.title + '</span>';
   });
   legendHTML += '</div></div>';
 
-  legendHTML += '<div style="font-size:10px;color:#8b7aac;display:flex;align-items:center;gap:6px">'
+  legendHTML += '<div style="font-size:10px;color:#a898c0;display:flex;align-items:center;gap:6px">'
     + '<span style="font-size:12px;color:#f59e0b">⚠</span> Single reviewer — treat with caution</div>';
   legendHTML += '</div>';
 
@@ -2332,7 +2332,7 @@ function renderPodProfile() {
       });
     }
     if (noAI > 0) {
-      card += '<span class="pod-domain-tag" style="background:#1c1030;color:#8b7aac">No specific AI ×' + noAI + '</span>';
+      card += '<span class="pod-domain-tag" style="background:#1c1030;color:#a898c0">No specific AI ×' + noAI + '</span>';
     }
     card += '</div></div>';
 
@@ -2343,7 +2343,7 @@ function renderPodProfile() {
       + '<div class="pod-section-label">Research Areas (primary)</div>';
     sortedAreas.forEach(function(e) {
       var aId  = AREA_NAME_TO_ID[e[0]] || 'other';
-      var aCol = AREA_COLOR[aId] || '#8b7aac';
+      var aCol = AREA_COLOR[aId] || '#a898c0';
       var barW = Math.round(e[1] / maxAreaCnt * 100);
       card += '<div class="pod-area-row">'
         + '<span class="pod-area-name" style="color:' + aCol + '">' + e[0] + '</span>'
@@ -2408,8 +2408,8 @@ function renderPodProfile() {
 
   // ── Page intro ──────────────────────────────────────────────────────────
   var intro = '<div style="padding:20px 24px 0;border-bottom:1px solid #1c1030;margin-bottom:0">'
-    + '<div style="font-size:15px;font-weight:800;color:#ede8f5;margin-bottom:4px">Pod Intelligence</div>'
-    + '<div style="font-size:11px;color:#8b7aac">How each pod clusters across AI depth, domains, research areas, transformation statement dimensions, and network themes.'
+    + '<div style="font-size:15px;font-weight:800;color:#f0ecf8;margin-bottom:4px">Pod Intelligence</div>'
+    + '<div style="font-size:11px;color:#a898c0">How each pod clusters across AI depth, domains, research areas, transformation statement dimensions, and network themes.'
     + ' Sorted by pod size. TS dimensions ranked by pod strength.</div>'
     + '</div>';
 
@@ -2423,7 +2423,7 @@ function renderPodRelations() {
   var el = document.getElementById('view-podrelations');
   el.innerHTML = ''
     + '<div class="pr-header">'
-    + '<div style="font-size:15px;font-weight:800;color:#ede8f5;margin-bottom:2px">Pod Relations</div>'
+    + '<div style="font-size:15px;font-weight:800;color:#f0ecf8;margin-bottom:2px">Pod Relations</div>'
     + '<div class="pr-view-toggle">'
     + '<button class="pr-toggle-btn' + (podRelView==='force'?' active':'') + '" id="pr-btn-force" onclick="podRelView=\'force\';document.getElementById(\'pr-btn-force\').className=\'pr-toggle-btn active\';document.getElementById(\'pr-btn-flow\').className=\'pr-toggle-btn\';buildPRView()">Force Network</button>'
     + '<button class="pr-toggle-btn' + (podRelView==='flow'?' active':'') + '" id="pr-btn-flow"  onclick="podRelView=\'flow\'; document.getElementById(\'pr-btn-force\').className=\'pr-toggle-btn\';document.getElementById(\'pr-btn-flow\').className=\'pr-toggle-btn active\';buildPRView()">Parallel Flow</button>'
@@ -2787,10 +2787,10 @@ function buildForceView(canvas) {
     {label:'Project',         r:3,  op:0.65, stroke:'none',    sw:0}
   ].forEach(function(item, i){
     legG.append('circle').attr('cx',9).attr('cy',i*20+1).attr('r',item.r)
-      .attr('fill','#8b7aac').attr('fill-opacity',item.op)
+      .attr('fill','#a898c0').attr('fill-opacity',item.op)
       .attr('stroke',item.stroke).attr('stroke-width',item.sw);
     legG.append('text').attr('x',22).attr('y',i*20+5)
-      .attr('font-size',9).attr('fill','#8b7aac').text(item.label);
+      .attr('font-size',9).attr('fill','#a898c0').text(item.label);
   });
 
   svg.append('text')
@@ -3023,8 +3023,8 @@ function buildFlowView(canvas, mode) {
   var DEPTH_COL = {'High':'#f87171','Mid':'#fbbf24','Low':'#a3e635','None':'#475569'};
   function nodeColor(key, cat) {
     if (key==='pod')   return podColor(cat);
-    if (key==='depth') return DEPTH_COL[cat]||'#8b7aac';
-    if (key==='area')  return AREA_COLOR[AREA_NAME_TO_ID[cat]]||'#8b7aac';
+    if (key==='depth') return DEPTH_COL[cat]||'#a898c0';
+    if (key==='area')  return AREA_COLOR[AREA_NAME_TO_ID[cat]]||'#a898c0';
     if (key==='theme') {
       var tm=(DATA.research_themes||[]).find(function(t){ return t.label===cat; });
       return tm ? tm.color||'#99ee81' : '#99ee81';
@@ -3107,7 +3107,7 @@ function buildFlowView(canvas, mode) {
         + '<div style="font-size:8px;color:#475569;margin-bottom:6px;letter-spacing:.04em">'
         +   d.leftKey.toUpperCase()+' \u2192 '+d.rightKey.toUpperCase()+'</div>';
       if (projs.length) {
-        html += '<div style="font-size:9px;color:#8b7aac;margin-bottom:4px;font-weight:600">'
+        html += '<div style="font-size:9px;color:#a898c0;margin-bottom:4px;font-weight:600">'
           +projs.length+' project'+(projs.length!==1?'s':'')+'</div>'
           +'<div style="max-height:130px;overflow-y:auto">';
         projs.forEach(function(p){
@@ -3136,7 +3136,7 @@ function buildFlowView(canvas, mode) {
 
     svg.append('text').attr('x', x + AX_W/2).attr('y', PAD_T - 22)
       .attr('text-anchor','middle').attr('font-size',10).attr('font-weight','700')
-      .attr('fill','#8b7aac').attr('letter-spacing',1)
+      .attr('fill','#a898c0').attr('letter-spacing',1)
       .text(AXIS_LABELS[ai].toUpperCase());
 
     cats.forEach(function(c){
@@ -3144,8 +3144,8 @@ function buildFlowView(canvas, mode) {
       if (!block) return;
 
       var col = key==='pod'   ? podColor(c[0]) :
-                key==='depth' ? ({'High':'#f87171','Mid':'#fbbf24','Low':'#a3e635','None':'#475569'}[c[0]]||'#8b7aac') :
-                key==='area'  ? (AREA_COLOR[AREA_NAME_TO_ID[c[0]]]||'#8b7aac') : '#99ee81';
+                key==='depth' ? ({'High':'#f87171','Mid':'#fbbf24','Low':'#a3e635','None':'#475569'}[c[0]]||'#a898c0') :
+                key==='area'  ? (AREA_COLOR[AREA_NAME_TO_ID[c[0]]]||'#a898c0') : '#99ee81';
       if (key==='theme'){
         var tm = (DATA.research_themes||[]).find(function(t){ return t.label===c[0]; });
         if (tm) col = tm.color||'#99ee81';
@@ -3234,8 +3234,8 @@ function renderTransform() {
 
   // ── Summary strip — 7 dimension pills at top ─────────────────────
   var summaryHTML = '<div style="padding:20px 24px 0">'
-    + '<h2 style="font-size:15px;font-weight:800;color:#ede8f5;margin-bottom:4px">Network Transformation Map</h2>'
-    + '<p style="font-size:12px;color:#8b7aac;margin-bottom:16px">How strongly does the AbInt network advance each dimension of the transformation statement? Each section shows every project\'s contribution, ranked by signal strength.</p>'
+    + '<h2 style="font-size:15px;font-weight:800;color:#f0ecf8;margin-bottom:4px">Network Transformation Map</h2>'
+    + '<p style="font-size:12px;color:#a898c0;margin-bottom:16px">How strongly does the AbInt network advance each dimension of the transformation statement? Each section shows every project\'s contribution, ranked by signal strength.</p>'
     + '<div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:24px">';
 
   // Sort dims by network average descending for the summary pills
@@ -3251,7 +3251,7 @@ function renderTransform() {
       + '<div style="background:' + col + ';height:6px;border-radius:4px;width:' + Math.round(avg * 200) + 'px;max-width:100%"></div>'
       + '</div>'
       + '<div style="display:flex;justify-content:space-between;align-items:center">'
-      + '<span style="font-size:10px;color:#8b7aac">' + rank + '</span>'
+      + '<span style="font-size:10px;color:#a898c0">' + rank + '</span>'
       + '<span style="font-size:11px;font-weight:700;color:' + col + '">' + pct + '%</span>'
       + '</div>'
       + '</div>';
@@ -3281,12 +3281,12 @@ function renderTransform() {
     sectionsHTML += '<div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">'
       + '<div>'
       + '<div style="font-size:14px;font-weight:800;color:' + col + ';margin-bottom:2px">' + dim.label + '</div>'
-      + '<div style="font-size:11px;color:#8b7aac">' + dim.desc + '</div>'
+      + '<div style="font-size:11px;color:#a898c0">' + dim.desc + '</div>'
       + '</div>'
       + '<div style="display:flex;gap:8px;align-items:center">'
       + '<span style="font-size:10px;padding:3px 10px;border-radius:99px;background:' + col + '22;color:' + col + '">'
       + strongCount + ' strong signal' + (strongCount !== 1 ? 's' : '') + '</span>'
-      + '<span style="font-size:10px;padding:3px 10px;border-radius:99px;background:#1c1030;color:#8b7aac">'
+      + '<span style="font-size:10px;padding:3px 10px;border-radius:99px;background:#1c1030;color:#a898c0">'
       + totalCount + ' projects contributing</span>'
       + '</div>'
       + '</div>';
@@ -3294,7 +3294,7 @@ function renderTransform() {
     // Network aggregate bar
     sectionsHTML += '<div style="margin-bottom:16px">'
       + '<div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">'
-      + '<span style="font-size:10px;font-weight:700;color:#8b7aac;text-transform:uppercase;letter-spacing:.06em;min-width:120px">Network Average</span>'
+      + '<span style="font-size:10px;font-weight:700;color:#a898c0;text-transform:uppercase;letter-spacing:.06em;min-width:120px">Network Average</span>'
       + '<div style="flex:1;background:#0a0f1a;border-radius:4px;height:10px">'
       + '<div style="background:' + col + ';height:10px;border-radius:4px;width:' + Math.min(100, Math.round(avg * 200)) + '%;opacity:0.85"></div>'
       + '</div>'
@@ -3341,7 +3341,7 @@ function renderTransform() {
           // Reviewer chips
           + '<div style="min-width:80px">'
           + (p.reviewers||[]).map(function(r){
-              return '<span style="font-size:9px;padding:1px 5px;border-radius:99px;background:#1c1030;color:#8b7aac;margin:1px;display:inline-block">' + r + '</span>';
+              return '<span style="font-size:9px;padding:1px 5px;border-radius:99px;background:#1c1030;color:#a898c0;margin:1px;display:inline-block">' + r + '</span>';
             }).join('')
           + '</div>'
           + '</div>';
@@ -3376,8 +3376,8 @@ function renderTSRollup() {
 
   // ── Header ──────────────────────────────────────────────────────
   var html = '<div style="padding:24px 24px 0">'
-    + '<h2 style="font-size:16px;font-weight:800;color:#ede8f5;margin-bottom:4px">Network Transformation — What Reviewers Are Saying</h2>'
-    + '<p style="font-size:12px;color:#8b7aac;margin-bottom:20px;max-width:800px">'
+    + '<h2 style="font-size:16px;font-weight:800;color:#f0ecf8;margin-bottom:4px">Network Transformation — What Reviewers Are Saying</h2>'
+    + '<p style="font-size:12px;color:#a898c0;margin-bottom:20px;max-width:800px">'
     + 'An analytical read of how the AbInt network advances each dimension of the Transformation Statement, '
     + 'based on LLM semantic analysis of all reviewer text across ' + projects.length + ' projects. '
     + 'Scoring blends 70% semantic reading with 30% keyword-hybrid analysis.</p>'
@@ -3424,13 +3424,13 @@ function renderTSRollup() {
     html += '<div style="padding:18px 20px;border-bottom:1px solid ' + col + '22;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:8px">'
       + '<div style="flex:1;min-width:300px">'
       + '<div style="font-size:15px;font-weight:800;color:' + col + ';margin-bottom:2px">' + dim.label + '</div>'
-      + '<div style="font-size:11px;color:#8b7aac">' + dim.desc + '</div>'
+      + '<div style="font-size:11px;color:#a898c0">' + dim.desc + '</div>'
       + '</div>'
       + '<div style="display:flex;gap:8px;align-items:center;flex-shrink:0">';
 
     var sigCol = (s.signal_strength==='Strong') ? '#4ade80' : (s.signal_strength==='Moderate') ? '#fbbf24' : '#f87171';
     html += '<span style="font-size:10px;padding:4px 12px;border-radius:99px;background:' + sigCol + '22;color:' + sigCol + ';font-weight:700">' + (s.signal_strength||'?') + ' signal</span>'
-      + '<span style="font-size:10px;padding:4px 12px;border-radius:99px;background:#1c1030;color:#8b7aac">'
+      + '<span style="font-size:10px;padding:4px 12px;border-radius:99px;background:#1c1030;color:#a898c0">'
       + (s.strong_count||0) + ' strong · ' + (s.moderate_count||0) + ' moderate · ' + (s.weak_count||0) + ' weak</span>'
       + '</div></div>';
 
@@ -3449,8 +3449,8 @@ function renderTSRollup() {
     // What reviewers flag
     if (s.what_reviewers_flag) {
       html += '<div style="margin-bottom:14px;padding:12px 14px;background:#0a0f1a;border-radius:8px;border-left:3px solid ' + col + '44">'
-        + '<div style="font-size:10px;font-weight:700;color:#8b7aac;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">What Reviewers Flag</div>'
-        + '<div style="font-size:11px;color:#8b7aac;line-height:1.6">' + s.what_reviewers_flag + '</div>'
+        + '<div style="font-size:10px;font-weight:700;color:#a898c0;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">What Reviewers Flag</div>'
+        + '<div style="font-size:11px;color:#a898c0;line-height:1.6">' + s.what_reviewers_flag + '</div>'
         + '</div>';
     }
 
@@ -3458,7 +3458,7 @@ function renderTSRollup() {
     if (s.gap) {
       html += '<div style="margin-bottom:14px;padding:12px 14px;background:#0a0f1a;border-radius:8px;border-left:3px solid #f5920b44">'
         + '<div style="font-size:10px;font-weight:700;color:#f59e0b;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Gap</div>'
-        + '<div style="font-size:11px;color:#8b7aac;line-height:1.6">' + s.gap + '</div>'
+        + '<div style="font-size:11px;color:#a898c0;line-height:1.6">' + s.gap + '</div>'
         + '</div>';
     }
 
@@ -3466,7 +3466,7 @@ function renderTSRollup() {
     if (s.phase2_question) {
       html += '<div style="padding:12px 14px;background:#0a0f1a;border-radius:8px;border-left:3px solid #4ade8044">'
         + '<div style="font-size:10px;font-weight:700;color:#4ade80;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Phase 2 Question</div>'
-        + '<div style="font-size:11px;color:#8b7aac;line-height:1.6;font-style:italic">' + s.phase2_question + '</div>'
+        + '<div style="font-size:11px;color:#a898c0;line-height:1.6;font-style:italic">' + s.phase2_question + '</div>'
         + '</div>';
     }
 
@@ -3477,7 +3477,7 @@ function renderTSRollup() {
 
     // Pod strength mini-bars
     html += '<div style="margin-bottom:16px">'
-      + '<div style="font-size:10px;font-weight:700;color:#8b7aac;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Pod Strength</div>';
+      + '<div style="font-size:10px;font-weight:700;color:#a898c0;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Pod Strength</div>';
 
     var POD_ORDER = ['Niitsitapi Pod',"Ka Hawai\u2019i Pae \u2018\u0100ina Pod","T'karonto Pod","Wih\u00e1\u014bble S\u2019a Pod",'Hiringa Te Mara','Haudenosaunee Pod','Podless'];
     POD_ORDER.forEach(function(pod) {
@@ -3487,7 +3487,7 @@ function renderTSRollup() {
       var shortName = pod.replace(' Pod','').replace("Ka Hawai\u2019i Pae \u2018\u0100ina",'Hawai\u02BBi').replace('Hiringa Te Mara','Hiringa');
       var isLeader = podLeaders.indexOf(pod) >= 0;
       html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">'
-        + '<div style="width:70px;font-size:10px;color:' + (isLeader ? pc : '#8b7aac') + ';font-weight:' + (isLeader ? '700':'400') + ';text-align:right">' + shortName + '</div>'
+        + '<div style="width:70px;font-size:10px;color:' + (isLeader ? pc : '#a898c0') + ';font-weight:' + (isLeader ? '700':'400') + ';text-align:right">' + shortName + '</div>'
         + '<div style="flex:1;background:#0a0f1a;border-radius:3px;height:8px">'
         + '<div style="background:' + pc + ';height:8px;border-radius:3px;width:' + Math.round(sc*100) + '%;opacity:' + Math.max(0.3, sc*1.5).toFixed(2) + '"></div>'
         + '</div>'
@@ -3498,7 +3498,7 @@ function renderTSRollup() {
 
     // Top projects list
     html += '<div style="margin-bottom:12px">'
-      + '<div style="font-size:10px;font-weight:700;color:#8b7aac;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Strongest Projects</div>';
+      + '<div style="font-size:10px;font-weight:700;color:#a898c0;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Strongest Projects</div>';
 
     topProjects.slice(0, 6).forEach(function(p) {
       var sc = (DATA.ts_project_scores[p.id]||{})[dim.id]||0;
@@ -3534,7 +3534,7 @@ function renderTSRollup() {
   // ── Method note ─────────────────────────────────────────────────
   html += '<div style="padding:0 24px 32px">'
     + '<div style="font-size:10px;color:#475569;padding:10px 14px;background:#1c1030;border-radius:8px;border-left:3px solid #99ee8144;max-width:700px">'
-    + '<strong style="color:#8b7aac">Method:</strong> Each dimension summary is based on LLM semantic analysis of all reviewer text across all projects. '
+    + '<strong style="color:#a898c0">Method:</strong> Each dimension summary is based on LLM semantic analysis of all reviewer text across all projects. '
     + 'Scores blend 70% LLM reading (what reviewers actually mean) with 30% keyword-hybrid analysis (density + sentence peaks + phrase matching). '
     + 'Summaries, gaps, and Phase 2 questions are written by the LLM after reading every reviewer sentence organised by dimension.'
     + '</div></div>';
