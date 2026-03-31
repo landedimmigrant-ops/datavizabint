@@ -6,16 +6,16 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
 <style>
 :root {
-  --bg:      #0c0e17;
-  --surface: #141826;
-  --surface2:#1c2235;
-  --border:  #2a3050;
-  --text:    #e2e8f0;
-  --muted:   #64748b;
+  --bg:      #110820;
+  --surface: #1c1030;
+  --surface2:#261540;
+  --border:  #3a2060;
+  --text:    #ede8f5;
+  --muted:   #8b7aac;
   --pos:     #4ade80;
   --neg:     #f87171;
   --warn:    #fbbf24;
-  --accent:  #818cf8;
+  --accent:  #99ee81;
   --lang:    #facc15;
   --story:   #a78bfa;
   --env:     #4ade80;
@@ -28,6 +28,7 @@ html, body { height: 100%; font-family: 'Inter', system-ui, sans-serif;
 /* ── Header ── */
 .app-header {
   padding: 14px 24px 10px;
+  border-top: 4px solid #99ee81;
   border-bottom: 1px solid var(--border);
   display: flex; align-items: baseline; gap: 12px;
 }
@@ -56,7 +57,7 @@ html, body { height: 100%; font-family: 'Inter', system-ui, sans-serif;
 .chip-pos  { background: rgba(74,222,128,.15); color: var(--pos); }
 .chip-neg  { background: rgba(248,113,113,.15); color: var(--neg); }
 .chip-warn { background: rgba(251,191,36,.15);  color: var(--warn); }
-.chip-blue { background: rgba(129,140,248,.15); color: var(--accent); }
+.chip-blue { background: rgba(153,238,129,.15); color: var(--accent); }
 .chip-muted{ background: rgba(100,116,139,.15); color: var(--muted); }
 
 /* ── Legend ── */
@@ -78,12 +79,12 @@ html, body { height: 100%; font-family: 'Inter', system-ui, sans-serif;
 #tooltip .phrases { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 8px; }
 #tooltip .ph-chip {
   font-size: 10px; padding: 2px 7px; border-radius: 99px;
-  background: rgba(129,140,248,.2); color: var(--accent);
+  background: rgba(153,238,129,.2); color: var(--accent);
 }
 
 /* ── Landscape View ── */
 #landscape-svg { width: 100%; }
-.quadrant-label { font-size: 11px; fill: #3a4460; font-weight: 600; pointer-events: none; }
+.quadrant-label { font-size: 11px; fill: #3d2060; font-weight: 600; pointer-events: none; }
 .axis-label     { font-size: 11px; fill: var(--muted); }
 .node-label     { font-size: 10px; fill: var(--text); pointer-events: none; }
 .bubble         { cursor: pointer; transition: opacity .15s; }
@@ -105,14 +106,14 @@ html, body { height: 100%; font-family: 'Inter', system-ui, sans-serif;
   white-space: nowrap; vertical-align: bottom;
   cursor: pointer;
 }
-.ct-col-header:hover { background: rgba(129,140,248,.06); }
+.ct-col-header:hover { background: rgba(153,238,129,.06); }
 .ct-cell {
   width: 68px; height: 56px;
   border: 1px solid rgba(42,48,80,.4);
   position: relative; cursor: default;
   transition: background .1s;
 }
-.ct-cell:hover { background: rgba(129,140,248,.06); }
+.ct-cell:hover { background: rgba(153,238,129,.06); }
 .ct-cell svg { display: block; margin: auto; }
 .ct-no-data {
   background: repeating-linear-gradient(
@@ -168,7 +169,7 @@ html, body { height: 100%; font-family: 'Inter', system-ui, sans-serif;
 .sc-phrases { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 10px; }
 .sc-phrase {
   font-size: 10px; padding: 2px 7px; border-radius: 99px;
-  background: rgba(129,140,248,.15); color: var(--accent);
+  background: rgba(153,238,129,.15); color: #2A1040;
 }
 .sc-signal { margin-bottom: 6px; padding: 7px 9px; border-radius: 7px; font-size: 11px; line-height: 1.4; }
 .sc-signal.pos { background: rgba(74,222,128,.07); border-left: 3px solid var(--pos); }
@@ -188,7 +189,7 @@ html, body { height: 100%; font-family: 'Inter', system-ui, sans-serif;
 .asc-split { font-size: 10px; color: var(--muted); margin-bottom: 8px; display: flex; gap: 6px; flex-wrap: wrap; }
 .asc-split-pill { padding: 2px 7px; border-radius: 99px; font-weight: 600; }
 .asc-proj-list { display: flex; flex-direction: column; gap: 3px; margin-bottom: 8px; }
-.asc-proj-row { font-size: 10px; display: flex; align-items: center; gap: 5px; color: #94a3b8; }
+.asc-proj-row { font-size: 10px; display: flex; align-items: center; gap: 5px; color: var(--muted); }
 .asc-proj-badge { font-size: 9px; padding: 1px 5px; border-radius: 3px; font-weight: 700; flex-shrink: 0; }
 .asc-align-row { display: flex; align-items: baseline; gap: 4px; margin-top: 6px; border-top: 1px solid var(--border); padding-top: 6px; }
 .asc-align-num { font-size: 13px; font-weight: 800; }
@@ -201,24 +202,24 @@ html, body { height: 100%; font-family: 'Inter', system-ui, sans-serif;
 .pod-card-header { padding: 12px 14px 10px; border-bottom: 1px solid var(--border); }
 .pod-card-name { font-size: 13px; font-weight: 800; letter-spacing: .02em; margin-bottom: 2px; }
 .pod-card-meta { font-size: 10px; color: var(--muted); display: flex; gap: 10px; }
-.pod-section { padding: 10px 14px; border-bottom: 1px solid #0e1625; }
+.pod-section { padding: 10px 14px; border-bottom: 1px solid #1e0e38; }
 .pod-section-label { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-bottom: 7px; }
 .pod-depth-bar { height: 8px; border-radius: 4px; overflow: hidden; display: flex; gap: 1px; margin-bottom: 4px; }
 .pod-depth-seg { height: 100%; border-radius: 2px; }
 .pod-depth-legend { display: flex; flex-wrap: wrap; gap: 6px; }
-.pod-depth-key { font-size: 9px; display: flex; align-items: center; gap: 3px; color: #94a3b8; }
+.pod-depth-key { font-size: 9px; display: flex; align-items: center; gap: 3px; color: var(--muted); }
 .pod-domain-tags { display: flex; flex-wrap: wrap; gap: 4px; }
 .pod-domain-tag { font-size: 9px; padding: 2px 7px; border-radius: 99px; font-weight: 600; }
 .pod-area-row { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
-.pod-area-name { font-size: 9.5px; color: #94a3b8; width: 110px; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.pod-area-bar-wrap { flex: 1; height: 6px; background: #0e1625; border-radius: 3px; }
+.pod-area-name { font-size: 9.5px; color: var(--muted); width: 110px; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pod-area-bar-wrap { flex: 1; height: 6px; background: #1e0e38; border-radius: 3px; }
 .pod-area-bar { height: 100%; border-radius: 3px; }
 .pod-area-count { font-size: 9px; color: var(--muted); flex-shrink: 0; width: 14px; text-align: right; }
 .pod-ts-row { display: flex; align-items: center; gap: 6px; margin-bottom: 3px; }
-.pod-ts-label { font-size: 9px; color: #64748b; width: 82px; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.pod-ts-bar-wrap { flex: 1; height: 5px; background: #0e1625; border-radius: 3px; }
+.pod-ts-label { font-size: 9px; color: var(--muted); width: 82px; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pod-ts-bar-wrap { flex: 1; height: 5px; background: #1e0e38; border-radius: 3px; }
 .pod-ts-bar { height: 100%; border-radius: 3px; }
-.pod-ts-score { font-size: 9px; color: #64748b; width: 28px; text-align: right; flex-shrink: 0; }
+.pod-ts-score { font-size: 9px; color: var(--muted); width: 28px; text-align: right; flex-shrink: 0; }
 .pod-theme-tags { display: flex; flex-wrap: wrap; gap: 4px; }
 .pod-theme-tag { font-size: 9px; padding: 2px 8px; border-radius: 99px; }
 .pod-align-footer { padding: 8px 14px; display: flex; align-items: baseline; gap: 5px; }
@@ -236,11 +237,11 @@ html, body { height: 100%; font-family: 'Inter', system-ui, sans-serif;
   display: inline-flex; align-items: center; gap: 5px;
   font-size: 11px; padding: 4px 9px; border-radius: 99px;
   margin: 3px 2px; cursor: default;
-  background: rgba(129,140,248,.12); color: var(--accent);
-  border: 1px solid rgba(129,140,248,.2);
+  background: rgba(153,238,129,.12); color: #99ee81;
+  border: 1px solid rgba(153,238,129,.25);
 }
 .intel-phrase-tag .itag-count {
-  background: rgba(129,140,248,.25); border-radius: 99px;
+  background: rgba(153,238,129,.25); border-radius: 99px;
   padding: 1px 5px; font-size: 10px; font-weight: 700;
 }
 #intel-main { flex: 1; min-width: 0; }
@@ -309,11 +310,11 @@ html, body { height: 100%; font-family: 'Inter', system-ui, sans-serif;
 /* ── Pod Relations tab ── */
 .pr-header { padding: 18px 24px 0; }
 .pr-view-toggle { display:flex; gap:6px; margin:10px 0 6px; }
-.pr-toggle-btn { padding:5px 16px; border-radius:99px; border:1.5px solid #1e2535; background:transparent; color:#64748b; font-size:12px; cursor:pointer; transition:all .15s; }
-.pr-toggle-btn.active { border-color:#818cf8; background:#818cf822; color:#818cf8; font-weight:700; }
+.pr-toggle-btn { padding:5px 16px; border-radius:99px; border:1.5px solid #1c1030; background:transparent; color:#8b7aac; font-size:12px; cursor:pointer; transition:all .15s; }
+.pr-toggle-btn.active { border-color:#99ee81; background:#99ee8122; color:#99ee81; font-weight:700; }
 .pr-canvas { padding:0 24px 24px; }
 .pr-legend { display:flex; gap:14px; flex-wrap:wrap; padding:8px 24px 0; }
-.pr-legend-item { font-size:10px; display:flex; align-items:center; gap:5px; color:#94a3b8; }
+.pr-legend-item { font-size:10px; display:flex; align-items:center; gap:5px; color:#8b7aac; }
 /* ── Scrollbar ── */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: var(--bg); }
@@ -368,7 +369,7 @@ const AREA_NAME_TO_ID = {
 };
 function areaColor(name) {
   var id = AREA_NAME_TO_ID[name] || 'other';
-  return AREA_COLOR[id] || '#64748b';
+  return AREA_COLOR[id] || '#8b7aac';
 }
 function areaId(name) { return AREA_NAME_TO_ID[name] || 'other'; }
 
@@ -491,17 +492,17 @@ function renderLandscape() {
 
   // ── Colour-by toggle ────────────────────────────────────────────────────
   var ctrl = document.createElement('div');
-  ctrl.style.cssText = 'display:flex;align-items:center;gap:8px;margin-bottom:10px;font-size:12px;color:#64748b';
+  ctrl.style.cssText = 'display:flex;align-items:center;gap:8px;margin-bottom:10px;font-size:12px;color:#8b7aac';
   ctrl.innerHTML = '<span>Colour by</span>'
-    + '<button id="ls-btn-area"   style="padding:3px 10px;border-radius:6px;border:1px solid #3b4a6b;background:#1c2235;color:#e2e8f0;cursor:pointer;font-size:11px">Research Area</button>'
-    + '<button id="ls-btn-domain" style="padding:3px 10px;border-radius:6px;border:1px solid #3b4a6b;background:transparent;color:#64748b;cursor:pointer;font-size:11px">AI Domain</button>';
+    + '<button id="ls-btn-area"   style="padding:3px 10px;border-radius:6px;border:1px solid #3a2060;background:#261540;color:#ede8f5;cursor:pointer;font-size:11px">Research Area</button>'
+    + '<button id="ls-btn-domain" style="padding:3px 10px;border-radius:6px;border:1px solid #3a2060;background:transparent;color:#8b7aac;cursor:pointer;font-size:11px">AI Domain</button>';
   el.appendChild(ctrl);
 
   function setActiveBtn(mode) {
-    document.getElementById('ls-btn-area').style.background   = mode === 'area'   ? '#1c2235' : 'transparent';
-    document.getElementById('ls-btn-area').style.color        = mode === 'area'   ? '#e2e8f0' : '#64748b';
-    document.getElementById('ls-btn-domain').style.background = mode === 'domain' ? '#1c2235' : 'transparent';
-    document.getElementById('ls-btn-domain').style.color      = mode === 'domain' ? '#e2e8f0' : '#64748b';
+    document.getElementById('ls-btn-area').style.background   = mode === 'area'   ? '#261540' : 'transparent';
+    document.getElementById('ls-btn-area').style.color        = mode === 'area'   ? '#ede8f5' : '#8b7aac';
+    document.getElementById('ls-btn-domain').style.background = mode === 'domain' ? '#261540' : 'transparent';
+    document.getElementById('ls-btn-domain').style.color      = mode === 'domain' ? '#ede8f5' : '#8b7aac';
   }
 
   var svg = d3.select(el).append('svg')
@@ -517,7 +518,7 @@ function renderLandscape() {
   var quads = [
     {x:0,    y:0,    w:cx,    h:cy,    label:'Ready to Build On',       color:'rgba(74,222,128,.04)'},
     {x:cx,   y:0,    w:iw-cx, h:cy,    label:'High Potential\u2014Address Concerns',color:'rgba(251,191,36,.04)'},
-    {x:0,    y:cy,   w:cx,    h:ih-cy, label:'Monitor Closely',         color:'rgba(129,140,248,.03)'},
+    {x:0,    y:cy,   w:cx,    h:ih-cy, label:'Monitor Closely',         color:'rgba(103,48,145,.05)'},
     {x:cx,   y:cy,   w:iw-cx, h:ih-cy, label:'Significant Concerns',    color:'rgba(248,113,113,.04)'},
   ];
   quads.forEach(function(q) {
@@ -539,14 +540,14 @@ function renderLandscape() {
   g.append('g').attr('transform','translate(0,' + ih + ')')
     .call(d3.axisBottom(xScale).ticks(5).tickFormat(d3.format('.2f')))
     .call(function(a) {
-      a.selectAll('path,line').attr('stroke','#2a3050');
-      a.selectAll('text').attr('fill','#64748b').attr('font-size','11');
+      a.selectAll('path,line').attr('stroke','#3a2060');
+      a.selectAll('text').attr('fill','#8b7aac').attr('font-size','11');
     });
   g.append('g')
     .call(d3.axisLeft(yScale).ticks(5))
     .call(function(a) {
-      a.selectAll('path,line').attr('stroke','#2a3050');
-      a.selectAll('text').attr('fill','#64748b').attr('font-size','11');
+      a.selectAll('path,line').attr('stroke','#3a2060');
+      a.selectAll('text').attr('fill','#8b7aac').attr('font-size','11');
     });
 
   // Axis labels
@@ -615,7 +616,7 @@ function renderLandscape() {
     var neg0 = d.concerns && d.concerns[0]
       ? '<div style="font-size:11px;color:#f87171">\u25B3 ' + d.concerns[0].text.slice(0,90) + '\u2026</div>'
       : '';
-    var html = '<h4>' + d.short + (d.code ? ' <span style="color:#64748b;font-weight:400;font-size:11px">' + d.code + '</span>' : '') + '</h4>'
+    var html = '<h4>' + d.short + (d.code ? ' <span style="color:#8b7aac;font-weight:400;font-size:11px">' + d.code + '</span>' : '') + '</h4>'
       + '<div style="font-size:11px;color:#a78bfa;margin-bottom:4px">' + d.title.slice(0,80) + '</div>'
       + '<div class="tt-row"><span class="tt-label">Area</span> <span>' + d.primary_area + '</span></div>'
       + '<div class="tt-row"><span class="tt-label">Status</span> <span>' + d.status + '</span></div>'
@@ -633,7 +634,7 @@ function renderLandscape() {
 
   // — Research Area legend —
   var legArea = legG.append('g').attr('id','leg-area');
-  legArea.append('text').attr('y',-4).attr('fill','#64748b').attr('font-size','11').text('Research Area');
+  legArea.append('text').attr('y',-4).attr('fill','#8b7aac').attr('font-size','11').text('Research Area');
   var legData = DATA.research_areas.concat(
     ALL_AREAS.filter(function(a) {
       return !DATA.research_areas.find(function(ra) { return ra.id === a.id; });
@@ -644,36 +645,36 @@ function renderLandscape() {
     legArea.append('circle').attr('cx', 7).attr('cy', ly).attr('r', 7)
       .attr('fill', a.color).attr('fill-opacity', a._gap ? 0.2 : 0.75);
     legArea.append('text').attr('x', 18).attr('y', ly + 4)
-      .attr('fill', a._gap ? '#f87171' : '#e2e8f0').attr('font-size', '11')
+      .attr('fill', a._gap ? '#f87171' : '#ede8f5').attr('font-size', '11')
       .text(a.title + (a._gap ? ' (not reviewed)' : ''));
   });
 
   // — AI Domain legend —
   var legDomain = legG.append('g').attr('id','leg-domain').attr('display','none');
-  legDomain.append('text').attr('y',-4).attr('fill','#64748b').attr('font-size','11').text('AI Domain');
+  legDomain.append('text').attr('y',-4).attr('fill','#8b7aac').attr('font-size','11').text('AI Domain');
   AI_DOMAIN_LIST.forEach(function(d, i) {
     var ly = 12 + i * 22;
     legDomain.append('circle').attr('cx', 7).attr('cy', ly).attr('r', 7)
       .attr('fill', d.color).attr('fill-opacity', d.id === 'unknown' ? 0.25 : 0.75);
     legDomain.append('text').attr('x', 18).attr('y', ly + 4)
-      .attr('fill', d.id === 'unknown' ? '#64748b' : '#e2e8f0').attr('font-size', '11')
+      .attr('fill', d.id === 'unknown' ? '#8b7aac' : '#ede8f5').attr('font-size', '11')
       .text(d.label);
   });
 
   // — AI Depth size legend (shared) —
   var depthY = 12 + Math.max(legData.length, AI_DOMAIN_LIST.length) * 22 + 14;
-  legG.append('text').attr('y', depthY - 4).attr('fill','#64748b').attr('font-size','11').text('AI Depth');
+  legG.append('text').attr('y', depthY - 4).attr('fill','#8b7aac').attr('font-size','11').text('AI Depth');
   [['None',9],['Low',12],['Mid',16],['High',20]].forEach(function(pair, i) {
     var lly = depthY + 12 + i * 22;
     legG.append('circle').attr('cx', pair[1]).attr('cy', lly).attr('r', pair[1])
-      .attr('fill','#64748b').attr('fill-opacity', .4);
+      .attr('fill','#8b7aac').attr('fill-opacity', .4);
     legG.append('text').attr('x', 26).attr('y', lly + 4)
-      .attr('fill','#64748b').attr('font-size','11').text(pair[0]);
+      .attr('fill','#8b7aac').attr('font-size','11').text(pair[0]);
   });
 
   // — Review depth indicator —
   var revY = depthY + 12 + 4 * 22 + 14;
-  legG.append('text').attr('y', revY - 4).attr('fill','#64748b').attr('font-size','11').text('Review Depth');
+  legG.append('text').attr('y', revY - 4).attr('fill','#8b7aac').attr('font-size','11').text('Review Depth');
   var revLeg = [
     {label: 'Multi-reviewer', dash: 'none'},
     {label: 'Single reviewer', dash: '3,2'},
@@ -681,10 +682,10 @@ function renderLandscape() {
   revLeg.forEach(function(rl, i) {
     var rly = revY + 12 + i * 22;
     legG.append('circle').attr('cx', 10).attr('cy', rly).attr('r', 9)
-      .attr('fill','none').attr('stroke','#94a3b8').attr('stroke-width',1.5)
+      .attr('fill','none').attr('stroke','#8b7aac').attr('stroke-width',1.5)
       .attr('stroke-dasharray', rl.dash);
     legG.append('text').attr('x', 26).attr('y', rly + 4)
-      .attr('fill','#64748b').attr('font-size','11').text(rl.label);
+      .attr('fill','#8b7aac').attr('font-size','11').text(rl.label);
   });
 
   // ── Toggle button handlers ────────────────────────────────────────────────
@@ -717,7 +718,7 @@ function podColor(pod) { return POD_COLORS[pod] || '#475569'; }
 
 var INFRA_COLORS = {
   'Public':       '#4ade80',
-  'AbInt Network':'#818cf8',
+  'AbInt Network':'#99ee81',
   'Pod':          '#fbbf24',
   'None':         '#1e293b',
 };
@@ -747,7 +748,7 @@ function renderCoverage() {
   var legendHTML = '<div style="display:flex;flex-wrap:wrap;gap:24px;margin-bottom:14px;align-items:flex-start">';
 
   // Coverage circles
-  legendHTML += '<div><div style="font-size:11px;font-weight:700;color:#64748b;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">Circle type</div>'
+  legendHTML += '<div><div style="font-size:11px;font-weight:700;color:#8b7aac;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">Circle type</div>'
     + '<div style="display:flex;flex-direction:column;gap:6px">'
     + '<span style="display:flex;align-items:center;gap:7px;font-size:12px">'
     + '<svg width="22" height="22"><circle cx="11" cy="11" r="9" fill="#a78bfa" fill-opacity=".7"/><text x="11" y="15" text-anchor="middle" fill="#fff" font-size="9" font-weight="700">9</text></svg>'
@@ -756,7 +757,7 @@ function renderCoverage() {
     + '<svg width="22" height="22"><circle cx="11" cy="11" r="8" fill="none" stroke="#a78bfa" stroke-width="2" stroke-opacity=".7"/><text x="11" y="15" text-anchor="middle" fill="#a78bfa" font-size="9">9</text></svg>'
     + 'Secondary area</span>'
     + '<span style="display:flex;align-items:center;gap:7px;font-size:12px">'
-    + '<svg width="22" height="22"><circle cx="11" cy="11" r="4" fill="#2a3050"/></svg>'
+    + '<svg width="22" height="22"><circle cx="11" cy="11" r="4" fill="#3a2060"/></svg>'
     + 'Not in area</span>'
     + '</div></div>';
 
@@ -768,19 +769,19 @@ function renderCoverage() {
     if (!seenPods[pod]) { seenPods[pod] = true; usedPods.push(pod); }
   });
 
-  legendHTML += '<div><div style="font-size:11px;font-weight:700;color:#64748b;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">Pod (column top strip)</div>'
+  legendHTML += '<div><div style="font-size:11px;font-weight:700;color:#8b7aac;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">Pod (column top strip)</div>'
     + '<div style="display:flex;flex-direction:column;gap:5px">';
   usedPods.forEach(function(pod) {
     var count = projects.filter(function(p) { return p.pod === pod; }).length;
     if (!count) return;
     legendHTML += '<span style="display:flex;align-items:center;gap:7px;font-size:12px">'
       + '<span style="display:inline-block;width:28px;height:6px;background:' + podColor(pod) + ';border-radius:3px"></span>'
-      + pod + ' <span style="color:#64748b">(' + count + ')</span></span>';
+      + pod + ' <span style="color:#8b7aac">(' + count + ')</span></span>';
   });
   legendHTML += '</div></div>';
 
   // Infra sharability legend
-  legendHTML += '<div><div style="font-size:11px;font-weight:700;color:#64748b;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">Infrastructure sharability (coloured dot)</div>'
+  legendHTML += '<div><div style="font-size:11px;font-weight:700;color:#8b7aac;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">Infrastructure sharability (coloured dot)</div>'
     + '<div style="display:flex;flex-direction:column;gap:5px">';
   ['Public','AbInt Network','Pod','None'].forEach(function(v) {
     var border = v === 'None' ? 'border:1.5px solid #334155;' : '';
@@ -808,12 +809,12 @@ function renderCoverage() {
       + '<span title="' + (p.infra_share || 'None') + '" style="display:inline-block;width:11px;height:11px;border-radius:50%;background:' + ic + ';' + infraBorder + '"></span>'
       + '</div>'
       // Code + first name (not rotated — compact)
-      + '<div style="font-size:10px;font-weight:700;text-align:center;color:#e2e8f0;line-height:1.2">' + displayName(p) + '</div>'
+      + '<div style="font-size:10px;font-weight:700;text-align:center;color:#ede8f5;line-height:1.2">' + displayName(p) + '</div>'
       + '</th>';
   });
 
-  tableHTML += '<th style="width:36px;font-size:11px;color:#64748b;padding:4px 6px;text-align:left;vertical-align:bottom">n</th>'
-    + '<th style="width:76px;font-size:11px;color:#64748b;padding:4px 6px;text-align:left;vertical-align:bottom">Avg&nbsp;Align</th>'
+  tableHTML += '<th style="width:36px;font-size:11px;color:#8b7aac;padding:4px 6px;text-align:left;vertical-align:bottom">n</th>'
+    + '<th style="width:76px;font-size:11px;color:#8b7aac;padding:4px 6px;text-align:left;vertical-align:bottom">Avg&nbsp;Align</th>'
     + '</tr></thead><tbody>';
 
   // ── Area rows ──────────────────────────────────────────────────
@@ -845,7 +846,7 @@ function renderCoverage() {
           + '</svg>';
       } else {
         tableHTML += '<svg width="46" height="50">'
-          + '<circle cx="23" cy="26" r="4" fill="#2a3050"/>'
+          + '<circle cx="23" cy="26" r="4" fill="#3a2060"/>'
           + '</svg>';
       }
       tableHTML += '</td>';
@@ -854,7 +855,7 @@ function renderCoverage() {
     var aData = areaDataMap[area.id];
     if (aData) {
       var barW = Math.round((aData.alignment_avg / 10) * 60);
-      tableHTML += '<td style="padding:4px 6px;font-size:12px;color:#64748b">' + aData.n_projects + '</td>'
+      tableHTML += '<td style="padding:4px 6px;font-size:12px;color:#8b7aac">' + aData.n_projects + '</td>'
         + '<td style="padding:4px 6px"><div style="font-size:13px;font-weight:700;color:' + area.color + '">'
         + aData.alignment_avg + '</div>'
         + '<div style="width:' + barW + 'px;height:3px;background:' + area.color + ';border-radius:2px;opacity:.5;margin-top:3px"></div>'
@@ -866,7 +867,7 @@ function renderCoverage() {
   });
 
   // Alignment score footer row
-  tableHTML += '<tr><td class="ct-row-header" style="color:#64748b;font-size:11px">Alignment</td>';
+  tableHTML += '<tr><td class="ct-row-header" style="color:#8b7aac;font-size:11px">Alignment</td>';
   projects.forEach(function(p) {
     var sc = p.alignment_avg >= 8.5 ? '#4ade80' : (p.alignment_avg >= 7 ? '#fbbf24' : '#f87171');
     tableHTML += '<td style="text-align:center;padding:5px 0">'
@@ -877,29 +878,29 @@ function renderCoverage() {
   tableHTML += '</tbody></table></div>';
 
   // ── TS Dimensions table ────────────────────────────────────────
-  var dimHTML = '<div style="margin-top:28px"><h3 style="font-size:13px;font-weight:700;margin-bottom:10px;color:#818cf8">'
+  var dimHTML = '<div style="margin-top:28px"><h3 style="font-size:13px;font-weight:700;margin-bottom:10px;color:#99ee81">'
     + 'Transformation Statement Coverage</h3>'
-    + '<p style="font-size:11px;color:#64748b;margin-bottom:12px">Bar width = how strongly reviewer language maps onto each TS dimension.</p>'
+    + '<p style="font-size:11px;color:#8b7aac;margin-bottom:12px">Bar width = how strongly reviewer language maps onto each TS dimension.</p>'
     + '<div style="overflow-x:auto"><table class="coverage-table"><thead><tr>'
     + '<th class="ct-row-header" style="border:none;min-width:160px"></th>';
 
   projects.forEach(function(p) {
-    dimHTML += '<th style="font-size:10px;color:#64748b;padding:4px 2px;text-align:center;width:72px">' + displayName(p) + '</th>';
+    dimHTML += '<th style="font-size:10px;color:#8b7aac;padding:4px 2px;text-align:center;width:72px">' + displayName(p) + '</th>';
   });
   dimHTML += '</tr></thead><tbody>';
 
   DATA.ts_dimensions.forEach(function(dim) {
-    dimHTML += '<tr><td class="ct-row-header" style="font-size:11px;color:#94a3b8">' + dim.label + '</td>';
+    dimHTML += '<tr><td class="ct-row-header" style="font-size:11px;color:#8b7aac">' + dim.label + '</td>';
     projects.forEach(function(p) {
       var score = (DATA.ts_project_scores[p.id] || {})[dim.id] || 0;
       var opacity = Math.max(0.07, score * 2);
       var barW = Math.round(score * 52);
       dimHTML += '<td style="padding:6px 2px;text-align:center">';
       if (score > 0.05) {
-        dimHTML += '<div style="background:#818cf8;opacity:' + opacity.toFixed(2)
+        dimHTML += '<div style="background:#99ee81;opacity:' + opacity.toFixed(2)
           + ';height:7px;border-radius:4px;width:' + barW + 'px;margin:0 auto"></div>';
       } else {
-        dimHTML += '<div style="background:#1c2235;height:7px;border-radius:4px;width:22px;margin:0 auto"></div>';
+        dimHTML += '<div style="background:#261540;height:7px;border-radius:4px;width:22px;margin:0 auto"></div>';
       }
       dimHTML += '</td>';
     });
@@ -948,7 +949,7 @@ function renderCoverage() {
       splitHTML += '<span class="asc-split-pill" style="background:' + area.color + '25;color:' + area.color + '">'
         + primary.length + ' primary</span>';
     if (secondary.length)
-      splitHTML += '<span class="asc-split-pill" style="background:#1e2535;color:#64748b">'
+      splitHTML += '<span class="asc-split-pill" style="background:#1c1030;color:#8b7aac">'
         + secondary.length + ' secondary</span>';
 
     // Project list: sorted by alignment, cap at 6, show score + 1°/2° badge
@@ -956,7 +957,7 @@ function renderCoverage() {
     var shown = rankedProjects.slice(0, 6);
     shown.forEach(function(p) {
       var badgeColor = p.is_primary ? area.color : '#475569';
-      var badgeBg    = p.is_primary ? area.color + '22' : '#1e2535';
+      var badgeBg    = p.is_primary ? area.color + '22' : '#1c1030';
       var sc = p.alignment_avg;
       var scCol = sc >= 8.5 ? '#4ade80' : (sc >= 7 ? '#fbbf24' : '#f87171');
       projRows += '<div class="asc-proj-row" style="justify-content:space-between">'
@@ -1004,7 +1005,7 @@ function renderCoverage() {
         .map(function(ph) { return '<span class="ph-chip">' + ph + '</span>'; }).join('');
 
       var html = '<h4 style="line-height:1.35">' + proj.title + '</h4>'
-        + '<div style="font-size:11px;color:#64748b;margin-bottom:8px">' + proj.short + ' &middot; ' + proj.code + '</div>'
+        + '<div style="font-size:11px;color:#8b7aac;margin-bottom:8px">' + proj.short + ' &middot; ' + proj.code + '</div>'
         + '<div class="tt-row"><span class="tt-label">Pod</span>'
         + '<span style="display:inline-flex;align-items:center;gap:5px">'
         + '<span style="width:10px;height:10px;border-radius:50%;background:' + pc + ';display:inline-block"></span>'
@@ -1057,7 +1058,7 @@ function renderVoice() {
 
   el.innerHTML =
     '<div style="margin-bottom:10px">'
-    + '<h3 style="font-size:13px;font-weight:700;color:#64748b;margin-bottom:3px">'
+    + '<h3 style="font-size:13px;font-weight:700;color:#8b7aac;margin-bottom:3px">'
     + 'Emergent Voice &mdash; what the network is saying, interpreted for Phase 2 strategy'
     + '</h3>'
     + '<p style="font-size:11px;color:#475569;line-height:1.5">'
@@ -1067,7 +1068,7 @@ function renderVoice() {
     + '<div id="voice-wrap">'
     + '<div id="voice-svg-wrap"></div>'
     + '<div id="voice-detail">'
-    + '<div style="font-size:12px;color:#64748b;line-height:1.7;padding-top:8px">'
+    + '<div style="font-size:12px;color:#8b7aac;line-height:1.7;padding-top:8px">'
     + 'Select a theme to see the full analytical read, network question, Phase 2 implications, and evidence.'
     + '</div></div></div>'
     + '<div id="voice-actions" style="margin-top:18px"></div>';
@@ -1153,7 +1154,7 @@ function renderVoice() {
     var phraseTags = (d.phrases || []).map(function(ph) {
       return '<span style="display:inline-block;font-size:10px;padding:2px 8px;border-radius:99px;'
         + 'background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);'
-        + 'margin:2px;color:#94a3b8">' + ph + '</span>';
+        + 'margin:2px;color:#8b7aac">' + ph + '</span>';
     }).join('');
 
     var revList = (d.reviewers || []).map(function(rv) {
@@ -1162,33 +1163,33 @@ function renderVoice() {
     }).join('');
 
     var sentHTML = (d.sentences || []).slice(0, 4).map(function(s) {
-      var polColor = s.polarity === 'positive' ? '#4ade80' : s.polarity === 'concern' ? '#f87171' : '#94a3b8';
+      var polColor = s.polarity === 'positive' ? '#4ade80' : s.polarity === 'concern' ? '#f87171' : '#8b7aac';
       var polIcon  = s.polarity === 'positive' ? '\u25B2' : s.polarity === 'concern' ? '\u25BC' : '\u25CF';
       return '<div style="padding:8px 10px;border-radius:8px;background:rgba(255,255,255,.04);'
         + 'border-left:3px solid ' + d.color + ';margin-bottom:6px;font-size:11px;line-height:1.5;">'
         + '<div style="color:var(--text)">' + s.text + '</div>'
-        + '<div style="font-size:10px;color:#64748b;margin-top:4px">'
+        + '<div style="font-size:10px;color:#8b7aac;margin-top:4px">'
         + '<span style="color:' + polColor + '">' + polIcon + '</span> '
-        + s.reviewer + ' &middot; <strong style="color:#94a3b8">' + s.code + '</strong>'
+        + s.reviewer + ' &middot; <strong style="color:#8b7aac">' + s.code + '</strong>'
         + '</div></div>';
     }).join('');
 
     var emBadge = d.emerging
-      ? '<span style="font-size:10px;padding:2px 8px;border-radius:99px;border:1px dashed #94a3b8;color:#94a3b8;margin-left:6px">auto-detected</span>'
+      ? '<span style="font-size:10px;padding:2px 8px;border-radius:99px;border:1px dashed #8b7aac;color:#8b7aac;margin-left:6px">auto-detected</span>'
       : '';
 
     // ── Build the rich detail panel ──
     var html = '<div style="border-left:3px solid ' + d.color + ';padding-left:10px;margin-bottom:12px">'
       + '<div style="font-size:15px;font-weight:700;color:' + d.color + '">' + d.label + emBadge + '</div>'
-      + '<div style="font-size:11px;color:#64748b;margin-top:3px">'
+      + '<div style="font-size:11px;color:#8b7aac;margin-top:3px">'
       + d.n_reviewers + ' reviewers &middot; ' + d.n_projects + ' projects'
       + '</div></div>';
 
     // ── Interpretation (the LLM read) ──
     if (d.interpretation) {
-      html += '<div style="background:rgba(129,140,248,.06);border-radius:10px;padding:12px 14px;margin-bottom:12px;border:1px solid rgba(129,140,248,.12)">'
-        + '<div style="font-size:10px;font-weight:700;color:#818cf8;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Analytical Read</div>'
-        + '<div style="font-size:12px;color:#e2e8f0;line-height:1.6">' + d.interpretation + '</div>'
+      html += '<div style="background:rgba(153,238,129,.06);border-radius:10px;padding:12px 14px;margin-bottom:12px;border:1px solid rgba(153,238,129,.15)">'
+        + '<div style="font-size:10px;font-weight:700;color:#99ee81;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Analytical Read</div>'
+        + '<div style="font-size:12px;color:#ede8f5;line-height:1.6">' + d.interpretation + '</div>'
         + '</div>';
     }
 
@@ -1196,7 +1197,7 @@ function renderVoice() {
     if (d.network_question) {
       html += '<div style="background:rgba(251,191,36,.06);border-radius:10px;padding:12px 14px;margin-bottom:12px;border:1px solid rgba(251,191,36,.12)">'
         + '<div style="font-size:10px;font-weight:700;color:#fbbf24;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Strategic Question for Phase 2</div>'
-        + '<div style="font-size:12px;color:#e2e8f0;line-height:1.6;font-style:italic">' + d.network_question + '</div>'
+        + '<div style="font-size:12px;color:#ede8f5;line-height:1.6;font-style:italic">' + d.network_question + '</div>'
         + '</div>';
     }
 
@@ -1204,7 +1205,7 @@ function renderVoice() {
     if (d.phase2) {
       html += '<div style="background:rgba(74,222,128,.06);border-radius:10px;padding:12px 14px;margin-bottom:12px;border:1px solid rgba(74,222,128,.12)">'
         + '<div style="font-size:10px;font-weight:700;color:#4ade80;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Phase 2 Implication</div>'
-        + '<div style="font-size:12px;color:#e2e8f0;line-height:1.6">' + d.phase2 + '</div>'
+        + '<div style="font-size:12px;color:#ede8f5;line-height:1.6">' + d.phase2 + '</div>'
         + '</div>';
     }
 
@@ -1217,16 +1218,16 @@ function renderVoice() {
     }
 
     // ── Reviewers + Phrases ──
-    html += '<div style="font-size:10px;color:#64748b;margin-bottom:4px;text-transform:uppercase;letter-spacing:.05em">Reviewers</div>'
+    html += '<div style="font-size:10px;color:#8b7aac;margin-bottom:4px;text-transform:uppercase;letter-spacing:.05em">Reviewers</div>'
       + '<div style="margin-bottom:10px">' + revList + '</div>';
     if (phraseTags) {
-      html += '<div style="font-size:10px;color:#64748b;margin-bottom:4px;text-transform:uppercase;letter-spacing:.05em">Key Phrases</div>'
+      html += '<div style="font-size:10px;color:#8b7aac;margin-bottom:4px;text-transform:uppercase;letter-spacing:.05em">Key Phrases</div>'
         + '<div style="margin-bottom:10px">' + phraseTags + '</div>';
     }
 
     // ── Evidence: reviewer sentences ──
     if (sentHTML) {
-      html += '<div style="font-size:10px;color:#64748b;margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em">Evidence from Reviewer Sentences</div>'
+      html += '<div style="font-size:10px;color:#8b7aac;margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em">Evidence from Reviewer Sentences</div>'
         + sentHTML;
     }
 
@@ -1236,7 +1237,7 @@ function renderVoice() {
   // ── Network Actions Panel ──────────────────────────────────────────────
   if (actions.length > 0) {
     var actDiv = document.getElementById('voice-actions');
-    var actHTML = '<div style="border-top:1px solid #2a3050;padding-top:16px">'
+    var actHTML = '<div style="border-top:1px solid #3a2060;padding-top:16px">'
       + '<h3 style="font-size:13px;font-weight:700;color:#fbbf24;margin-bottom:3px">'
       + 'Network Actions &mdash; structural proposals from reviewers</h3>'
       + '<p style="font-size:11px;color:#475569;line-height:1.5;margin-bottom:12px">'
@@ -1248,9 +1249,9 @@ function renderVoice() {
       var polColor = a.polarity === 'positive' ? '#4ade80' : a.polarity === 'concern' ? '#f87171' : '#fbbf24';
       actHTML += '<div style="padding:10px 12px;border-radius:8px;background:rgba(251,191,36,.04);'
         + 'border-left:3px solid #fbbf24;font-size:11px;line-height:1.5">'
-        + '<div style="color:#e2e8f0">' + a.text + '</div>'
-        + '<div style="font-size:10px;color:#64748b;margin-top:4px">'
-        + a.reviewer + ' &middot; ' + (a.project || '') + (a.code ? ' <strong style="color:#94a3b8">' + a.code + '</strong>' : '')
+        + '<div style="color:#ede8f5">' + a.text + '</div>'
+        + '<div style="font-size:10px;color:#8b7aac;margin-top:4px">'
+        + a.reviewer + ' &middot; ' + (a.project || '') + (a.code ? ' <strong style="color:#8b7aac">' + a.code + '</strong>' : '')
         + '</div></div>';
     });
     actHTML += '</div></div>';
@@ -1299,8 +1300,8 @@ function renderCards() {
     var reviewers = (p.reviewers || []).join(', ');
 
     var singleRev = (p.reviewers || []).length < 2;
-    var singleStyle = singleRev ? ';border-style:dashed;border-width:1px;border-color:#3b4a6b' : '';
-    var singleBadge = singleRev ? '<span style="font-size:9px;color:#64748b;background:#1c2235;padding:1px 6px;border-radius:4px;margin-left:6px">single reviewer</span>' : '';
+    var singleStyle = singleRev ? ';border-style:dashed;border-width:1px;border-color:#3a2060' : '';
+    var singleBadge = singleRev ? '<span style="font-size:9px;color:#8b7aac;background:#261540;padding:1px 6px;border-radius:4px;margin-left:6px">single reviewer</span>' : '';
 
     html += '<div class="signal-card" style="border-top:3px solid ' + acolor + singleStyle + '">'
       + '<div class="sc-header">'
@@ -1315,7 +1316,7 @@ function renderCards() {
       + '<div class="sc-title" title="' + p.title + '">' + p.title.slice(0, 65) + (p.title.length > 65 ? '\u2026' : '') + '</div>'
       + '<div class="sc-meta">' + areaChip + statusChip + aiChip + ikChip + '</div>'
       + (phrases ? '<div class="sc-phrases">' + phrases + '</div>' : '')
-      + '<div style="font-size:10px;color:#64748b;margin-bottom:6px">Reviewed by: ' + reviewers + '</div>'
+      + '<div style="font-size:10px;color:#8b7aac;margin-bottom:6px">Reviewed by: ' + reviewers + '</div>'
       + pos0 + neg0
       + '</div>';
   });
@@ -1348,7 +1349,7 @@ function renderIntelligence() {
     'Language': '#facc15', 'Storytelling': '#a78bfa',
     'Environmental Stewardship': '#4ade80', 'Env Stewardship': '#4ade80',
     'Socio-Neuro AI': '#f97316', 'Multi-Agent Systems': '#60a5fa',
-    'Other': '#64748b'
+    'Other': '#8b7aac'
   };
 
   var TYPE_COLOR = {recommendation:'#f59e0b', question:'#22d3ee', action:'#4ade80', observation:'#a78bfa'};
@@ -1400,14 +1401,14 @@ function renderIntelligence() {
 
     // ── Stacked bar: sentence type distribution ──
     var barY = 14, barH = 22, barX = 140, barW = 280;
-    svg += '<text x="8" y="' + (barY+15) + '" fill="#64748b" font-size="10" font-weight="700">REVIEW STYLE</text>';
+    svg += '<text x="8" y="' + (barY+15) + '" fill="#8b7aac" font-size="10" font-weight="700">REVIEW STYLE</text>';
     var bx = barX;
     TYPE_KEYS.forEach(function(t) {
       var w = st.total > 0 ? (st.typeCounts[t] / st.total) * barW : 0;
       if (w > 0) {
         svg += '<rect x="' + bx + '" y="' + barY + '" width="' + w + '" height="' + barH + '" rx="3" fill="' + TYPE_COLOR[t] + '" fill-opacity=".75"/>';
         if (w > 28) {
-          svg += '<text x="' + (bx + w/2) + '" y="' + (barY + barH/2 + 4) + '" text-anchor="middle" fill="#0c0e17" font-size="10" font-weight="600">' + st.typeCounts[t] + '</text>';
+          svg += '<text x="' + (bx + w/2) + '" y="' + (barY + barH/2 + 4) + '" text-anchor="middle" fill="#2A1040" font-size="10" font-weight="600">' + st.typeCounts[t] + '</text>';
         }
         bx += w;
       }
@@ -1417,24 +1418,24 @@ function renderIntelligence() {
     TYPE_KEYS.forEach(function(t, i) {
       var ly = barY + i * 14;
       svg += '<circle cx="' + (legX+5) + '" cy="' + (ly+5) + '" r="4" fill="' + TYPE_COLOR[t] + '" fill-opacity=".75"/>';
-      svg += '<text x="' + (legX+14) + '" y="' + (ly+9) + '" fill="#94a3b8" font-size="9">' + TYPE_LABEL[t] + '</text>';
+      svg += '<text x="' + (legX+14) + '" y="' + (ly+9) + '" fill="#8b7aac" font-size="9">' + TYPE_LABEL[t] + '</text>';
     });
 
     // ── Alignment dot vs global average ──
     var dotY = 62, dotBarX = barX, dotBarW = barW;
-    svg += '<text x="8" y="' + (dotY+12) + '" fill="#64748b" font-size="10" font-weight="700">ALIGNMENT</text>';
+    svg += '<text x="8" y="' + (dotY+12) + '" fill="#8b7aac" font-size="10" font-weight="700">ALIGNMENT</text>';
     var alignMin = 4, alignMax = 10;
     var scaleX = function(v) { return dotBarX + ((v - alignMin) / (alignMax - alignMin)) * dotBarW; };
     // track line
-    svg += '<line x1="' + dotBarX + '" x2="' + (dotBarX+dotBarW) + '" y1="' + (dotY+8) + '" y2="' + (dotY+8) + '" stroke="#2a3050" stroke-width="2"/>';
+    svg += '<line x1="' + dotBarX + '" x2="' + (dotBarX+dotBarW) + '" y1="' + (dotY+8) + '" y2="' + (dotY+8) + '" stroke="#3a2060" stroke-width="2"/>';
     // global avg marker
     var gx = scaleX(globalAvg);
-    svg += '<line x1="' + gx + '" x2="' + gx + '" y1="' + (dotY) + '" y2="' + (dotY+16) + '" stroke="#64748b" stroke-width="1.5" stroke-dasharray="3,2"/>';
-    svg += '<text x="' + gx + '" y="' + (dotY+28) + '" text-anchor="middle" fill="#64748b" font-size="9">avg ' + globalAvg.toFixed(1) + '</text>';
+    svg += '<line x1="' + gx + '" x2="' + gx + '" y1="' + (dotY) + '" y2="' + (dotY+16) + '" stroke="#8b7aac" stroke-width="1.5" stroke-dasharray="3,2"/>';
+    svg += '<text x="' + gx + '" y="' + (dotY+28) + '" text-anchor="middle" fill="#8b7aac" font-size="9">avg ' + globalAvg.toFixed(1) + '</text>';
     // reviewer dot
     var rx = scaleX(st.avgAlign);
     var dotCol = st.avgAlign >= globalAvg ? '#4ade80' : '#fbbf24';
-    svg += '<circle cx="' + rx + '" cy="' + (dotY+8) + '" r="7" fill="' + dotCol + '" stroke="#0c0e17" stroke-width="2"/>';
+    svg += '<circle cx="' + rx + '" cy="' + (dotY+8) + '" r="7" fill="' + dotCol + '" stroke="#2A1040" stroke-width="2"/>';
     svg += '<text x="' + rx + '" y="' + (dotY-4) + '" text-anchor="middle" fill="' + dotCol + '" font-size="11" font-weight="700">' + st.avgAlign.toFixed(1) + '</text>';
     // scale labels
     svg += '<text x="' + dotBarX + '" y="' + (dotY+28) + '" fill="#475569" font-size="9">' + alignMin + '</text>';
@@ -1442,11 +1443,11 @@ function renderIntelligence() {
 
     // ── Polarity lean: pos / neutral / concern ──
     var polY = 100, polBarW = barW;
-    svg += '<text x="8" y="' + (polY+12) + '" fill="#64748b" font-size="10" font-weight="700">POLARITY LEAN</text>';
+    svg += '<text x="8" y="' + (polY+12) + '" fill="#8b7aac" font-size="10" font-weight="700">POLARITY LEAN</text>';
     var px = barX;
     var polData = [
       {label:'Positive', count:st.posCount, color:'#4ade80'},
-      {label:'Neutral',  count:st.neutralCount, color:'#64748b'},
+      {label:'Neutral',  count:st.neutralCount, color:'#8b7aac'},
       {label:'Concern',  count:st.negCount, color:'#f87171'},
     ];
     polData.forEach(function(pd) {
@@ -1454,7 +1455,7 @@ function renderIntelligence() {
       if (w > 0) {
         svg += '<rect x="' + px + '" y="' + polY + '" width="' + w + '" height="' + barH + '" rx="3" fill="' + pd.color + '" fill-opacity=".6"/>';
         if (w > 28) {
-          svg += '<text x="' + (px + w/2) + '" y="' + (polY + barH/2 + 4) + '" text-anchor="middle" fill="#0c0e17" font-size="10" font-weight="600">' + pd.count + '</text>';
+          svg += '<text x="' + (px + w/2) + '" y="' + (polY + barH/2 + 4) + '" text-anchor="middle" fill="#2A1040" font-size="10" font-weight="600">' + pd.count + '</text>';
         }
         px += w;
       }
@@ -1463,7 +1464,7 @@ function renderIntelligence() {
     polData.forEach(function(pd, i) {
       var ly = polY + i * 14;
       svg += '<circle cx="' + (legX+5) + '" cy="' + (ly+5) + '" r="4" fill="' + pd.color + '" fill-opacity=".6"/>';
-      svg += '<text x="' + (legX+14) + '" y="' + (ly+9) + '" fill="#94a3b8" font-size="9">' + pd.label + '</text>';
+      svg += '<text x="' + (legX+14) + '" y="' + (ly+9) + '" fill="#8b7aac" font-size="9">' + pd.label + '</text>';
     });
 
     // ── Summary stats ──
@@ -1482,14 +1483,14 @@ function renderIntelligence() {
     var svg = '<svg width="' + cW + '" height="' + cH + '" style="display:block;margin-bottom:12px">';
 
     // Headers
-    svg += '<text x="' + barX + '" y="16" fill="#64748b" font-size="10" font-weight="700">SENTENCE TYPE MIX</text>';
-    svg += '<text x="' + dotX + '" y="16" fill="#64748b" font-size="10" font-weight="700">ALIGNMENT TENDENCY</text>';
+    svg += '<text x="' + barX + '" y="16" fill="#8b7aac" font-size="10" font-weight="700">SENTENCE TYPE MIX</text>';
+    svg += '<text x="' + dotX + '" y="16" fill="#8b7aac" font-size="10" font-weight="700">ALIGNMENT TENDENCY</text>';
 
     reviewerNames.forEach(function(rev, i) {
       var st = revStats[rev];
       var ry = headH + i * rowH + 12;
       // Reviewer name
-      svg += '<text x="8" y="' + (ry+14) + '" fill="#e2e8f0" font-size="12" font-weight="600">' + rev + '</text>';
+      svg += '<text x="8" y="' + (ry+14) + '" fill="#ede8f5" font-size="12" font-weight="600">' + rev + '</text>';
       svg += '<text x="8" y="' + (ry+26) + '" fill="#475569" font-size="9">' + st.nProjects + ' projects · ' + st.total + ' sents</text>';
 
       // Stacked bar
@@ -1499,7 +1500,7 @@ function renderIntelligence() {
         if (w > 0) {
           svg += '<rect x="' + bx + '" y="' + (ry+2) + '" width="' + w + '" height="' + 18 + '" rx="2" fill="' + TYPE_COLOR[t] + '" fill-opacity=".7"/>';
           if (w > 22) {
-            svg += '<text x="' + (bx+w/2) + '" y="' + (ry+14) + '" text-anchor="middle" fill="#0c0e17" font-size="9" font-weight="600">' + st.typeCounts[t] + '</text>';
+            svg += '<text x="' + (bx+w/2) + '" y="' + (ry+14) + '" text-anchor="middle" fill="#2A1040" font-size="9" font-weight="600">' + st.typeCounts[t] + '</text>';
           }
           bx += w;
         }
@@ -1508,14 +1509,14 @@ function renderIntelligence() {
       // Alignment dot
       var alignMin = 4, alignMax = 10;
       var scaleA = function(v) { return dotX + ((v - alignMin) / (alignMax - alignMin)) * dotW; };
-      svg += '<line x1="' + dotX + '" x2="' + (dotX+dotW) + '" y1="' + (ry+11) + '" y2="' + (ry+11) + '" stroke="#2a3050" stroke-width="1.5"/>';
+      svg += '<line x1="' + dotX + '" x2="' + (dotX+dotW) + '" y1="' + (ry+11) + '" y2="' + (ry+11) + '" stroke="#3a2060" stroke-width="1.5"/>';
       // global avg
       var gx = scaleA(globalAvg);
       svg += '<line x1="' + gx + '" x2="' + gx + '" y1="' + (ry+3) + '" y2="' + (ry+19) + '" stroke="#475569" stroke-width="1" stroke-dasharray="2,2"/>';
       // reviewer dot
       var ax = scaleA(st.avgAlign);
       var dc = st.avgAlign >= globalAvg ? '#4ade80' : '#fbbf24';
-      svg += '<circle cx="' + ax + '" cy="' + (ry+11) + '" r="6" fill="' + dc + '" stroke="#0c0e17" stroke-width="1.5"/>';
+      svg += '<circle cx="' + ax + '" cy="' + (ry+11) + '" r="6" fill="' + dc + '" stroke="#2A1040" stroke-width="1.5"/>';
       svg += '<text x="' + (ax) + '" y="' + (ry-1) + '" text-anchor="middle" fill="' + dc + '" font-size="9" font-weight="700">' + st.avgAlign.toFixed(1) + '</text>';
     });
 
@@ -1524,7 +1525,7 @@ function renderIntelligence() {
     var lx = barX;
     TYPE_KEYS.forEach(function(t) {
       svg += '<circle cx="' + (lx+4) + '" cy="' + (ly+4) + '" r="4" fill="' + TYPE_COLOR[t] + '" fill-opacity=".7"/>';
-      svg += '<text x="' + (lx+12) + '" y="' + (ly+8) + '" fill="#94a3b8" font-size="9">' + TYPE_LABEL[t] + '</text>';
+      svg += '<text x="' + (lx+12) + '" y="' + (ly+8) + '" fill="#8b7aac" font-size="9">' + TYPE_LABEL[t] + '</text>';
       lx += 82;
     });
     svg += '<text x="' + dotX + '" y="' + (ly+8) + '" fill="#475569" font-size="9">Dashed line = global avg (' + globalAvg.toFixed(1) + ')</text>';
@@ -1535,9 +1536,9 @@ function renderIntelligence() {
 
   // ── Cross-project phrase tags panel ──
   var tagHTML = phrases.map(function(p) {
-    var pol = p.polarity > 0 ? 'rgba(74,222,128,.15)' : p.polarity < 0 ? 'rgba(248,113,113,.15)' : 'rgba(129,140,248,.12)';
-    var polBorder = p.polarity > 0 ? 'rgba(74,222,128,.3)' : p.polarity < 0 ? 'rgba(248,113,113,.3)' : 'rgba(129,140,248,.2)';
-    var polText = p.polarity > 0 ? '#4ade80' : p.polarity < 0 ? '#f87171' : '#818cf8';
+    var pol = p.polarity > 0 ? 'rgba(74,222,128,.15)' : p.polarity < 0 ? 'rgba(248,113,113,.15)' : 'rgba(103,48,145,.18)';
+    var polBorder = p.polarity > 0 ? 'rgba(74,222,128,.3)' : p.polarity < 0 ? 'rgba(248,113,113,.3)' : 'rgba(103,48,145,.35)';
+    var polText = p.polarity > 0 ? '#4ade80' : p.polarity < 0 ? '#f87171' : '#99ee81';
     return '<span class="intel-phrase-tag" style="background:' + pol + ';border-color:' + polBorder + ';color:' + polText + '" title="' + p.n_projects + ' projects">'
       + p.phrase
       + '<span class="itag-count" style="background:' + polBorder + '">' + p.n_projects + '</span>'
@@ -1546,16 +1547,16 @@ function renderIntelligence() {
 
   // ── Build a sentence card ──
   function makeCard(s) {
-    var aColor = AREA_COL[s.area] || '#64748b';
+    var aColor = AREA_COL[s.area] || '#8b7aac';
     var polIcon = s.polarity === 'positive' ? '\u25B2' : s.polarity === 'concern' ? '\u25BC' : '\u25CF';
-    var polColor = s.polarity === 'positive' ? '#4ade80' : s.polarity === 'concern' ? '#f87171' : '#64748b';
+    var polColor = s.polarity === 'positive' ? '#4ade80' : s.polarity === 'concern' ? '#f87171' : '#8b7aac';
     return '<div class="intel-card ' + s.type + '" data-reviewer="' + s.reviewer + '" data-project="' + (s.project||'') + '" data-type="' + s.type + '" data-polarity="' + (s.polarity||'neutral') + '">'
       + '<div class="intel-card-text">' + s.text + '</div>'
       + '<div class="intel-card-meta">'
       + '<span class="intel-area-dot" style="background:' + aColor + '"></span>'
       + '<span class="intel-code">' + s.code + '</span>'
-      + '<span style="color:#94a3b8">' + s.reviewer + '</span>'
-      + '<span class="intel-card-type-chip" style="background:' + (TYPE_COLOR[s.type]||'#64748b') + ';color:#0c0e17;padding:1px 6px;border-radius:4px;font-size:9px;font-weight:600;margin-left:6px">' + s.type + '</span>'
+      + '<span style="color:#8b7aac">' + s.reviewer + '</span>'
+      + '<span class="intel-card-type-chip" style="background:' + (TYPE_COLOR[s.type]||'#8b7aac') + ';color:#2A1040;padding:1px 6px;border-radius:4px;font-size:9px;font-weight:600;margin-left:6px">' + s.type + '</span>'
       + '<span style="color:' + polColor + ';margin-left:auto">' + polIcon + ' ' + s.polarity + '</span>'
       + '</div></div>';
   }
@@ -1598,8 +1599,8 @@ function renderIntelligence() {
   // ── Reviewer dropdown + Group-by toggle ──
   var controlHTML = '<div style="display:flex;align-items:center;gap:16px;margin-bottom:12px;flex-wrap:wrap">'
     + '<div style="display:flex;align-items:center;gap:8px">'
-    + '<label style="font-size:11px;color:#64748b;font-weight:700;text-transform:uppercase;letter-spacing:.5px">Reviewer</label>'
-    + '<select id="intel-rev-select" style="background:#141826;color:#e2e8f0;border:1px solid #2a3050;border-radius:8px;padding:5px 10px;font-size:12px;cursor:pointer">'
+    + '<label style="font-size:11px;color:#8b7aac;font-weight:700;text-transform:uppercase;letter-spacing:.5px">Reviewer</label>'
+    + '<select id="intel-rev-select" style="background:#1c1030;color:#ede8f5;border:1px solid #3a2060;border-radius:8px;padding:5px 10px;font-size:12px;cursor:pointer">'
     + '<option value="all">All Reviewers</option>';
   reviewerNames.forEach(function(r) {
     var st = revStats[r];
@@ -1607,9 +1608,9 @@ function renderIntelligence() {
   });
   controlHTML += '</select></div>'
     + '<div style="display:flex;align-items:center;gap:8px">'
-    + '<label style="font-size:11px;color:#64748b;font-weight:700;text-transform:uppercase;letter-spacing:.5px">Group by</label>'
-    + '<button id="intel-grp-type" class="intel-filter-btn" style="padding:3px 10px;font-size:11px;background:#1c2235;color:#e2e8f0;border:1px solid #3b4a6b;border-radius:6px;cursor:pointer">Type</button>'
-    + '<button id="intel-grp-proj" class="intel-filter-btn" style="padding:3px 10px;font-size:11px;background:transparent;color:#64748b;border:1px solid #3b4a6b;border-radius:6px;cursor:pointer">Project</button>'
+    + '<label style="font-size:11px;color:#8b7aac;font-weight:700;text-transform:uppercase;letter-spacing:.5px">Group by</label>'
+    + '<button id="intel-grp-type" class="intel-filter-btn" style="padding:3px 10px;font-size:11px;background:#261540;color:#ede8f5;border:1px solid #3a2060;border-radius:6px;cursor:pointer">Type</button>'
+    + '<button id="intel-grp-proj" class="intel-filter-btn" style="padding:3px 10px;font-size:11px;background:transparent;color:#8b7aac;border:1px solid #3a2060;border-radius:6px;cursor:pointer">Project</button>'
     + '</div>'
     + '</div>';
 
@@ -1633,7 +1634,7 @@ function renderIntelligence() {
         + '<div class="intel-bucket-header">'
         + '<span class="intel-bucket-icon">' + b.icon + '</span>'
         + '<div><div class="intel-bucket-title">' + b.label + '</div>'
-        + '<div style="font-size:11px;color:#64748b;margin-top:2px">' + b.desc + '</div></div>'
+        + '<div style="font-size:11px;color:#8b7aac;margin-top:2px">' + b.desc + '</div></div>'
         + '<span class="intel-bucket-count">' + items.length + ' signals</span>'
         + '</div>'
         + '<div class="intel-cards">' + cards + '</div>'
@@ -1664,15 +1665,15 @@ function renderIntelligence() {
       var items = projGroups[projKey];
       var pObj = DATA.projects.find(function(p) { return p.short === projKey || p.id.indexOf(projKey) > -1; });
       var dName = projDisplayName(projKey);
-      var aColor = pObj ? areaColor(pObj.primary_area) : '#64748b';
+      var aColor = pObj ? areaColor(pObj.primary_area) : '#8b7aac';
       var code = pObj ? pObj.code : '';
       var alignStr = pObj ? ' · Align: ' + pObj.alignment_avg.toFixed(1) : '';
       var cards = items.map(makeCard).join('');
       return '<div class="intel-bucket" data-bucket="project" data-project-group="' + projKey + '">'
         + '<div class="intel-bucket-header">'
         + '<span style="width:6px;height:28px;border-radius:3px;background:' + aColor + ';flex-shrink:0"></span>'
-        + '<div><div class="intel-bucket-title">' + dName + (code ? ' <span style="font-weight:400;color:#64748b;font-size:11px">' + code + '</span>' : '') + '</div>'
-        + '<div style="font-size:11px;color:#64748b;margin-top:2px">'
+        + '<div><div class="intel-bucket-title">' + dName + (code ? ' <span style="font-weight:400;color:#8b7aac;font-size:11px">' + code + '</span>' : '') + '</div>'
+        + '<div style="font-size:11px;color:#8b7aac;margin-top:2px">'
         + items.length + ' sentences' + alignStr
         + '</div></div>'
         + '</div>'
@@ -1683,7 +1684,7 @@ function renderIntelligence() {
 
   el.innerHTML =
     '<div style="margin-bottom:16px">'
-    + '<h3 style="font-size:13px;font-weight:700;color:#64748b;margin-bottom:4px">'
+    + '<h3 style="font-size:13px;font-weight:700;color:#8b7aac;margin-bottom:4px">'
     + 'Reviewer Intelligence &mdash; what the reviewers are actually saying, in their own words.'
     + '</h3>'
     + '<p style="font-size:11px;color:#475569;line-height:1.5">'
@@ -1710,10 +1711,10 @@ function renderIntelligence() {
 
   // ── Wire up group-by toggle ──
   function setGroupBtn(mode) {
-    document.getElementById('intel-grp-type').style.background = mode === 'type' ? '#1c2235' : 'transparent';
-    document.getElementById('intel-grp-type').style.color      = mode === 'type' ? '#e2e8f0' : '#64748b';
-    document.getElementById('intel-grp-proj').style.background = mode === 'project' ? '#1c2235' : 'transparent';
-    document.getElementById('intel-grp-proj').style.color      = mode === 'project' ? '#e2e8f0' : '#64748b';
+    document.getElementById('intel-grp-type').style.background = mode === 'type' ? '#261540' : 'transparent';
+    document.getElementById('intel-grp-type').style.color      = mode === 'type' ? '#ede8f5' : '#8b7aac';
+    document.getElementById('intel-grp-proj').style.background = mode === 'project' ? '#261540' : 'transparent';
+    document.getElementById('intel-grp-proj').style.color      = mode === 'project' ? '#ede8f5' : '#8b7aac';
     // In project mode, hide the type filter bar (grouping replaces it), or keep it for sub-filtering
     var filterBar = document.getElementById('intel-filter-bar');
     if (mode === 'project') {
@@ -1941,7 +1942,7 @@ function renderAIDomain() {
       svg.append('text')
         .attr('x', nd.x).attr('y', nd.y + nd.r + 11)
         .attr('text-anchor', 'middle').attr('font-size', 9)
-        .attr('fill', '#94a3b8').attr('pointer-events', 'none')
+        .attr('fill', '#8b7aac').attr('pointer-events', 'none')
         .text(displayName(nd.p));
     }
   });
@@ -1949,18 +1950,18 @@ function renderAIDomain() {
   // ── Legend row: AI Depth ──────────────────────────────────────────────────
   var legendY = H - 32;
   svg.append('text').attr('x', 16).attr('y', legendY - 4)
-    .attr('fill','#64748b').attr('font-size', 10).attr('font-weight', 700)
+    .attr('fill','#8b7aac').attr('font-size', 10).attr('font-weight', 700)
     .attr('text-transform','uppercase').text('AI Depth →');
   var lx = 90;
   DEPTH_ORDER.forEach(function(dep) {
     svg.append('circle').attr('cx', lx).attr('cy', legendY - 5).attr('r', 7)
       .attr('fill', DEPTH_COLOR[dep]).attr('fill-opacity', 0.78);
     svg.append('text').attr('x', lx + 11).attr('y', legendY - 1)
-      .attr('fill','#94a3b8').attr('font-size', 11).text(dep);
+      .attr('fill','#8b7aac').attr('font-size', 11).text(dep);
     lx += 72;
   });
   svg.append('text').attr('x', lx + 12).attr('y', legendY - 1)
-    .attr('fill','#64748b').attr('font-size', 10)
+    .attr('fill','#8b7aac').attr('font-size', 10)
     .text('  Bubble size = reviewer alignment score');
 }
 
@@ -2010,7 +2011,7 @@ function buildOverview() {
     : '—';
 
   var statsHTML = '<div style="display:flex;gap:12px;margin-bottom:18px;flex-wrap:wrap">'
-    + pill(visCount + ' projects', '#818cf8')
+    + pill(visCount + ' projects', '#99ee81')
     + pill(visEvals + ' evaluations', '#38bdf8')
     + pill('avg alignment ' + visAlign, '#4ade80')
     + '</div>';
@@ -2024,9 +2025,9 @@ function buildOverview() {
     var active = overviewState.reviewer === val;
     return '<button onclick="overviewState.reviewer=\'' + val + '\';buildOverview()" style="'
       + 'padding:5px 14px;border-radius:6px;border:1.5px solid '
-      + (active ? '#818cf8' : '#1e2535') + ';background:'
-      + (active ? '#818cf822' : 'transparent') + ';color:'
-      + (active ? '#818cf8' : '#94a3b8') + ';font-size:12px;font-weight:' + (active ? '700' : '500') + ';cursor:pointer;margin-right:6px">'
+      + (active ? '#99ee81' : '#1c1030') + ';background:'
+      + (active ? '#99ee8122' : 'transparent') + ';color:'
+      + (active ? '#99ee81' : '#8b7aac') + ';font-size:12px;font-weight:' + (active ? '700' : '500') + ';cursor:pointer;margin-right:6px">'
       + label + '</button>';
   }
 
@@ -2034,18 +2035,18 @@ function buildOverview() {
     var active = overviewState.sort === val;
     return '<button onclick="overviewState.sort=\'' + val + '\';buildOverview()" style="'
       + 'padding:4px 11px;border-radius:6px;border:1.5px solid '
-      + (active ? '#fbbf24' : '#1e2535') + ';background:'
+      + (active ? '#fbbf24' : '#1c1030') + ';background:'
       + (active ? '#fbbf2422' : 'transparent') + ';color:'
-      + (active ? '#fbbf24' : '#64748b') + ';font-size:11px;cursor:pointer;margin-right:4px">'
+      + (active ? '#fbbf24' : '#8b7aac') + ';font-size:11px;cursor:pointer;margin-right:4px">'
       + label + '</button>';
   }
 
   var controlsHTML = '<div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-bottom:18px">'
-    + '<div style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.06em;margin-right:4px">Reviewer</div>'
+    + '<div style="font-size:11px;font-weight:700;color:#8b7aac;text-transform:uppercase;letter-spacing:.06em;margin-right:4px">Reviewer</div>'
     + revBtn('all', 'All')
     + allReviewers.map(function(r) { return revBtn(r, r); }).join('')
     + '<div style="flex:1"></div>'
-    + '<div style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.06em;margin-right:4px">Sort by</div>'
+    + '<div style="font-size:11px;font-weight:700;color:#8b7aac;text-transform:uppercase;letter-spacing:.06em;margin-right:4px">Sort by</div>'
     + sortBtn('alignment', 'Alignment ↓')
     + sortBtn('pod', 'Pod')
     + sortBtn('area', 'Research Area')
@@ -2059,7 +2060,7 @@ function buildOverview() {
 
   // Row 1: pod colour strip + project name
   tableHTML += '<tr><th class="ct-row-header" style="border:none;min-width:170px;vertical-align:bottom;padding-bottom:8px">'
-    + '<span style="font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:.06em">Project</span></th>';
+    + '<span style="font-size:10px;color:#8b7aac;text-transform:uppercase;letter-spacing:.06em">Project</span></th>';
 
   projects.forEach(function(p) {
     var pc   = podColor(p.pod || 'Podless');
@@ -2077,11 +2078,11 @@ function buildOverview() {
       + '</div>'
       + '</th>';
   });
-  tableHTML += '<th style="width:44px;font-size:10px;color:#64748b;padding:4px 6px;text-align:center;vertical-align:bottom">Align</th>'
+  tableHTML += '<th style="width:44px;font-size:10px;color:#8b7aac;padding:4px 6px;text-align:center;vertical-align:bottom">Align</th>'
     + '</tr></thead><tbody>';
 
   // Row: Research Area
-  tableHTML += '<tr><td class="ct-row-header" style="font-size:11px;color:#94a3b8">Research Area</td>';
+  tableHTML += '<tr><td class="ct-row-header" style="font-size:11px;color:#8b7aac">Research Area</td>';
   projects.forEach(function(p) {
     var area = AREA_NAME_TO_ID[p.primary_area] || 'other';
     var ac   = AREA_COLOR[area] || '#475569';
@@ -2093,7 +2094,7 @@ function buildOverview() {
   tableHTML += '<td></td></tr>';
 
   // Row: Pod
-  tableHTML += '<tr><td class="ct-row-header" style="font-size:11px;color:#94a3b8">Pod</td>';
+  tableHTML += '<tr><td class="ct-row-header" style="font-size:11px;color:#8b7aac">Pod</td>';
   projects.forEach(function(p) {
     var pc = podColor(p.pod || 'Podless');
     tableHTML += '<td style="text-align:center;padding:5px 2px">'
@@ -2104,7 +2105,7 @@ function buildOverview() {
   tableHTML += '<td></td></tr>';
 
   // Row: AI Depth
-  tableHTML += '<tr><td class="ct-row-header" style="font-size:11px;color:#94a3b8">AI Depth</td>';
+  tableHTML += '<tr><td class="ct-row-header" style="font-size:11px;color:#8b7aac">AI Depth</td>';
   projects.forEach(function(p) {
     var depCol = {'High':'#f87171','Mid':'#fb923c','Low':'#fbbf24','None':'#475569'}[p.ai_depth] || '#475569';
     tableHTML += '<td style="text-align:center;padding:5px 2px">'
@@ -2115,9 +2116,9 @@ function buildOverview() {
   tableHTML += '<td></td></tr>';
 
   // Row: Status
-  tableHTML += '<tr><td class="ct-row-header" style="font-size:11px;color:#94a3b8">Status</td>';
+  tableHTML += '<tr><td class="ct-row-header" style="font-size:11px;color:#8b7aac">Status</td>';
   projects.forEach(function(p) {
-    var stCol = {'Completed':'#4ade80','Mid-Point':'#38bdf8','Beginning':'#818cf8'}[p.status] || '#475569';
+    var stCol = {'Completed':'#4ade80','Mid-Point':'#38bdf8','Beginning':'#99ee81'}[p.status] || '#475569';
     tableHTML += '<td style="text-align:center;padding:5px 2px">'
       + '<span style="font-size:10px;padding:2px 6px;border-radius:99px;background:' + stCol + '22;color:' + stCol + '">'
       + (p.status || '—')
@@ -2130,23 +2131,23 @@ function buildOverview() {
 
   // TS dimension label header
   tableHTML += '<tr><td colspan="' + (projects.length + 2) + '" style="padding:10px 0 4px">'
-    + '<span style="font-size:11px;font-weight:700;color:#818cf8;text-transform:uppercase;letter-spacing:.06em">↓ Transformation Statement Coverage</span>'
+    + '<span style="font-size:11px;font-weight:700;color:#99ee81;text-transform:uppercase;letter-spacing:.06em">↓ Transformation Statement Coverage</span>'
     + '<span style="font-size:10px;color:#475569;margin-left:10px">Bar width = reviewer language alignment to each TS dimension</span>'
     + '</td></tr>';
 
   // TS dimension rows
   dims.forEach(function(dim) {
-    tableHTML += '<tr><td class="ct-row-header" style="font-size:11px;color:#94a3b8">' + dim.label + '</td>';
+    tableHTML += '<tr><td class="ct-row-header" style="font-size:11px;color:#8b7aac">' + dim.label + '</td>';
     projects.forEach(function(p) {
       var score = (DATA.ts_project_scores[p.id] || {})[dim.id] || 0;
       var opacity = Math.max(0.08, score * 2);
       var barW = Math.round(score * 56);
       tableHTML += '<td style="padding:6px 2px;text-align:center">';
       if (score > 0.05) {
-        tableHTML += '<div style="background:#818cf8;opacity:' + opacity.toFixed(2)
+        tableHTML += '<div style="background:#99ee81;opacity:' + opacity.toFixed(2)
           + ';height:8px;border-radius:4px;width:' + barW + 'px;margin:0 auto"></div>';
       } else {
-        tableHTML += '<div style="background:#1c2235;height:8px;border-radius:4px;width:20px;margin:0 auto"></div>';
+        tableHTML += '<div style="background:#261540;height:8px;border-radius:4px;width:20px;margin:0 auto"></div>';
       }
       tableHTML += '</td>';
     });
@@ -2157,7 +2158,7 @@ function buildOverview() {
   tableHTML += '<tr><td colspan="' + (projects.length + 2) + '" style="height:6px;background:#0d1117"></td></tr>';
 
   // Alignment footer row
-  tableHTML += '<tr><td class="ct-row-header" style="font-size:11px;color:#64748b;font-weight:700">Alignment Score</td>';
+  tableHTML += '<tr><td class="ct-row-header" style="font-size:11px;color:#8b7aac;font-weight:700">Alignment Score</td>';
   projects.forEach(function(p) {
     var sc = p.alignment_avg >= 8.5 ? '#4ade80' : (p.alignment_avg >= 7 ? '#fbbf24' : '#f87171');
     tableHTML += '<td style="text-align:center;padding:6px 0">'
@@ -2166,11 +2167,11 @@ function buildOverview() {
   tableHTML += '<td></td></tr>';
 
   // Reviewer count row
-  tableHTML += '<tr><td class="ct-row-header" style="font-size:11px;color:#64748b">Reviewers</td>';
+  tableHTML += '<tr><td class="ct-row-header" style="font-size:11px;color:#8b7aac">Reviewers</td>';
   projects.forEach(function(p) {
     var revs = p.reviewers || [];
     var chips = revs.map(function(r) {
-      return '<span style="font-size:9px;padding:1px 5px;border-radius:99px;background:#818cf822;color:#818cf8;margin:1px;display:inline-block">' + r + '</span>';
+      return '<span style="font-size:9px;padding:1px 5px;border-radius:99px;background:#99ee8122;color:#99ee81;margin:1px;display:inline-block">' + r + '</span>';
     }).join('');
     tableHTML += '<td style="text-align:center;padding:4px 2px">' + chips + '</td>';
   });
@@ -2179,29 +2180,29 @@ function buildOverview() {
   tableHTML += '</tbody></table></div>';
 
   // ── Legend ───────────────────────────────────────────────────────
-  var legendHTML = '<div style="display:flex;flex-wrap:wrap;gap:16px;margin-bottom:20px;padding:12px 16px;background:#0d1520;border-radius:10px;border:1px solid #1e2535">';
-  legendHTML += '<div><div style="font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Pod (top strip colour)</div><div style="display:flex;flex-wrap:wrap;gap:8px">';
+  var legendHTML = '<div style="display:flex;flex-wrap:wrap;gap:16px;margin-bottom:20px;padding:12px 16px;background:#1c1030;border-radius:10px;border:1px solid #1c1030">';
+  legendHTML += '<div><div style="font-size:10px;font-weight:700;color:#8b7aac;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Pod (top strip colour)</div><div style="display:flex;flex-wrap:wrap;gap:8px">';
   var podsSeen = {};
   DATA.projects.forEach(function(p) {
     var pod = p.pod || 'Podless';
     if (!podsSeen[pod]) {
       podsSeen[pod] = true;
-      legendHTML += '<span style="font-size:10px;display:flex;align-items:center;gap:4px;color:#94a3b8">'
+      legendHTML += '<span style="font-size:10px;display:flex;align-items:center;gap:4px;color:#8b7aac">'
         + '<span style="display:inline-block;width:20px;height:5px;background:' + podColor(pod) + ';border-radius:3px"></span>'
         + pod.replace(' Pod','') + '</span>';
     }
   });
   legendHTML += '</div></div>';
 
-  legendHTML += '<div><div style="font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Research Area (dot)</div><div style="display:flex;flex-wrap:wrap;gap:8px">';
+  legendHTML += '<div><div style="font-size:10px;font-weight:700;color:#8b7aac;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Research Area (dot)</div><div style="display:flex;flex-wrap:wrap;gap:8px">';
   ALL_AREAS.forEach(function(a) {
-    legendHTML += '<span style="font-size:10px;display:flex;align-items:center;gap:4px;color:#94a3b8">'
+    legendHTML += '<span style="font-size:10px;display:flex;align-items:center;gap:4px;color:#8b7aac">'
       + '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:' + a.color + '"></span>'
       + a.title + '</span>';
   });
   legendHTML += '</div></div>';
 
-  legendHTML += '<div style="font-size:10px;color:#94a3b8;display:flex;align-items:center;gap:6px">'
+  legendHTML += '<div style="font-size:10px;color:#8b7aac;display:flex;align-items:center;gap:6px">'
     + '<span style="font-size:12px;color:#f59e0b">⚠</span> Single reviewer — treat with caution</div>';
   legendHTML += '</div>';
 
@@ -2252,7 +2253,7 @@ function renderPodProfile() {
     });
     Object.keys(podCounts).forEach(function(pod) {
       if (!podThemes[pod]) podThemes[pod] = [];
-      podThemes[pod].push({ label: theme.label, count: podCounts[pod], color: theme.color || '#818cf8' });
+      podThemes[pod].push({ label: theme.label, count: podCounts[pod], color: theme.color || '#99ee81' });
     });
   });
 
@@ -2331,7 +2332,7 @@ function renderPodProfile() {
       });
     }
     if (noAI > 0) {
-      card += '<span class="pod-domain-tag" style="background:#1e2535;color:#64748b">No specific AI ×' + noAI + '</span>';
+      card += '<span class="pod-domain-tag" style="background:#1c1030;color:#8b7aac">No specific AI ×' + noAI + '</span>';
     }
     card += '</div></div>';
 
@@ -2342,7 +2343,7 @@ function renderPodProfile() {
       + '<div class="pod-section-label">Research Areas (primary)</div>';
     sortedAreas.forEach(function(e) {
       var aId  = AREA_NAME_TO_ID[e[0]] || 'other';
-      var aCol = AREA_COLOR[aId] || '#64748b';
+      var aCol = AREA_COLOR[aId] || '#8b7aac';
       var barW = Math.round(e[1] / maxAreaCnt * 100);
       card += '<div class="pod-area-row">'
         + '<span class="pod-area-name" style="color:' + aCol + '">' + e[0] + '</span>'
@@ -2357,7 +2358,7 @@ function renderPodProfile() {
     if (podTS && tsDims.length) {
       var TS_DIM_COL = {
         ts_ik:'#4ade80', ts_relational:'#22d3ee', ts_community:'#f59e0b',
-        ts_technical:'#f87171', ts_governance:'#818cf8', ts_network:'#60a5fa', ts_imaginaries:'#c084fc'
+        ts_technical:'#f87171', ts_governance:'#a066cc', ts_network:'#60a5fa', ts_imaginaries:'#c084fc'
       };
       card += '<div class="pod-section">'
         + '<div class="pod-section-label">Transformation Statement Dimensions</div>';
@@ -2367,7 +2368,7 @@ function renderPodProfile() {
       });
       sortedDims.forEach(function(dim) {
         var sc  = podTS[dim.id] || 0;
-        var col = TS_DIM_COL[dim.id] || '#818cf8';
+        var col = TS_DIM_COL[dim.id] || '#99ee81';
         var barW = Math.round(sc * 100);
         var shortLabel = dim.label.replace('Indigenous Knowledge', 'IK')
                                   .replace('Integration', '')
@@ -2406,9 +2407,9 @@ function renderPodProfile() {
   html += '</div>'; // close pod-grid
 
   // ── Page intro ──────────────────────────────────────────────────────────
-  var intro = '<div style="padding:20px 24px 0;border-bottom:1px solid #1e2535;margin-bottom:0">'
-    + '<div style="font-size:15px;font-weight:800;color:#e2e8f0;margin-bottom:4px">Pod Intelligence</div>'
-    + '<div style="font-size:11px;color:#64748b">How each pod clusters across AI depth, domains, research areas, transformation statement dimensions, and network themes.'
+  var intro = '<div style="padding:20px 24px 0;border-bottom:1px solid #1c1030;margin-bottom:0">'
+    + '<div style="font-size:15px;font-weight:800;color:#ede8f5;margin-bottom:4px">Pod Intelligence</div>'
+    + '<div style="font-size:11px;color:#8b7aac">How each pod clusters across AI depth, domains, research areas, transformation statement dimensions, and network themes.'
     + ' Sorted by pod size. TS dimensions ranked by pod strength.</div>'
     + '</div>';
 
@@ -2422,7 +2423,7 @@ function renderPodRelations() {
   var el = document.getElementById('view-podrelations');
   el.innerHTML = ''
     + '<div class="pr-header">'
-    + '<div style="font-size:15px;font-weight:800;color:#e2e8f0;margin-bottom:2px">Pod Relations</div>'
+    + '<div style="font-size:15px;font-weight:800;color:#ede8f5;margin-bottom:2px">Pod Relations</div>'
     + '<div class="pr-view-toggle">'
     + '<button class="pr-toggle-btn' + (podRelView==='force'?' active':'') + '" id="pr-btn-force" onclick="podRelView=\'force\';document.getElementById(\'pr-btn-force\').className=\'pr-toggle-btn active\';document.getElementById(\'pr-btn-flow\').className=\'pr-toggle-btn\';buildPRView()">Force Network</button>'
     + '<button class="pr-toggle-btn' + (podRelView==='flow'?' active':'') + '" id="pr-btn-flow"  onclick="podRelView=\'flow\'; document.getElementById(\'pr-btn-force\').className=\'pr-toggle-btn\';document.getElementById(\'pr-btn-flow\').className=\'pr-toggle-btn active\';buildPRView()">Parallel Flow</button>'
@@ -2471,7 +2472,7 @@ function buildForceView(canvas) {
     // Pill label: full theme name, truncated to 18 chars
     var pill = t.label.length > 18 ? t.label.slice(0, 17) + '\u2026' : t.label;
     var nd = {id:'theme|'+t.id, type:'theme', label:t.label, pillLabel:pill,
-              color:t.color||'#818cf8', r:r,
+              color:t.color||'#99ee81', r:r,
               _pw: pill.length * 5.5 + 18,  // pill width pre-computed
               _ph: 18};                       // pill height
     nodes.push(nd); nodeById[nd.id] = nd;
@@ -2494,14 +2495,14 @@ function buildForceView(canvas) {
     (t.projects||[]).forEach(function(pid){
       var src = 'proj|'+pid, tgt = 'theme|'+t.id;
       if (nodeById[src]) links.push({source:src, target:tgt, ltype:'theme',
-                                     themeColor: t.color||'#818cf8'});
+                                     themeColor: t.color||'#99ee81'});
     });
   });
 
   // ── SVG + zoom ───────────────────────────────────────────────────────────
   var svg = d3.select(canvas).append('svg')
     .attr('width', W).attr('height', H)
-    .style('background','#080e1a').style('border-radius','10px');
+    .style('background','#110820').style('border-radius','10px');
 
   var gridG = svg.append('g');
   [outerR * 0.38, outerR * 0.72, outerR].forEach(function(r){
@@ -2568,7 +2569,7 @@ function buildForceView(canvas) {
     .attr('fill', function(d){ return d.color; })
     .attr('fill-opacity', function(d){ return d.type==='project' ? 0.65 : d.type==='theme' ? 0.80 : 1; })
     .attr('stroke', function(d){
-      if (d.type==='pod')   return '#080e1a';
+      if (d.type==='pod')   return '#110820';
       if (d.type==='theme') return d.color;
       return 'none';
     })
@@ -2609,7 +2610,7 @@ function buildForceView(canvas) {
     .attr('width', function(d){ return d._pw; })
     .attr('height', function(d){ return d._ph; })
     .attr('rx', 5).attr('ry', 5)
-    .attr('fill', '#0d1525')
+    .attr('fill', '#1c1030')
     .attr('stroke', function(d){ return d.color; })
     .attr('stroke-width', 1.5).attr('stroke-opacity', 0.80)
     .style('cursor','pointer');
@@ -2781,15 +2782,15 @@ function buildForceView(canvas) {
   // ── Legend ────────────────────────────────────────────────────────────────
   var legG = svg.append('g').attr('transform','translate(14,14)');
   [
-    {label:'Theme (centre)',  r:6,  op:0.80, stroke:'#818cf8', sw:2},
-    {label:'Pod (outer ring)',r:8,  op:1,    stroke:'#080e1a', sw:2.5},
+    {label:'Theme (centre)',  r:6,  op:0.80, stroke:'#99ee81', sw:2},
+    {label:'Pod (outer ring)',r:8,  op:1,    stroke:'#110820', sw:2.5},
     {label:'Project',         r:3,  op:0.65, stroke:'none',    sw:0}
   ].forEach(function(item, i){
     legG.append('circle').attr('cx',9).attr('cy',i*20+1).attr('r',item.r)
-      .attr('fill','#94a3b8').attr('fill-opacity',item.op)
+      .attr('fill','#8b7aac').attr('fill-opacity',item.op)
       .attr('stroke',item.stroke).attr('stroke-width',item.sw);
     legG.append('text').attr('x',22).attr('y',i*20+5)
-      .attr('font-size',9).attr('fill','#64748b').text(item.label);
+      .attr('font-size',9).attr('fill','#8b7aac').text(item.label);
   });
 
   svg.append('text')
@@ -2846,7 +2847,7 @@ function buildFlowView(canvas, mode) {
     if (!t.projects||!t.projects.length) return;
     t.projects.forEach(function(pid){
       if (!projThemeMap[pid]) projThemeMap[pid]=[];
-      projThemeMap[pid].push({label:t.label, color:t.color||'#818cf8'});
+      projThemeMap[pid].push({label:t.label, color:t.color||'#99ee81'});
     });
   });
   var records = [];
@@ -2908,7 +2909,7 @@ function buildFlowView(canvas, mode) {
   var svg = d3.select(canvas).append('svg')
     .attr('viewBox', '0 0 ' + W + ' ' + H)
     .attr('width', '100%').attr('height', H)
-    .style('background','#080e1a').style('border-radius','10px')
+    .style('background','#110820').style('border-radius','10px')
     .style('overflow','visible').style('display','block');
 
   // ── Compute band data with originSet (for click tracing) ───────────────
@@ -2974,12 +2975,12 @@ function buildFlowView(canvas, mode) {
           var ry1 = ry0 + bandH_r;
 
           // Colour: use pod colour wherever possible (visual consistency)
-          var bandColor = '#818cf8';
+          var bandColor = '#99ee81';
           if (leftKey==='pod') {
             bandColor = podColor(lk);
           } else if (leftKey==='theme') {
             var tmL = (DATA.research_themes||[]).find(function(t){ return t.label===lk; });
-            if (tmL) bandColor = tmL.color || '#818cf8';
+            if (tmL) bandColor = tmL.color || '#99ee81';
           } else {
             var podCounts = {};
             records.forEach(function(r){
@@ -3022,13 +3023,13 @@ function buildFlowView(canvas, mode) {
   var DEPTH_COL = {'High':'#f87171','Mid':'#fbbf24','Low':'#a3e635','None':'#475569'};
   function nodeColor(key, cat) {
     if (key==='pod')   return podColor(cat);
-    if (key==='depth') return DEPTH_COL[cat]||'#64748b';
-    if (key==='area')  return AREA_COLOR[AREA_NAME_TO_ID[cat]]||'#64748b';
+    if (key==='depth') return DEPTH_COL[cat]||'#8b7aac';
+    if (key==='area')  return AREA_COLOR[AREA_NAME_TO_ID[cat]]||'#8b7aac';
     if (key==='theme') {
       var tm=(DATA.research_themes||[]).find(function(t){ return t.label===cat; });
-      return tm ? tm.color||'#818cf8' : '#818cf8';
+      return tm ? tm.color||'#99ee81' : '#99ee81';
     }
-    return '#818cf8';
+    return '#99ee81';
   }
 
   // ── Click state + highlight logic ────────────────────────────────────────
@@ -3106,7 +3107,7 @@ function buildFlowView(canvas, mode) {
         + '<div style="font-size:8px;color:#475569;margin-bottom:6px;letter-spacing:.04em">'
         +   d.leftKey.toUpperCase()+' \u2192 '+d.rightKey.toUpperCase()+'</div>';
       if (projs.length) {
-        html += '<div style="font-size:9px;color:#64748b;margin-bottom:4px;font-weight:600">'
+        html += '<div style="font-size:9px;color:#8b7aac;margin-bottom:4px;font-weight:600">'
           +projs.length+' project'+(projs.length!==1?'s':'')+'</div>'
           +'<div style="max-height:130px;overflow-y:auto">';
         projs.forEach(function(p){
@@ -3135,7 +3136,7 @@ function buildFlowView(canvas, mode) {
 
     svg.append('text').attr('x', x + AX_W/2).attr('y', PAD_T - 22)
       .attr('text-anchor','middle').attr('font-size',10).attr('font-weight','700')
-      .attr('fill','#94a3b8').attr('letter-spacing',1)
+      .attr('fill','#8b7aac').attr('letter-spacing',1)
       .text(AXIS_LABELS[ai].toUpperCase());
 
     cats.forEach(function(c){
@@ -3143,11 +3144,11 @@ function buildFlowView(canvas, mode) {
       if (!block) return;
 
       var col = key==='pod'   ? podColor(c[0]) :
-                key==='depth' ? ({'High':'#f87171','Mid':'#fbbf24','Low':'#a3e635','None':'#475569'}[c[0]]||'#64748b') :
-                key==='area'  ? (AREA_COLOR[AREA_NAME_TO_ID[c[0]]]||'#64748b') : '#818cf8';
+                key==='depth' ? ({'High':'#f87171','Mid':'#fbbf24','Low':'#a3e635','None':'#475569'}[c[0]]||'#8b7aac') :
+                key==='area'  ? (AREA_COLOR[AREA_NAME_TO_ID[c[0]]]||'#8b7aac') : '#99ee81';
       if (key==='theme'){
         var tm = (DATA.research_themes||[]).find(function(t){ return t.label===c[0]; });
-        if (tm) col = tm.color||'#818cf8';
+        if (tm) col = tm.color||'#99ee81';
       }
 
       blockData.push({key:key, cat:c[0], ai:ai, x:x, y:block.y,
@@ -3210,7 +3211,7 @@ var TS_DIM_COLORS = {
   ts_relational:  '#22d3ee',
   ts_community:   '#f59e0b',
   ts_technical:   '#f87171',
-  ts_governance:  '#818cf8',
+  ts_governance:  '#a066cc',
   ts_network:     '#60a5fa',
   ts_imaginaries: '#c084fc'
 };
@@ -3233,24 +3234,24 @@ function renderTransform() {
 
   // ── Summary strip — 7 dimension pills at top ─────────────────────
   var summaryHTML = '<div style="padding:20px 24px 0">'
-    + '<h2 style="font-size:15px;font-weight:800;color:#e2e8f0;margin-bottom:4px">Network Transformation Map</h2>'
-    + '<p style="font-size:12px;color:#64748b;margin-bottom:16px">How strongly does the AbInt network advance each dimension of the transformation statement? Each section shows every project\'s contribution, ranked by signal strength.</p>'
+    + '<h2 style="font-size:15px;font-weight:800;color:#ede8f5;margin-bottom:4px">Network Transformation Map</h2>'
+    + '<p style="font-size:12px;color:#8b7aac;margin-bottom:16px">How strongly does the AbInt network advance each dimension of the transformation statement? Each section shows every project\'s contribution, ranked by signal strength.</p>'
     + '<div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:24px">';
 
   // Sort dims by network average descending for the summary pills
   var dimsSorted = dims.slice().sort(function(a,b){ return netAvg[b.id] - netAvg[a.id]; });
   dimsSorted.forEach(function(dim) {
-    var col  = TS_DIM_COLORS[dim.id] || '#818cf8';
+    var col  = TS_DIM_COLORS[dim.id] || '#99ee81';
     var avg  = netAvg[dim.id];
     var pct  = Math.round(avg * 100);
     var rank = avg > 0.5 ? 'Strong' : avg > 0.25 ? 'Moderate' : 'Emerging';
     summaryHTML += '<div style="padding:10px 16px;border-radius:10px;background:' + col + '15;border:1.5px solid ' + col + '44;min-width:160px;flex:1">'
       + '<div style="font-size:11px;font-weight:800;color:' + col + ';margin-bottom:4px">' + dim.label + '</div>'
-      + '<div style="background:#0d1520;border-radius:4px;height:6px;margin-bottom:6px">'
+      + '<div style="background:#1c1030;border-radius:4px;height:6px;margin-bottom:6px">'
       + '<div style="background:' + col + ';height:6px;border-radius:4px;width:' + Math.round(avg * 200) + 'px;max-width:100%"></div>'
       + '</div>'
       + '<div style="display:flex;justify-content:space-between;align-items:center">'
-      + '<span style="font-size:10px;color:#64748b">' + rank + '</span>'
+      + '<span style="font-size:10px;color:#8b7aac">' + rank + '</span>'
       + '<span style="font-size:11px;font-weight:700;color:' + col + '">' + pct + '%</span>'
       + '</div>'
       + '</div>';
@@ -3261,7 +3262,7 @@ function renderTransform() {
   var sectionsHTML = '<div style="padding:0 24px 40px">';
 
   dims.forEach(function(dim) {
-    var col = TS_DIM_COLORS[dim.id] || '#818cf8';
+    var col = TS_DIM_COLORS[dim.id] || '#99ee81';
     var avg = netAvg[dim.id];
 
     // Projects with score > 0.04, sorted desc
@@ -3274,18 +3275,18 @@ function renderTransform() {
     var strongCount = dimProjects.filter(function(x){ return x.score >= 0.2; }).length;
     var totalCount  = dimProjects.length;
 
-    sectionsHTML += '<div style="margin-bottom:36px;padding:20px;border-radius:12px;background:#0d1520;border:1px solid ' + col + '33">';
+    sectionsHTML += '<div style="margin-bottom:36px;padding:20px;border-radius:12px;background:#1c1030;border:1px solid ' + col + '33">';
 
     // Section header
     sectionsHTML += '<div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">'
       + '<div>'
       + '<div style="font-size:14px;font-weight:800;color:' + col + ';margin-bottom:2px">' + dim.label + '</div>'
-      + '<div style="font-size:11px;color:#64748b">' + dim.desc + '</div>'
+      + '<div style="font-size:11px;color:#8b7aac">' + dim.desc + '</div>'
       + '</div>'
       + '<div style="display:flex;gap:8px;align-items:center">'
       + '<span style="font-size:10px;padding:3px 10px;border-radius:99px;background:' + col + '22;color:' + col + '">'
       + strongCount + ' strong signal' + (strongCount !== 1 ? 's' : '') + '</span>'
-      + '<span style="font-size:10px;padding:3px 10px;border-radius:99px;background:#1e2535;color:#94a3b8">'
+      + '<span style="font-size:10px;padding:3px 10px;border-radius:99px;background:#1c1030;color:#8b7aac">'
       + totalCount + ' projects contributing</span>'
       + '</div>'
       + '</div>';
@@ -3293,7 +3294,7 @@ function renderTransform() {
     // Network aggregate bar
     sectionsHTML += '<div style="margin-bottom:16px">'
       + '<div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">'
-      + '<span style="font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.06em;min-width:120px">Network Average</span>'
+      + '<span style="font-size:10px;font-weight:700;color:#8b7aac;text-transform:uppercase;letter-spacing:.06em;min-width:120px">Network Average</span>'
       + '<div style="flex:1;background:#0a0f1a;border-radius:4px;height:10px">'
       + '<div style="background:' + col + ';height:10px;border-radius:4px;width:' + Math.min(100, Math.round(avg * 200)) + '%;opacity:0.85"></div>'
       + '</div>'
@@ -3340,7 +3341,7 @@ function renderTransform() {
           // Reviewer chips
           + '<div style="min-width:80px">'
           + (p.reviewers||[]).map(function(r){
-              return '<span style="font-size:9px;padding:1px 5px;border-radius:99px;background:#1e2535;color:#64748b;margin:1px;display:inline-block">' + r + '</span>';
+              return '<span style="font-size:9px;padding:1px 5px;border-radius:99px;background:#1c1030;color:#8b7aac;margin:1px;display:inline-block">' + r + '</span>';
             }).join('')
           + '</div>'
           + '</div>';
@@ -3375,8 +3376,8 @@ function renderTSRollup() {
 
   // ── Header ──────────────────────────────────────────────────────
   var html = '<div style="padding:24px 24px 0">'
-    + '<h2 style="font-size:16px;font-weight:800;color:#e2e8f0;margin-bottom:4px">Network Transformation — What Reviewers Are Saying</h2>'
-    + '<p style="font-size:12px;color:#64748b;margin-bottom:20px;max-width:800px">'
+    + '<h2 style="font-size:16px;font-weight:800;color:#ede8f5;margin-bottom:4px">Network Transformation — What Reviewers Are Saying</h2>'
+    + '<p style="font-size:12px;color:#8b7aac;margin-bottom:20px;max-width:800px">'
     + 'An analytical read of how the AbInt network advances each dimension of the Transformation Statement, '
     + 'based on LLM semantic analysis of all reviewer text across ' + projects.length + ' projects. '
     + 'Scoring blends 70% semantic reading with 30% keyword-hybrid analysis.</p>'
@@ -3385,12 +3386,12 @@ function renderTSRollup() {
   // ── Summary ribbon — quick glance at all 7 dims ────────────────
   html += '<div style="padding:0 24px 24px;display:flex;flex-wrap:wrap;gap:10px">';
   dimsSorted.forEach(function(dim) {
-    var col = TS_DIM_COLORS[dim.id] || '#818cf8';
+    var col = TS_DIM_COLORS[dim.id] || '#99ee81';
     var s   = summaries[dim.id] || {};
     var sig = s.signal_strength || '?';
     var sigCol = sig === 'Strong' ? '#4ade80' : sig === 'Moderate' ? '#fbbf24' : '#f87171';
     var avg = netAvg[dim.id];
-    html += '<div style="flex:1;min-width:140px;padding:10px 14px;border-radius:10px;background:#0d1520;border:1.5px solid ' + col + '33">'
+    html += '<div style="flex:1;min-width:140px;padding:10px 14px;border-radius:10px;background:#1c1030;border:1.5px solid ' + col + '33">'
       + '<div style="font-size:11px;font-weight:800;color:' + col + ';margin-bottom:3px">' + dim.label + '</div>'
       + '<div style="display:flex;align-items:center;gap:6px">'
       + '<span style="font-size:10px;padding:2px 8px;border-radius:99px;background:' + sigCol + '22;color:' + sigCol + ';font-weight:700">' + sig + '</span>'
@@ -3404,7 +3405,7 @@ function renderTSRollup() {
   html += '<div style="padding:0 24px 40px">';
 
   dimsSorted.forEach(function(dim) {
-    var col = TS_DIM_COLORS[dim.id] || '#818cf8';
+    var col = TS_DIM_COLORS[dim.id] || '#99ee81';
     var s   = summaries[dim.id] || {};
     var avg = netAvg[dim.id];
 
@@ -3417,19 +3418,19 @@ function renderTSRollup() {
     // Pod leaders
     var podLeaders = s.pod_leaders || [];
 
-    html += '<div style="margin-bottom:32px;border-radius:12px;background:#0d1520;border:1px solid ' + col + '33;overflow:hidden">';
+    html += '<div style="margin-bottom:32px;border-radius:12px;background:#1c1030;border:1px solid ' + col + '33;overflow:hidden">';
 
     // Section header bar
     html += '<div style="padding:18px 20px;border-bottom:1px solid ' + col + '22;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:8px">'
       + '<div style="flex:1;min-width:300px">'
       + '<div style="font-size:15px;font-weight:800;color:' + col + ';margin-bottom:2px">' + dim.label + '</div>'
-      + '<div style="font-size:11px;color:#64748b">' + dim.desc + '</div>'
+      + '<div style="font-size:11px;color:#8b7aac">' + dim.desc + '</div>'
       + '</div>'
       + '<div style="display:flex;gap:8px;align-items:center;flex-shrink:0">';
 
     var sigCol = (s.signal_strength==='Strong') ? '#4ade80' : (s.signal_strength==='Moderate') ? '#fbbf24' : '#f87171';
     html += '<span style="font-size:10px;padding:4px 12px;border-radius:99px;background:' + sigCol + '22;color:' + sigCol + ';font-weight:700">' + (s.signal_strength||'?') + ' signal</span>'
-      + '<span style="font-size:10px;padding:4px 12px;border-radius:99px;background:#1e2535;color:#94a3b8">'
+      + '<span style="font-size:10px;padding:4px 12px;border-radius:99px;background:#1c1030;color:#8b7aac">'
       + (s.strong_count||0) + ' strong · ' + (s.moderate_count||0) + ' moderate · ' + (s.weak_count||0) + ' weak</span>'
       + '</div></div>';
 
@@ -3437,7 +3438,7 @@ function renderTSRollup() {
     html += '<div style="display:flex;flex-wrap:wrap;gap:0">';
 
     // ── Left column: analytical read ──────────────────────────────
-    html += '<div style="flex:1;min-width:360px;padding:18px 20px;border-right:1px solid #1e2535">';
+    html += '<div style="flex:1;min-width:360px;padding:18px 20px;border-right:1px solid #1c1030">';
 
     // Main summary
     html += '<div style="margin-bottom:14px">'
@@ -3448,8 +3449,8 @@ function renderTSRollup() {
     // What reviewers flag
     if (s.what_reviewers_flag) {
       html += '<div style="margin-bottom:14px;padding:12px 14px;background:#0a0f1a;border-radius:8px;border-left:3px solid ' + col + '44">'
-        + '<div style="font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">What Reviewers Flag</div>'
-        + '<div style="font-size:11px;color:#94a3b8;line-height:1.6">' + s.what_reviewers_flag + '</div>'
+        + '<div style="font-size:10px;font-weight:700;color:#8b7aac;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">What Reviewers Flag</div>'
+        + '<div style="font-size:11px;color:#8b7aac;line-height:1.6">' + s.what_reviewers_flag + '</div>'
         + '</div>';
     }
 
@@ -3457,7 +3458,7 @@ function renderTSRollup() {
     if (s.gap) {
       html += '<div style="margin-bottom:14px;padding:12px 14px;background:#0a0f1a;border-radius:8px;border-left:3px solid #f5920b44">'
         + '<div style="font-size:10px;font-weight:700;color:#f59e0b;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Gap</div>'
-        + '<div style="font-size:11px;color:#94a3b8;line-height:1.6">' + s.gap + '</div>'
+        + '<div style="font-size:11px;color:#8b7aac;line-height:1.6">' + s.gap + '</div>'
         + '</div>';
     }
 
@@ -3465,7 +3466,7 @@ function renderTSRollup() {
     if (s.phase2_question) {
       html += '<div style="padding:12px 14px;background:#0a0f1a;border-radius:8px;border-left:3px solid #4ade8044">'
         + '<div style="font-size:10px;font-weight:700;color:#4ade80;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Phase 2 Question</div>'
-        + '<div style="font-size:11px;color:#94a3b8;line-height:1.6;font-style:italic">' + s.phase2_question + '</div>'
+        + '<div style="font-size:11px;color:#8b7aac;line-height:1.6;font-style:italic">' + s.phase2_question + '</div>'
         + '</div>';
     }
 
@@ -3476,7 +3477,7 @@ function renderTSRollup() {
 
     // Pod strength mini-bars
     html += '<div style="margin-bottom:16px">'
-      + '<div style="font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Pod Strength</div>';
+      + '<div style="font-size:10px;font-weight:700;color:#8b7aac;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Pod Strength</div>';
 
     var POD_ORDER = ['Niitsitapi Pod',"Ka Hawai\u2019i Pae \u2018\u0100ina Pod","T'karonto Pod","Wih\u00e1\u014bble S\u2019a Pod",'Hiringa Te Mara','Haudenosaunee Pod','Podless'];
     POD_ORDER.forEach(function(pod) {
@@ -3486,7 +3487,7 @@ function renderTSRollup() {
       var shortName = pod.replace(' Pod','').replace("Ka Hawai\u2019i Pae \u2018\u0100ina",'Hawai\u02BBi').replace('Hiringa Te Mara','Hiringa');
       var isLeader = podLeaders.indexOf(pod) >= 0;
       html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">'
-        + '<div style="width:70px;font-size:10px;color:' + (isLeader ? pc : '#64748b') + ';font-weight:' + (isLeader ? '700':'400') + ';text-align:right">' + shortName + '</div>'
+        + '<div style="width:70px;font-size:10px;color:' + (isLeader ? pc : '#8b7aac') + ';font-weight:' + (isLeader ? '700':'400') + ';text-align:right">' + shortName + '</div>'
         + '<div style="flex:1;background:#0a0f1a;border-radius:3px;height:8px">'
         + '<div style="background:' + pc + ';height:8px;border-radius:3px;width:' + Math.round(sc*100) + '%;opacity:' + Math.max(0.3, sc*1.5).toFixed(2) + '"></div>'
         + '</div>'
@@ -3497,7 +3498,7 @@ function renderTSRollup() {
 
     // Top projects list
     html += '<div style="margin-bottom:12px">'
-      + '<div style="font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Strongest Projects</div>';
+      + '<div style="font-size:10px;font-weight:700;color:#8b7aac;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Strongest Projects</div>';
 
     topProjects.slice(0, 6).forEach(function(p) {
       var sc = (DATA.ts_project_scores[p.id]||{})[dim.id]||0;
@@ -3532,8 +3533,8 @@ function renderTSRollup() {
 
   // ── Method note ─────────────────────────────────────────────────
   html += '<div style="padding:0 24px 32px">'
-    + '<div style="font-size:10px;color:#475569;padding:10px 14px;background:#0d1520;border-radius:8px;border-left:3px solid #818cf844;max-width:700px">'
-    + '<strong style="color:#64748b">Method:</strong> Each dimension summary is based on LLM semantic analysis of all reviewer text across all projects. '
+    + '<div style="font-size:10px;color:#475569;padding:10px 14px;background:#1c1030;border-radius:8px;border-left:3px solid #99ee8144;max-width:700px">'
+    + '<strong style="color:#8b7aac">Method:</strong> Each dimension summary is based on LLM semantic analysis of all reviewer text across all projects. '
     + 'Scores blend 70% LLM reading (what reviewers actually mean) with 30% keyword-hybrid analysis (density + sentence peaks + phrase matching). '
     + 'Summaries, gaps, and Phase 2 questions are written by the LLM after reading every reviewer sentence organised by dimension.'
     + '</div></div>';
