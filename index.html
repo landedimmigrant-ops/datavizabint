@@ -340,6 +340,7 @@ html, body { height: 100%; font-family: 'Inter', system-ui, sans-serif;
   <button class="nav-tab" data-view="podprofile">Pod Intelligence</button>
   <button class="nav-tab" data-view="podrelations">Pod Relations</button>
   <button class="nav-tab" data-view="tsrollup">TS Network Rollup</button>
+  <button class="nav-tab" data-view="ecosystem">Living Ecosystem</button>
 </nav>
 
 <div id="view-landscape"  class="view active"></div>
@@ -353,6 +354,7 @@ html, body { height: 100%; font-family: 'Inter', system-ui, sans-serif;
 <div id="view-podrelations" class="view"></div>
 <div id="view-transform"    class="view" style="display:none"></div>
 <div id="view-tsrollup"   class="view"></div>
+<div id="view-ecosystem"  class="view"></div>
 
 <script>
 // ── Data ──────────────────────────────────────────────────────────────────
@@ -526,7 +528,8 @@ var VIEWS = {
   overview:    renderOverview,
   podprofile:   renderPodProfile,
   podrelations: renderPodRelations,
-  tsrollup:     renderTSRollup
+  tsrollup:     renderTSRollup,
+  ecosystem:    renderEcosystem
 };
 
 // ── VIEW 1: Polarity Landscape ────────────────────────────────────────────
@@ -3752,6 +3755,323 @@ function renderTSRollup() {
     + '</div></div>';
 
   el.innerHTML = html;
+}
+
+// ── VIEW: Living Ecosystem (Forest Model) ─────────────────────────────────
+// Trees = Projects | Community = Soil/roots | Branches = TS dimensions
+// Fruits = Technical outputs | Seeds = Imaginaries | Pods = Forest groves
+function renderEcosystem() {
+  var el = document.getElementById('view-ecosystem');
+  var projects = DATA.projects;
+  var scores = DATA.ts_project_scores || {};
+
+  // ── Group projects by pod ──────────────────────────────────────────
+  var podMap = {};
+  var podOrder = [];
+  projects.forEach(function(p) {
+    var pod = p.pod || 'Podless';
+    if (!podMap[pod]) { podMap[pod] = []; podOrder.push(pod); }
+    podMap[pod].push(p);
+  });
+  // Sort pods by project count desc, Podless last
+  podOrder.sort(function(a, b) {
+    if (a === 'Podless') return 1;
+    if (b === 'Podless') return -1;
+    return podMap[b].length - podMap[a].length;
+  });
+
+  // ── Layout constants ───────────────────────────────────────────────
+  var TREE_W   = 110;
+  var POD_GAP  = 60;
+  var H        = 520;
+  var GROUND_Y = 370;
+  var LEFT_PAD = 24;
+
+  var svgW = LEFT_PAD;
+  podOrder.forEach(function(pod) { svgW += podMap[pod].length * TREE_W + POD_GAP; });
+
+  // ── Build SVG ─────────────────────────────────────────────────────
+  var s = '<svg xmlns="http://www.w3.org/2000/svg" width="' + svgW + '" height="' + H + '" style="display:block">';
+
+  // Gradients + filters
+  s += '<defs>'
+    + '<linearGradient id="eco-sky" x1="0" y1="0" x2="0" y2="1">'
+    + '<stop offset="0%" stop-color="#060215"/>'
+    + '<stop offset="70%" stop-color="#110820"/>'
+    + '<stop offset="100%" stop-color="#1a1030"/>'
+    + '</linearGradient>'
+    + '<linearGradient id="eco-ground" x1="0" y1="0" x2="0" y2="1">'
+    + '<stop offset="0%" stop-color="#0e1f06"/>'
+    + '<stop offset="100%" stop-color="#060d02"/>'
+    + '</linearGradient>'
+    + '<radialGradient id="eco-star-glow" cx="50%" cy="50%" r="50%">'
+    + '<stop offset="0%" stop-color="#ffffff" stop-opacity="0.6"/>'
+    + '<stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>'
+    + '</radialGradient>'
+    + '<filter id="eco-blur" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="10"/></filter>'
+    + '<filter id="eco-glow-sm" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>'
+    + '</defs>';
+
+  // Sky + ground
+  s += '<rect x="0" y="0" width="' + svgW + '" height="' + GROUND_Y + '" fill="url(#eco-sky)"/>';
+  s += '<rect x="0" y="' + GROUND_Y + '" width="' + svgW + '" height="' + (H - GROUND_Y) + '" fill="url(#eco-ground)"/>';
+
+  // Ground line with grass texture
+  s += '<path d="M0 ' + GROUND_Y + ' L' + svgW + ' ' + GROUND_Y + '" stroke="#1f4010" stroke-width="2.5"/>';
+  // Subtle grass tufts along ground
+  for (var gi = 0; gi < Math.floor(svgW / 18); gi++) {
+    var gx = gi * 18 + 5;
+    var gh = 3 + (Math.sin(gi * 2.7) + 1) * 3;
+    s += '<path d="M' + gx + ' ' + GROUND_Y + ' Q' + (gx+2) + ' ' + (GROUND_Y-gh) + ' ' + (gx+4) + ' ' + GROUND_Y + '" stroke="#2a5c15" stroke-width="1" fill="none" opacity="0.4"/>';
+  }
+
+  // Stars (pseudo-random via sine, stable across renders)
+  for (var si2 = 0; si2 < 60; si2++) {
+    var starX = ((Math.sin(si2 * 137.508 * 0.017453) + 1) * 0.5 * svgW * 0.96 + svgW * 0.02);
+    var starY = ((Math.cos(si2 * 97.3 * 0.017453) + 1) * 0.5 * (GROUND_Y - 30) * 0.7 + 10);
+    var starR  = 0.7 + (Math.sin(si2 * 0.5) + 1) * 0.5;
+    var starOp = (0.15 + (Math.cos(si2 * 0.9) + 1) * 0.2).toFixed(2);
+    s += '<circle cx="' + starX.toFixed(1) + '" cy="' + starY.toFixed(1) + '" r="' + starR.toFixed(1) + '" fill="#ffffff" opacity="' + starOp + '"/>';
+  }
+
+  // ── Draw pods + trees ──────────────────────────────────────────────
+  var xOff = LEFT_PAD;
+  podOrder.forEach(function(pod) {
+    var podProjects = podMap[pod];
+    var podW = podProjects.length * TREE_W;
+    var col  = podColor(pod);
+
+    // Pod grove glow on ground
+    s += '<ellipse cx="' + (xOff + podW/2) + '" cy="' + (GROUND_Y + 2) + '"'
+      + ' rx="' + (podW * 0.55) + '" ry="18"'
+      + ' fill="' + col + '" opacity="0.10" filter="url(#eco-blur)"/>';
+
+    // Pod label below trees
+    var podLabel = pod.replace(' Pod', '').replace(' pod', '');
+    if (podLabel.length > 22) podLabel = podLabel.substring(0, 20) + '…';
+    s += '<text x="' + (xOff + podW/2) + '" y="' + (H - 10) + '"'
+      + ' text-anchor="middle" fill="' + col + '" font-size="9" font-family="system-ui,sans-serif"'
+      + ' font-weight="700" letter-spacing=".08em" opacity="0.75">'
+      + podLabel.toUpperCase() + '</text>';
+    // Pod separator line
+    if (podOrder.indexOf(pod) > 0) {
+      s += '<line x1="' + (xOff - POD_GAP/2) + '" y1="' + (GROUND_Y - 60) + '"'
+        + ' x2="' + (xOff - POD_GAP/2) + '" y2="' + (GROUND_Y + 20) + '"'
+        + ' stroke="#261540" stroke-width="1" stroke-dasharray="3,5" opacity="0.5"/>';
+    }
+
+    // ── Individual trees ───────────────────────────────────────────
+    podProjects.forEach(function(p, i) {
+      var cx   = xOff + i * TREE_W + TREE_W / 2;
+      var sc   = scores[p.id] || {};
+      var aln  = (p.alignment_avg || 5) / 10;         // 0–1 (alignment drives height)
+      var tsIK  = sc.ts_ik          || 0;              // roots
+      var tsCom = sc.ts_community   || 0;              // trunk width / soil
+      var tsRel = sc.ts_relational  || 0;              // branch left-mid
+      var tsTech= sc.ts_technical   || 0;              // branch right-mid + fruits
+      var tsGov = sc.ts_governance  || 0;              // branch right-low
+      var tsNet = sc.ts_network     || 0;              // canopy width
+      var tsImag= sc.ts_imaginaries || 0;              // branch left-high + seeds
+
+      // Tree geometry
+      var trunkH  = 55  + aln  * 140;                 // 55–195 px
+      var trunkW  = 4.5 + tsCom * 9;                  // 4.5–13.5 px
+      var canopyR = 20  + tsNet * 38;                  // 20–58 px
+      var trunkTopY = GROUND_Y - trunkH;
+      var canopyCY  = trunkTopY + 6;
+      // Unique lean per tree (subtle, organic)
+      var lean  = Math.sin(cx * 0.031 + i) * 5;
+
+      // ── Soil richness (ts_community) ──
+      s += '<ellipse cx="' + cx + '" cy="' + (GROUND_Y + 5) + '"'
+        + ' rx="' + (trunkW * 4.5) + '" ry="7"'
+        + ' fill="' + col + '" opacity="' + (0.08 + tsCom * 0.32).toFixed(2) + '"/>';
+
+      // ── Roots (ts_ik) ──
+      var rsp = 8 + tsIK * 30;
+      var rOp = (0.25 + tsIK * 0.55).toFixed(2);
+      var rW  = (1 + tsIK * 2).toFixed(1);
+      s += '<path d="M' + cx + ' ' + (GROUND_Y-3) + ' Q' + (cx-rsp*0.7) + ' ' + (GROUND_Y+9) + ' ' + (cx-rsp*1.5) + ' ' + (GROUND_Y+5) + '" stroke="' + col + '" stroke-width="' + rW + '" fill="none" opacity="' + rOp + '"/>';
+      s += '<path d="M' + cx + ' ' + (GROUND_Y-3) + ' Q' + (cx+rsp*0.7) + ' ' + (GROUND_Y+9) + ' ' + (cx+rsp*1.5) + ' ' + (GROUND_Y+5) + '" stroke="' + col + '" stroke-width="' + rW + '" fill="none" opacity="' + rOp + '"/>';
+      if (tsIK > 0.35) {
+        s += '<path d="M' + cx + ' ' + (GROUND_Y-2) + ' Q' + (cx+rsp*0.2) + ' ' + (GROUND_Y+12) + ' ' + (cx+rsp*0.6) + ' ' + (GROUND_Y+9) + '" stroke="' + col + '" stroke-width="1" fill="none" opacity="' + (rOp * 0.6).toFixed(2) + '"/>';
+      }
+
+      // ── Trunk (bezier with lean) ──
+      var t1x = cx - trunkW/2 + lean*0.2;
+      var t2x = cx + lean*0.7;
+      var t3x = cx + lean;
+      s += '<path d="M' + t1x.toFixed(1) + ' ' + GROUND_Y
+        + ' C ' + (t2x - trunkW/4).toFixed(1) + ' ' + (GROUND_Y - trunkH * 0.45).toFixed(1)
+        + ' ' + (t3x + trunkW/4).toFixed(1) + ' ' + (trunkTopY + trunkH * 0.3).toFixed(1)
+        + ' ' + (t3x).toFixed(1) + ' ' + trunkTopY.toFixed(1) + '"'
+        + ' stroke="' + col + '" stroke-width="' + trunkW.toFixed(1) + '"'
+        + ' fill="none" stroke-linecap="round" opacity="0.88"/>';
+
+      // ── Branches (4 TS dimensions) ──
+      // Each branch grows from a different height on the trunk
+      var branchDefs = [
+        { score: tsRel,  col: '#22d3ee', side: -1, hFrac: 0.32, baseAngle: 52 }, // Relational — left
+        { score: tsGov,  col: '#a066cc', side:  1, hFrac: 0.38, baseAngle: 48 }, // Governance — right
+        { score: tsImag, col: '#c084fc', side: -1, hFrac: 0.18, baseAngle: 40 }, // Imaginaries — left upper
+        { score: tsTech, col: '#f87171', side:  1, hFrac: 0.22, baseAngle: 38 }, // Technical — right upper
+      ];
+      branchDefs.forEach(function(b) {
+        if (b.score < 0.12) return;
+        var bOriginY = trunkTopY + trunkH * b.hFrac;
+        var bOriginX = cx + lean * b.hFrac;
+        var bLen     = 12 + b.score * 42;
+        var bAngleRad = (b.baseAngle + (1-b.score) * 15) * Math.PI / 180 * b.side;
+        var endX = bOriginX + Math.sin(bAngleRad) * bLen;
+        var endY = bOriginY - Math.cos(bAngleRad) * bLen * 0.7;
+        var bW   = (0.8 + b.score * 3.2).toFixed(1);
+        var cpX  = (bOriginX + endX) / 2 - Math.cos(bAngleRad) * bLen * 0.25;
+        var cpY  = (bOriginY + endY) / 2 - 4;
+        s += '<path d="M' + bOriginX.toFixed(1) + ' ' + bOriginY.toFixed(1)
+          + ' Q' + cpX.toFixed(1) + ' ' + cpY.toFixed(1)
+          + ' ' + endX.toFixed(1) + ' ' + endY.toFixed(1) + '"'
+          + ' stroke="' + b.col + '" stroke-width="' + bW + '"'
+          + ' fill="none" stroke-linecap="round" opacity="0.82"/>';
+        // Leaf cluster at branch tip (high scores)
+        if (b.score > 0.45) {
+          var leafR = (2.5 + b.score * 4).toFixed(1);
+          s += '<circle cx="' + endX.toFixed(1) + '" cy="' + endY.toFixed(1) + '"'
+            + ' r="' + leafR + '" fill="' + b.col + '" opacity="0.4"/>';
+        }
+      });
+
+      // ── Canopy (layered organic circles, width = ts_network) ──
+      s += '<circle cx="' + (cx + lean * 0.2).toFixed(1) + '" cy="' + canopyCY.toFixed(1) + '"'
+        + ' r="' + canopyR + '" fill="' + col + '" opacity="0.14"/>';
+      s += '<circle cx="' + (cx - canopyR * 0.28 + lean*0.1).toFixed(1) + '" cy="' + (canopyCY + canopyR * 0.12).toFixed(1) + '"'
+        + ' r="' + (canopyR * 0.72).toFixed(1) + '" fill="' + col + '" opacity="0.14"/>';
+      s += '<circle cx="' + (cx + canopyR * 0.30 + lean*0.1).toFixed(1) + '" cy="' + (canopyCY - canopyR * 0.06).toFixed(1) + '"'
+        + ' r="' + (canopyR * 0.68).toFixed(1) + '" fill="' + col + '" opacity="0.12"/>';
+      // Canopy edge
+      s += '<circle cx="' + (cx + lean * 0.2).toFixed(1) + '" cy="' + canopyCY.toFixed(1) + '"'
+        + ' r="' + canopyR + '" fill="none" stroke="' + col + '" stroke-width="1" opacity="0.35"/>';
+
+      // ── Fruits (ts_technical outputs) — lime green dots in canopy ──
+      var fruitN = Math.round(tsTech * 7);
+      for (var fi = 0; fi < fruitN; fi++) {
+        var fAngle = (fi / Math.max(fruitN, 1)) * Math.PI * 2;
+        var fRad   = canopyR * (0.28 + Math.abs(Math.sin(fi * 1.9)) * 0.38);
+        var fX = (cx + lean * 0.2 + Math.cos(fAngle) * fRad).toFixed(1);
+        var fY = (canopyCY + Math.sin(fAngle) * fRad * 0.65).toFixed(1);
+        s += '<circle cx="' + fX + '" cy="' + fY + '" r="3.2" fill="#99ee81" opacity="0.88"/>';
+      }
+
+      // ── Seeds / pollination (ts_imaginaries) — purple wisps above canopy ──
+      var seedN = Math.round(tsImag * 6);
+      for (var sj = 0; sj < seedN; sj++) {
+        var sAngle = ((sj / Math.max(seedN, 1)) - 0.5) * Math.PI * 0.9;
+        var sDist  = canopyR + 5 + sj * 9;
+        var sX = (cx + lean * 0.2 + Math.sin(sAngle) * sDist * 0.7).toFixed(1);
+        var sY = (canopyCY - Math.cos(sAngle) * sDist * 0.4 - 8).toFixed(1);
+        var sOp = (0.75 - sj * 0.1).toFixed(2);
+        s += '<circle cx="' + sX + '" cy="' + sY + '" r="1.8" fill="#c084fc" opacity="' + sOp + '"/>';
+        // Stem connecting seed to canopy
+        s += '<line x1="' + (cx + lean*0.2).toFixed(1) + '" y1="' + (canopyCY - canopyR + 4).toFixed(1)
+          + '" x2="' + sX + '" y2="' + sY
+          + '" stroke="#c084fc" stroke-width="0.5" opacity="' + (parseFloat(sOp) * 0.5).toFixed(2) + '"/>';
+      }
+
+      // ── Alignment score badge above tree ──
+      var badgeCol = aln > 0.85 ? '#4ade80' : (aln > 0.65 ? '#fbbf24' : '#f87171');
+      s += '<text x="' + (cx + lean*0.2).toFixed(1) + '" y="' + (canopyCY - canopyR - 6).toFixed(1) + '"'
+        + ' text-anchor="middle" fill="' + badgeCol + '"'
+        + ' font-size="9" font-family="system-ui,sans-serif" font-weight="700" opacity="0.8">'
+        + (p.alignment_avg || '?') + '</text>';
+
+      // ── Project name below ground ──
+      var nameStr = p.short || p.id || '';
+      nameStr = nameStr.split(' — ')[0].split(' - ')[0];
+      if (nameStr.length > 13) nameStr = nameStr.substring(0, 12) + '…';
+      s += '<text x="' + cx + '" y="' + (GROUND_Y + 18) + '"'
+        + ' text-anchor="middle" fill="#a898c0"'
+        + ' font-size="8" font-family="system-ui,sans-serif" opacity="0.85">'
+        + nameStr + '</text>';
+
+      // ── Invisible hover target + tooltip ──
+      var ttLines = [
+        p.short || p.id,
+        'Alignment: ' + (p.alignment_avg || '?') + '/10',
+        'Community: ' + Math.round((sc.ts_community||0)*100) + '%',
+        'IK Integration: ' + Math.round((sc.ts_ik||0)*100) + '%',
+        'Relational: ' + Math.round((sc.ts_relational||0)*100) + '%',
+        'Technical: ' + Math.round((sc.ts_technical||0)*100) + '%',
+        'Governance: ' + Math.round((sc.ts_governance||0)*100) + '%',
+        'Network: ' + Math.round((sc.ts_network||0)*100) + '%',
+        'Imaginaries: ' + Math.round((sc.ts_imaginaries||0)*100) + '%',
+      ];
+      s += '<rect x="' + (cx - TREE_W/2 + 6) + '" y="' + (canopyCY - canopyR - 14) + '"'
+        + ' width="' + (TREE_W - 12) + '" height="' + (GROUND_Y - (canopyCY - canopyR - 14) + 10) + '"'
+        + ' fill="transparent" style="cursor:pointer">'
+        + '<title>' + ttLines.join('\n') + '</title>'
+        + '</rect>';
+    });
+
+    xOff += podW + POD_GAP;
+  });
+
+  // ── Legend (top-left floating) ────────────────────────────────────
+  var LX = 16, LY = 12;
+  s += '<rect x="' + LX + '" y="' + LY + '" width="198" height="130" rx="8"'
+    + ' fill="#110820" opacity="0.88" stroke="#3a2060" stroke-width="1"/>';
+  s += '<text x="' + (LX+10) + '" y="' + (LY+15) + '"'
+    + ' fill="#a898c0" font-size="8.5" font-family="system-ui,sans-serif"'
+    + ' font-weight="700" letter-spacing=".07em">TREE ANATOMY</text>';
+
+  var legItems = [
+    { sym: '▊', col: '#f0ecf8',  label: 'Height  =  Alignment score' },
+    { sym: '▊', col: '#f0ecf8',  label: 'Width   =  Community-centred' },
+    { sym: '↙', col: '#4ade80',  label: 'Roots   =  IK Integration' },
+    { sym: '━', col: '#22d3ee',  label: 'Branch  =  Relational practice' },
+    { sym: '━', col: '#a066cc',  label: 'Branch  =  Governance' },
+    { sym: '━', col: '#c084fc',  label: 'Branch  =  Imaginaries' },
+    { sym: '━', col: '#f87171',  label: 'Branch  =  Technical' },
+    { sym: '●', col: '#99ee81',  label: 'Fruits  =  Technical outputs' },
+    { sym: '·', col: '#c084fc',  label: 'Seeds   =  Imaginaries spread' },
+    { sym: '○', col: '#60a5fa',  label: 'Canopy  =  Network reach' },
+  ];
+  legItems.forEach(function(item, idx) {
+    var liy = LY + 27 + idx * 10.5;
+    s += '<text x="' + (LX+10) + '" y="' + liy + '"'
+      + ' fill="' + item.col + '" font-size="10" font-family="monospace">' + item.sym + '</text>';
+    s += '<text x="' + (LX+24) + '" y="' + liy + '"'
+      + ' fill="#a898c0" font-size="8" font-family="system-ui,sans-serif">' + item.label + '</text>';
+  });
+
+  s += '</svg>';
+
+  // ── Wrap SVG in scrollable container ─────────────────────────────
+  el.innerHTML = '<div style="padding:20px 0 8px 24px">'
+    + '<h2 style="font-size:15px;font-weight:800;color:#f0ecf8;margin-bottom:2px">Living Ecosystem</h2>'
+    + '<p style="font-size:12px;color:#a898c0;margin-bottom:14px">'
+    + 'Each tree is a research project. Height = alignment strength. Branches = active TS dimensions. '
+    + 'Lime fruits = technical outputs. Purple seeds = imaginaries spreading outward. '
+    + 'Trees group into pod groves. Canopy width = network connectivity. Hover any tree for full detail.'
+    + '</p></div>'
+    + '<div style="overflow-x:auto;overflow-y:hidden;cursor:grab;padding-bottom:12px">'
+    + s
+    + '</div>';
+
+  // ── Drag-to-scroll on the container ──────────────────────────────
+  var scroller = el.querySelector('div > div[style*="overflow-x"]');
+  if (scroller) {
+    var isDragging = false, startX = 0, startScroll = 0;
+    scroller.addEventListener('mousedown', function(e) {
+      isDragging = true; startX = e.pageX; startScroll = scroller.scrollLeft;
+      scroller.style.cursor = 'grabbing';
+    });
+    document.addEventListener('mouseup', function() {
+      isDragging = false; if (scroller) scroller.style.cursor = 'grab';
+    });
+    document.addEventListener('mousemove', function(e) {
+      if (!isDragging) return;
+      scroller.scrollLeft = startScroll - (e.pageX - startX);
+    });
+  }
 }
 
 // ── Init ──────────────────────────────────────────────────────────────────
