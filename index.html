@@ -342,6 +342,7 @@ html, body { height: 100%; font-family: 'Inter', system-ui, sans-serif;
   <button class="nav-tab" data-view="tsrollup">TS Network Rollup</button>
   <button class="nav-tab" data-view="ecosystem">Living Ecosystem</button>
   <button class="nav-tab" data-view="signallab">Signal Lab</button>
+  <button class="nav-tab" data-view="ridgeline">Ridge Profiles</button>
 </nav>
 
 <div id="view-landscape"  class="view active"></div>
@@ -357,6 +358,7 @@ html, body { height: 100%; font-family: 'Inter', system-ui, sans-serif;
 <div id="view-tsrollup"   class="view"></div>
 <div id="view-ecosystem"  class="view"></div>
 <div id="view-signallab" class="view"></div>
+<div id="view-ridgeline" class="view"></div>
 
 <script>
 // ── Data ──────────────────────────────────────────────────────────────────
@@ -532,7 +534,8 @@ var VIEWS = {
   podrelations: renderPodRelations,
   tsrollup:     renderTSRollup,
   ecosystem:    renderEcosystem,
-  signallab:    renderSignalLab
+  signallab:    renderSignalLab,
+  ridgeline:    renderRidgeline
 };
 
 // ── VIEW 1: Polarity Landscape ────────────────────────────────────────────
@@ -4286,6 +4289,247 @@ function renderSignalLab() {
     + keyHTML
     + '</div>'
     + '<div style="padding:0 24px 40px">' + gridHTML + '</div>';
+}
+
+// ── VIEW: Ridge Profiles ──────────────────────────────────────────────────
+function buildRidgePath(xPts, vals, baseline, ridgeH) {
+  var n = xPts.length;
+  if (n === 0) return 'M 0 0 Z';
+  var lx = xPts[0] - 28;
+  var rx = xPts[n - 1] + 28;
+  var xs = [lx].concat(xPts).concat([rx]);
+  var vs = [0].concat(vals).concat([0]);
+  var m = xs.length;
+  var d = 'M ' + lx + ' ' + baseline;
+  for (var i = 0; i < m - 1; i++) {
+    var i0 = Math.max(0, i - 1);
+    var i3 = Math.min(m - 1, i + 2);
+    var p0x = xs[i0], p0y = vs[i0];
+    var p1x = xs[i],  p1y = vs[i];
+    var p2x = xs[i + 1], p2y = vs[i + 1];
+    var p3x = xs[i3], p3y = vs[i3];
+    var t = 0.42;
+    var cp1x = p1x + t * (p2x - p0x) / 2;
+    var cp1y = Math.max(0, p1y + t * (p2y - p0y) / 2);
+    var cp2x = p2x - t * (p3x - p1x) / 2;
+    var cp2y = Math.max(0, p2y - t * (p3y - p1y) / 2);
+    d += ' C ' + cp1x.toFixed(1) + ' ' + (baseline - cp1y * ridgeH).toFixed(1)
+      + ',' + cp2x.toFixed(1) + ' ' + (baseline - cp2y * ridgeH).toFixed(1)
+      + ',' + p2x.toFixed(1) + ' ' + (baseline - Math.max(0, p2y) * ridgeH).toFixed(1);
+  }
+  d += ' Z';
+  return d;
+}
+
+function renderRidgeline() {
+  var el = document.getElementById('view-ridgeline');
+  var scores = DATA.ts_project_scores || {};
+
+  var DIMS = ['ts_ik','ts_relational','ts_community','ts_technical','ts_governance','ts_network','ts_imaginaries'];
+  var DIM_LABEL = {
+    ts_ik:          'IK / TK',
+    ts_relational:  'Relational',
+    ts_community:   'Community',
+    ts_technical:   'Technical',
+    ts_governance:  'Governance',
+    ts_network:     'Network',
+    ts_imaginaries: 'Imaginaries'
+  };
+
+  // Group by pod, sort pods by avg alignment desc
+  var podMap = {};
+  DATA.projects.forEach(function(p) {
+    var pod = p.pod || 'Other';
+    if (!podMap[pod]) podMap[pod] = [];
+    podMap[pod].push(p);
+  });
+  var podOrder = Object.keys(podMap).sort(function(a, b) {
+    var avgA = podMap[a].reduce(function(s, p) { return s + (p.alignment_avg || 0); }, 0) / podMap[a].length;
+    var avgB = podMap[b].reduce(function(s, p) { return s + (p.alignment_avg || 0); }, 0) / podMap[b].length;
+    return avgB - avgA;
+  });
+  // Sort projects within each pod by alignment desc
+  podOrder.forEach(function(pod) {
+    podMap[pod].sort(function(a, b) { return (b.alignment_avg || 0) - (a.alignment_avg || 0); });
+  });
+
+  // Layout constants
+  var PAD_L   = 158;
+  var PAD_T   = 52;
+  var PAD_R   = 100;
+  var COL_W   = 86;
+  var ROW_H   = 31;
+  var POD_H   = 24;
+  var RIDGE_H = 54;
+  var NUM_COLS = DIMS.length;
+  var totalW = PAD_L + NUM_COLS * COL_W + PAD_R;
+
+  // Calculate positions
+  var rows = [];  // {type, pod, project?, y}
+  var curY = PAD_T;
+  podOrder.forEach(function(pod) {
+    rows.push({ type: 'pod', pod: pod, count: podMap[pod].length, y: curY });
+    curY += POD_H;
+    podMap[pod].forEach(function(p) {
+      rows.push({ type: 'proj', project: p, pod: pod, y: curY });
+      curY += ROW_H;
+    });
+  });
+  var totalH = curY + RIDGE_H + 20;
+
+  // Build SVG
+  var bubX = PAD_L + NUM_COLS * COL_W + 32;
+  var svg = '<svg id="svg-ridgeline" width="' + totalW + '" height="' + totalH + '" style="display:block;overflow:visible">';
+
+  // ── Defs: per-pod gradients
+  svg += '<defs>';
+  podOrder.forEach(function(pod) {
+    var col = podColor(pod);
+    var gid = 'rg_' + pod.replace(/[^a-z0-9]/gi, '_');
+    svg += '<linearGradient id="' + gid + '" x1="0" y1="0" x2="0" y2="1">'
+      + '<stop offset="0%" stop-color="' + col + '" stop-opacity="0.92"/>'
+      + '<stop offset="60%" stop-color="' + col + '" stop-opacity="0.55"/>'
+      + '<stop offset="100%" stop-color="' + col + '" stop-opacity="0.12"/>'
+      + '</linearGradient>';
+  });
+  svg += '</defs>';
+
+  // ── Column guide lines + headers
+  DIMS.forEach(function(dim, di) {
+    var cx = PAD_L + di * COL_W + COL_W / 2;
+    svg += '<line x1="' + cx + '" y1="' + PAD_T + '" x2="' + cx + '" y2="' + (totalH - 16) + '"'
+      + ' stroke="#3a2060" stroke-width="1" stroke-dasharray="3,6" opacity="0.55"/>';
+    svg += '<text x="' + cx + '" y="' + (PAD_T - 10) + '"'
+      + ' text-anchor="middle" fill="#8878a8" font-size="9.5" font-family="system-ui,sans-serif" font-weight="500">'
+      + DIM_LABEL[dim] + '</text>';
+  });
+  svg += '<text x="' + bubX + '" y="' + (PAD_T - 10) + '"'
+    + ' text-anchor="middle" fill="#8878a8" font-size="9" font-family="system-ui,sans-serif">Align</text>';
+
+  // ── Collect project rows for z-ordered ridge drawing
+  var projRows = rows.filter(function(r) { return r.type === 'proj'; });
+
+  // Draw ridges bottom-to-top for correct overlap
+  for (var ri = projRows.length - 1; ri >= 0; ri--) {
+    var rowObj = projRows[ri];
+    var p      = rowObj.project;
+    var pod    = rowObj.pod;
+    var bY     = rowObj.y;
+    var sc     = scores[p.id] || {};
+    var col    = podColor(pod);
+    var gid    = 'rg_' + pod.replace(/[^a-z0-9]/gi, '_');
+    var aln    = p.alignment_avg || 0;
+    var opacity = (0.55 + (aln / 10) * 0.4).toFixed(2);
+
+    var vals = DIMS.map(function(dim) { return Math.min(1, Math.max(0, sc[dim] || 0)); });
+    var xPts = DIMS.map(function(dim, di) { return PAD_L + di * COL_W + COL_W / 2; });
+    var pathD = buildRidgePath(xPts, vals, bY, RIDGE_H);
+
+    // Filled ridge
+    svg += '<path class="ridge-path" data-pid="' + p.id.replace(/"/g, '') + '"'
+      + ' d="' + pathD + '"'
+      + ' fill="url(#' + gid + ')" stroke="' + col + '" stroke-width="0.9"'
+      + ' opacity="' + opacity + '" style="cursor:pointer"/>';
+
+    // White peak dot
+    var maxVal = Math.max.apply(null, vals);
+    if (maxVal > 0.06) {
+      var maxIdx = vals.indexOf(maxVal);
+      svg += '<circle cx="' + xPts[maxIdx].toFixed(1) + '" cy="' + (bY - maxVal * RIDGE_H).toFixed(1) + '"'
+        + ' r="2.8" fill="white" opacity="0.88" pointer-events="none"/>';
+    }
+
+    // Project name
+    var nameStr = (p.short || p.id || '').split(' \u2014')[0].split(' - ')[0];
+    if (nameStr.length > 18) nameStr = nameStr.substring(0, 17) + '\u2026';
+    svg += '<text x="' + (PAD_L - 9) + '" y="' + (bY + 3.5) + '"'
+      + ' text-anchor="end" fill="#c0b0d8" font-size="9" font-family="system-ui,sans-serif">'
+      + nameStr + '</text>';
+
+    // Alignment bubble
+    var alnR  = (3.5 + (aln / 10) * 9).toFixed(1);
+    var alnCol = aln >= 8 ? '#4ade80' : (aln >= 6 ? '#fbbf24' : '#f87171');
+    svg += '<circle cx="' + bubX + '" cy="' + bY + '" r="' + alnR + '"'
+      + ' fill="' + alnCol + '" opacity="0.32" stroke="' + alnCol + '" stroke-width="0.7"/>';
+    svg += '<text x="' + (bubX + parseFloat(alnR) + 5) + '" y="' + (bY + 3.5) + '"'
+      + ' fill="' + alnCol + '" font-size="8.5" font-family="monospace" font-weight="600">'
+      + aln.toFixed(1) + '</text>';
+  }
+
+  // ── Pod headers (drawn after ridges so text is on top)
+  rows.forEach(function(r) {
+    if (r.type !== 'pod') return;
+    var col = podColor(r.pod);
+    var label = r.pod.replace(/ [Pp]od$/, '').toUpperCase();
+    svg += '<text x="2" y="' + (r.y + 15) + '"'
+      + ' fill="' + col + '" font-size="8" font-family="system-ui,sans-serif"'
+      + ' font-weight="700" letter-spacing="0.09em">'
+      + label + ' <tspan fill="#7060a0" font-weight="400">(' + r.count + ')</tspan></text>';
+    svg += '<line x1="2" y1="' + (r.y + 19) + '" x2="' + (PAD_L - 14) + '" y2="' + (r.y + 19) + '"'
+      + ' stroke="' + col + '" stroke-width="0.5" opacity="0.4"/>';
+  });
+
+  svg += '</svg>';
+
+  // ── Legend row
+  var legendHTML = '<div style="display:flex;flex-wrap:wrap;gap:18px;margin:10px 0 4px;font-size:10px;color:#8878a8">'
+    + '<span>● White dot = peak TS dimension</span>'
+    + '<span style="color:#4ade80">● Bubble ≥ 8</span>'
+    + '<span style="color:#fbbf24">● Bubble 6–8</span>'
+    + '<span style="color:#f87171">● Bubble &lt; 6  (= alignment score)</span>'
+    + '<span>Ridge height = TS score (0–1 scale)</span>'
+    + '</div>';
+
+  el.innerHTML = '<div style="padding:20px 24px 8px">'
+    + '<h2 style="font-size:15px;font-weight:800;color:#f0ecf8;margin-bottom:4px">Ridge Profiles</h2>'
+    + '<p style="font-size:12px;color:#a898c0;margin-bottom:6px">'
+    + 'Each row is a project. The ridge sweeps across 7 Transformative Systems dimensions — '
+    + 'height at each column reflects that project\'s score there. White dot marks the peak dimension. '
+    + 'Projects grouped by pod, sorted highest alignment first.'
+    + '</p>'
+    + legendHTML
+    + '</div>'
+    + '<div style="overflow-x:auto;padding:4px 24px 40px">' + svg + '</div>';
+
+  // ── Tooltip interaction
+  var tip = document.getElementById('tooltip');
+  el.querySelectorAll('.ridge-path').forEach(function(path) {
+    path.addEventListener('mouseover', function(e) {
+      var pid = this.getAttribute('data-pid');
+      var p   = DATA.projects.find(function(pr) { return pr.id === pid; });
+      if (!p) return;
+      var sc  = scores[p.id] || {};
+      var aln = p.alignment_avg || 0;
+      var alnCol = aln >= 8 ? '#4ade80' : (aln >= 6 ? '#fbbf24' : '#f87171');
+      var dimRows = DIMS.map(function(dim) {
+        var v = Math.round((sc[dim] || 0) * 100);
+        var barCol = v > 60 ? '#99ee81' : (v > 30 ? '#fbbf24' : '#6050a0');
+        return '<div class="tt-row"><span class="tt-label">' + DIM_LABEL[dim] + '</span>'
+          + '<div style="flex:1;background:#1a0d30;border-radius:2px;height:4px;margin:2px 0">'
+          + '<div style="width:' + v + '%;height:4px;background:' + barCol + ';border-radius:2px"></div></div>'
+          + '<span style="font-family:monospace;color:' + barCol + ';font-size:10px;margin-left:6px;min-width:26px">' + v + '</span></div>';
+      }).join('');
+      tip.innerHTML = '<h4>' + (p.short || p.id) + '</h4>'
+        + '<div style="font-size:10px;color:#a898c0;margin-bottom:8px">' + (p.pod || '') + '</div>'
+        + '<div style="display:flex;align-items:baseline;gap:6px;margin-bottom:10px">'
+        + '<span class="tt-label">Alignment</span>'
+        + '<span style="font-size:15px;font-weight:700;color:' + alnCol + '">' + aln.toFixed(1) + '</span>'
+        + '</div>'
+        + dimRows;
+      tip.style.display = 'block';
+      tip.style.left = (e.clientX + 18) + 'px';
+      tip.style.top  = (e.clientY - 20) + 'px';
+      this.style.opacity = '1';
+    });
+    path.addEventListener('mousemove', function(e) {
+      tip.style.left = (e.clientX + 18) + 'px';
+      tip.style.top  = (e.clientY - 20) + 'px';
+    });
+    path.addEventListener('mouseout', function() {
+      tip.style.display = 'none';
+      this.style.opacity = '';
+    });
+  });
 }
 
 // ── Init ──────────────────────────────────────────────────────────────────

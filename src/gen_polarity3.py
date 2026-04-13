@@ -5,8 +5,8 @@ Generate AbInt_Phase2_Dashboard.html from polarity_data3.json
 """
 import json, re
 
-DATA_FILE = '/sessions/gifted-exciting-ramanujan/polarity_data3.json'
-OUT_FILE  = '/sessions/gifted-exciting-ramanujan/mnt/Data viz for program report/AbInt_Phase2_Dashboard.html'
+DATA_FILE = '/sessions/sweet-sharp-clarke/mnt/Data viz for program report/src/polarity_data3.json'
+OUT_FILE  = '/sessions/sweet-sharp-clarke/mnt/Data viz for program report/AbInt_Phase2_Dashboard.html'
 
 with open(DATA_FILE) as f:
     raw = json.load(f)
