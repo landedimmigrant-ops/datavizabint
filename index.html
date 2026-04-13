@@ -4331,6 +4331,14 @@ function renderVoronoi() {
 }
 
 function buildVoronoiChart(el) {
+  try { _buildVoronoiInner(el); }
+  catch(e) {
+    var c = document.getElementById('vnoi-canvas');
+    if (c) c.innerHTML = '<div style="color:#f87171;font-family:monospace;font-size:12px;padding:20px">Voronoi error: ' + e.message + '</div>';
+    console.error('Voronoi build error:', e);
+  }
+}
+function _buildVoronoiInner(el) {
   var scores  = DATA.ts_project_scores || {};
 
   // ── Area colour map
@@ -4379,8 +4387,8 @@ function buildVoronoiChart(el) {
   var voronoiMap = d3.voronoiTreemap()
     .clip(clipPoly)
     .prng(prng)
-    .convergenceRatio(0.007)
-    .maxIterationCount(120)
+    .convergenceRatio(0.012)
+    .maxIterationCount(50)
     .minWeightRatio(0.001);
 
   voronoiMap(hierarchy);
@@ -4537,10 +4545,12 @@ function buildVoronoiChart(el) {
   legendSVG += '<div style="display:flex;align-items:center;gap:6px"><span style="color:#7060a0">Cell opacity = alignment strength</span></div>';
   legendSVG += '</div>';
 
-  // Inject
+  // Inject — append node directly so D3 event handlers survive
   var canvas = document.getElementById('vnoi-canvas');
-  canvas.innerHTML = legendSVG + '<div style="display:flex;justify-content:center">' + svg.node().outerHTML + '</div>';
-}
+  canvas.innerHTML = legendSVG + '<div id="vnoi-svg-wrap" style="display:flex;justify-content:center;padding:0 24px 40px"></div>';
+  document.getElementById('vnoi-svg-wrap').appendChild(svg.node());
+} // end _buildVoronoiInner
+
 
 // ── VIEW: Ridge Profiles ──────────────────────────────────────────────────
 function buildRidgePath(xPts, vals, baseline, ridgeH) {
