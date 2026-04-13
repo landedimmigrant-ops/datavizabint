@@ -4295,57 +4295,44 @@ function renderSignalLab() {
 }
 
 // ── VIEW: Voronoi Network ─────────────────────────────────────────────────
-function _loadScript(url, cb, onErr) {
-  if (document.querySelector('script[src="' + url + '"]')) { cb(); return; }
-  var s = document.createElement('script');
-  s.src = url;
-  s.onload = cb;
-  s.onerror = onErr || function() {};
-  document.head.appendChild(s);
-}
-
+// ── VIEW: Voronoi Network (D3 pack layout — no external CDN) ─────────────
 function renderVoronoi() {
   var el = document.getElementById('view-voronoi');
-  el.innerHTML = '<div style="padding:20px 24px">'
-    + '<h2 style="font-size:15px;font-weight:800;color:#f0ecf8;margin-bottom:4px">Voronoi Network</h2>'
-    + '<p style="font-size:12px;color:#a898c0;margin-bottom:16px">'
-    + 'Projects as organic cells — area ∝ alignment score, colour = research area, bold outlines = pod clusters. Hover any cell for details.'
-    + '</p></div>'
-    + '<div id="vnoi-canvas" style="display:flex;justify-content:center;align-items:center;min-height:400px;padding:0 24px 40px">'
-    + '<div style="color:#a898c0;font-family:monospace;font-size:12px;letter-spacing:.06em">⟳ LOADING VORONOI ENGINE…</div>'
-    + '</div>';
-
-  var WV = 'https://cdn.jsdelivr.net/npm/d3-weighted-voronoi@1.1.3/build/d3-weighted-voronoi.min.js';
-  var VT = 'https://cdn.jsdelivr.net/npm/d3-voronoi-treemap@1.1.1/build/d3-voronoi-treemap.min.js';
-
-  function onError() {
-    document.getElementById('vnoi-canvas').innerHTML =
-      '<div style="color:#f87171;font-family:monospace;font-size:12px">Could not load Voronoi engine — check network connection.</div>';
-  }
-
-  _loadScript(WV, function() {
-    _loadScript(VT, function() {
-      setTimeout(function() { buildVoronoiChart(el); }, 80);
-    }, onError);
-  }, onError);
+  el.innerHTML = '<div style="padding:20px 24px 8px">'
+    + '<h2 style="font-size:15px;font-weight:800;color:#f0ecf8;margin-bottom:4px">Pod Network</h2>'
+    + '<p style="font-size:12px;color:#a898c0;margin-bottom:6px">'
+    + 'Projects as nested circles — size ∝ alignment score, colour = primary research area, '
+    + 'grouped and outlined by pod. Hover any circle for details.'
+    + '</p>'
+    + '<div id="vnoi-legend" style="display:flex;flex-wrap:wrap;gap:8px 18px;margin-bottom:4px;font-size:11px"></div>'
+    + '</div>'
+    + '<div id="vnoi-canvas" style="display:flex;justify-content:center;padding:4px 24px 40px"></div>';
+  setTimeout(function() { _buildVoronoiInner(el); }, 30);
 }
 
-function buildVoronoiChart(el) {
-  try { _buildVoronoiInner(el); }
-  catch(e) {
-    var c = document.getElementById('vnoi-canvas');
-    if (c) c.innerHTML = '<div style="color:#f87171;font-family:monospace;font-size:12px;padding:20px">Voronoi error: ' + e.message + '</div>';
-    console.error('Voronoi build error:', e);
-  }
-}
 function _buildVoronoiInner(el) {
-  var scores  = DATA.ts_project_scores || {};
+  try {
 
   // ── Area colour map
   var AREA_COL = {};
   (DATA.research_areas || []).forEach(function(a) { AREA_COL[a.title] = a.color; });
 
-  // ── Group projects by pod (sort pods by avg alignment desc)
+  // Legend
+  var legEl = document.getElementById('vnoi-legend');
+  if (legEl) {
+    var legHTML = (DATA.research_areas || []).map(function(a) {
+      return '<div style="display:flex;align-items:center;gap:5px">'
+        + '<div style="width:11px;height:11px;border-radius:3px;background:' + a.color + ';opacity:0.85"></div>'
+        + '<span style="color:#c0b0d8">' + a.title + '</span></div>';
+    }).join('');
+    legHTML += '<div style="display:flex;align-items:center;gap:5px">'
+      + '<div style="width:28px;height:2px;background:#99ee81;border-radius:1px"></div>'
+      + '<span style="color:#6050a0">pod outline</span></div>';
+    legHTML += '<span style="color:#6050a0;font-size:10px">Circle size = alignment score</span>';
+    legEl.innerHTML = legHTML;
+  }
+
+  // ── Group projects by pod
   var podMap = {};
   DATA.projects.forEach(function(p) {
     var pod = p.pod || 'Other';
@@ -4358,118 +4345,128 @@ function _buildVoronoiInner(el) {
     return ab - aa;
   });
 
-  // ── D3 hierarchy
+  // ── D3 hierarchy for pack
   var rootData = {
     name: 'AbInt',
     children: podOrder.map(function(pod) {
       return {
         name: pod,
         children: podMap[pod].map(function(p) {
-          return { name: p.short || p.id, value: Math.max(1, p.alignment_avg || 1), project: p };
+          return { name: p.short || p.id, value: Math.max(0.5, p.alignment_avg || 1), project: p };
         })
       };
     })
   };
+
   var hierarchy = d3.hierarchy(rootData)
     .sum(function(d) { return d.value || 0; })
     .sort(function(a, b) { return b.value - a.value; });
 
-  // ── Circle clip polygon (150 points ≈ smooth circle)
-  var W = 740, H = 740, CX = W / 2, CY = H / 2, R = 340;
-  var N = 150;
-  var clipPoly = d3.range(N).map(function(i) {
-    var a = (i / N) * 2 * Math.PI - Math.PI / 2;
-    return [CX + R * Math.cos(a), CY + R * Math.sin(a)];
-  });
+  // ── Pack layout
+  var R = 340, DIAM = R * 2;
+  var pack = d3.pack().size([DIAM, DIAM]).padding(4);
+  pack(hierarchy);
 
-  // ── Run Voronoi treemap
-  var prng = d3.randomLcg(2024);
-  var voronoiMap = d3.voronoiTreemap()
-    .clip(clipPoly)
-    .prng(prng)
-    .convergenceRatio(0.012)
-    .maxIterationCount(50)
-    .minWeightRatio(0.001);
-
-  voronoiMap(hierarchy);
-
-  var leaves = hierarchy.leaves();
-
-  // ── Build SVG
+  // ── SVG
   var svg = d3.create('svg')
-    .attr('width', W).attr('height', H)
+    .attr('width', DIAM).attr('height', DIAM)
     .style('display', 'block').style('overflow', 'visible');
 
-  // Clip path
-  var clipId = 'vc-' + Date.now();
-  svg.append('defs').append('clipPath').attr('id', clipId)
-    .append('circle').attr('cx', CX).attr('cy', CY).attr('r', R);
-
-  // Dark background circle
-  svg.append('circle').attr('cx', CX).attr('cy', CY).attr('r', R)
-    .attr('fill', '#0c0618');
-
-  var g = svg.append('g').attr('clip-path', 'url(#' + clipId + ')');
+  // Dark BG circle
+  svg.append('circle').attr('cx', R).attr('cy', R).attr('r', R).attr('fill', '#0c0618');
 
   var tip = document.getElementById('tooltip');
 
-  // ── Draw leaf cells (projects)
-  leaves.forEach(function(leaf) {
-    var poly = leaf.polygon;
-    if (!poly || poly.length < 3) return;
-    var p       = leaf.data.project;
-    var pod     = leaf.parent.data.name;
-    var aln     = p.alignment_avg || 5;
-    var area    = p.primary_area || '';
-    var fillCol = AREA_COL[area] || podColor(pod);
-    var opacity = 0.28 + (aln / 10) * 0.52; // low aln = dim, high = vivid
-    var pathStr = 'M' + poly.map(function(pt) { return pt[0].toFixed(1) + ',' + pt[1].toFixed(1); }).join('L') + 'Z';
+  // ── Pod circles (depth=1): subtle fill + bold outline
+  hierarchy.descendants().filter(function(d) { return d.depth === 1; }).forEach(function(pod) {
+    var col = podColor(pod.data.name);
+    svg.append('circle')
+      .attr('cx', pod.x).attr('cy', pod.y).attr('r', pod.r)
+      .attr('fill', col).attr('fill-opacity', 0.07)
+      .attr('stroke', col).attr('stroke-width', 2.2).attr('stroke-opacity', 0.85)
+      .attr('pointer-events', 'none');
 
-    var cell = g.append('path')
-      .attr('d', pathStr)
-      .attr('fill', fillCol)
-      .attr('fill-opacity', opacity)
-      .attr('stroke', podColor(pod))
-      .attr('stroke-width', 0.7)
-      .attr('stroke-opacity', 0.6)
+    // Pod label if circle big enough
+    if (pod.r > 40) {
+      var podLbl = pod.data.name.replace(/ [Pp]od$/, '');
+      if (podLbl.length > 11) podLbl = podLbl.substring(0, 10) + '\u2026';
+      var fs = Math.max(8, Math.min(12, pod.r / 5));
+      svg.append('text')
+        .attr('x', pod.x).attr('y', pod.y - pod.r + fs * 1.6)
+        .attr('text-anchor', 'middle').attr('pointer-events', 'none')
+        .attr('fill', col).attr('font-size', fs)
+        .attr('font-family', 'system-ui,sans-serif')
+        .attr('font-weight', '800').attr('letter-spacing', '0.06em')
+        .attr('opacity', 0.9)
+        .text(podLbl.toUpperCase());
+    }
+  });
+
+  // ── Project circles (depth=2, leaves)
+  hierarchy.leaves().forEach(function(leaf) {
+    var p      = leaf.data.project;
+    var pod    = leaf.parent.data.name;
+    var aln    = p.alignment_avg || 5;
+    var area   = p.primary_area || '';
+    var fillC  = AREA_COL[area] || podColor(pod);
+    var opacity = 0.3 + (aln / 10) * 0.55;
+    var alnCol  = aln >= 8 ? '#4ade80' : (aln >= 6 ? '#fbbf24' : '#f87171');
+
+    var circle = svg.append('circle')
+      .attr('cx', leaf.x).attr('cy', leaf.y).attr('r', Math.max(0, leaf.r - 1))
+      .attr('fill', fillC).attr('fill-opacity', opacity)
+      .attr('stroke', fillC).attr('stroke-width', 0.8).attr('stroke-opacity', 0.6)
       .style('cursor', 'pointer');
 
-    // Labels if cell large enough
-    var cellArea = Math.abs(d3.polygonArea(poly));
-    var centroid = d3.polygonCentroid(poly);
-    if (cellArea > 1200) {
-      var fs      = Math.max(7, Math.min(11, Math.sqrt(cellArea) / 9));
+    // Label if big enough
+    if (leaf.r > 18) {
       var nameStr = (p.short || p.id || '').split(' \u2014')[0].split(' - ')[0];
-      if (nameStr.length > 13) nameStr = nameStr.substring(0, 12) + '\u2026';
-      var alnCol  = aln >= 8 ? '#4ade80' : (aln >= 6 ? '#fbbf24' : '#f87171');
+      var words   = nameStr.split(' ');
+      var line1   = words.slice(0, 2).join(' ');
+      var line2   = words.length > 2 ? words.slice(2, 4).join(' ') : '';
+      var fs2     = Math.max(6.5, Math.min(10, leaf.r / 3.2));
 
-      g.append('text')
-        .attr('x', centroid[0]).attr('y', centroid[1] - fs * 0.5)
-        .attr('text-anchor', 'middle').attr('pointer-events', 'none')
-        .attr('fill', '#f0ecf8').attr('font-size', fs)
-        .attr('font-family', 'system-ui,sans-serif').attr('font-weight', '600')
-        .text(nameStr);
-
-      if (cellArea > 2200) {
-        g.append('text')
-          .attr('x', centroid[0]).attr('y', centroid[1] + fs * 0.95)
+      if (leaf.r > 26 && line2) {
+        svg.append('text')
+          .attr('x', leaf.x).attr('y', leaf.y - fs2 * 0.7)
           .attr('text-anchor', 'middle').attr('pointer-events', 'none')
-          .attr('fill', alnCol).attr('font-size', fs * 0.82)
-          .attr('font-family', 'monospace').attr('font-weight', '700')
-          .text(aln.toFixed(1));
+          .attr('fill', '#f0ecf8').attr('font-size', fs2)
+          .attr('font-family', 'system-ui,sans-serif').attr('font-weight', '600')
+          .text(line1);
+        svg.append('text')
+          .attr('x', leaf.x).attr('y', leaf.y + fs2 * 0.7)
+          .attr('text-anchor', 'middle').attr('pointer-events', 'none')
+          .attr('fill', '#f0ecf8').attr('font-size', fs2)
+          .attr('font-family', 'system-ui,sans-serif').attr('font-weight', '600')
+          .text(line2);
+        if (leaf.r > 32) {
+          svg.append('text')
+            .attr('x', leaf.x).attr('y', leaf.y + fs2 * 2)
+            .attr('text-anchor', 'middle').attr('pointer-events', 'none')
+            .attr('fill', alnCol).attr('font-size', fs2 * 0.82)
+            .attr('font-family', 'monospace').attr('font-weight', '700')
+            .text(aln.toFixed(1));
+        }
+      } else {
+        svg.append('text')
+          .attr('x', leaf.x).attr('y', leaf.y + fs2 * 0.38)
+          .attr('text-anchor', 'middle').attr('pointer-events', 'none')
+          .attr('fill', '#f0ecf8').attr('font-size', fs2)
+          .attr('font-family', 'system-ui,sans-serif').attr('font-weight', '600')
+          .text(line1.length > 10 ? line1.substring(0, 9) + '\u2026' : line1);
       }
     }
 
     // Tooltip
-    cell.on('mouseover', function(event) {
-      d3.select(this).attr('fill-opacity', Math.min(0.95, opacity + 0.35));
-      var alnCol = aln >= 8 ? '#4ade80' : (aln >= 6 ? '#fbbf24' : '#f87171');
-      var depth  = p.ai_depth || '—';
+    circle.on('mouseover', function(event) {
+      d3.select(this).attr('fill-opacity', Math.min(0.95, opacity + 0.3));
+      var depth  = p.ai_depth || '\u2014';
       var depthC = depth === 'High' ? '#f87171' : (depth === 'Mid' ? '#fbbf24' : (depth === 'Low' ? '#a3e635' : '#475569'));
       tip.innerHTML = '<h4>' + (p.short || p.id) + '</h4>'
         + '<div style="font-size:10px;color:#a898c0;margin-bottom:8px">' + pod + '</div>'
-        + '<div class="tt-row"><span class="tt-label">Area</span><span style="color:' + (fillCol) + '">' + (area || '—') + '</span></div>'
-        + '<div class="tt-row"><span class="tt-label">2° Area</span><span>' + (p.secondary_area || '—') + '</span></div>'
+        + '<div class="tt-row"><span class="tt-label">Area</span>'
+        + '<span style="color:' + fillC + '">' + (area || '\u2014') + '</span></div>'
+        + '<div class="tt-row"><span class="tt-label">2\u00b0 Area</span><span>' + (p.secondary_area || '\u2014') + '</span></div>'
         + '<div class="tt-row"><span class="tt-label">AI Depth</span><span style="color:' + depthC + '">' + depth + '</span></div>'
         + '<div class="tt-row" style="margin-top:6px"><span class="tt-label">Alignment</span>'
         + '<span style="font-size:14px;font-weight:700;color:' + alnCol + '">' + aln.toFixed(1) + '</span></div>'
@@ -4488,68 +4485,21 @@ function _buildVoronoiInner(el) {
     });
   });
 
-  // ── Pod convex hulls + labels
-  var podPts = {};
-  leaves.forEach(function(leaf) {
-    var pod = leaf.parent.data.name;
-    if (!podPts[pod]) podPts[pod] = [];
-    (leaf.polygon || []).forEach(function(pt) { podPts[pod].push(pt); });
-  });
-
-  podOrder.forEach(function(pod) {
-    var pts  = podPts[pod];
-    if (!pts || pts.length < 3) return;
-    var hull = d3.polygonHull(pts);
-    if (!hull) return;
-    var col  = podColor(pod);
-    var hullPath = 'M' + hull.map(function(pt) { return pt[0].toFixed(1) + ',' + pt[1].toFixed(1); }).join('L') + 'Z';
-
-    g.append('path')
-      .attr('d', hullPath)
-      .attr('fill', 'none')
-      .attr('stroke', col)
-      .attr('stroke-width', 2.8)
-      .attr('stroke-opacity', 0.9)
-      .attr('pointer-events', 'none');
-
-    // Pod label at hull centroid
-    var hullArea = Math.abs(d3.polygonArea(hull));
-    if (hullArea > 8000) {
-      var hc      = d3.polygonCentroid(hull);
-      var podLbl  = pod.replace(/ [Pp]od$/, '');
-      if (podLbl.length > 12) podLbl = podLbl.substring(0, 11) + '…';
-      g.append('text')
-        .attr('x', hc[0]).attr('y', hc[1])
-        .attr('text-anchor', 'middle').attr('pointer-events', 'none')
-        .attr('fill', col).attr('font-size', 11)
-        .attr('font-family', 'system-ui,sans-serif')
-        .attr('font-weight', '900').attr('letter-spacing', '0.06em')
-        .attr('opacity', 0.95)
-        .text(podLbl.toUpperCase());
-    }
-  });
-
-  // ── Circle border
-  svg.append('circle').attr('cx', CX).attr('cy', CY).attr('r', R)
+  // Outer border
+  svg.append('circle').attr('cx', R).attr('cy', R).attr('r', R)
     .attr('fill', 'none').attr('stroke', '#3a2060').attr('stroke-width', 3);
 
-  // ── Legend (research areas)
-  var legendSVG = '<div style="display:flex;flex-wrap:wrap;gap:10px 20px;margin:0 24px 12px;font-size:11px">';
-  (DATA.research_areas || []).forEach(function(a) {
-    legendSVG += '<div style="display:flex;align-items:center;gap:6px">'
-      + '<div style="width:12px;height:12px;border-radius:3px;background:' + a.color + ';opacity:0.85"></div>'
-      + '<span style="color:#c0b0d8">' + a.title + '</span></div>';
-  });
-  legendSVG += '<div style="display:flex;align-items:center;gap:6px"><div style="width:32px;height:2px;background:#99ee81;border-radius:1px"></div>'
-    + '<span style="color:#7060a0">pod outline</span></div>';
-  legendSVG += '<div style="display:flex;align-items:center;gap:6px"><span style="color:#7060a0">Cell opacity = alignment strength</span></div>';
-  legendSVG += '</div>';
-
-  // Inject — append node directly so D3 event handlers survive
+  // Inject
   var canvas = document.getElementById('vnoi-canvas');
-  canvas.innerHTML = legendSVG + '<div id="vnoi-svg-wrap" style="display:flex;justify-content:center;padding:0 24px 40px"></div>';
-  document.getElementById('vnoi-svg-wrap').appendChild(svg.node());
-} // end _buildVoronoiInner
+  if (canvas) canvas.appendChild(svg.node());
+
+  } catch(e) {
+    var c = document.getElementById('vnoi-canvas');
+    if (c) c.innerHTML = '<div style="color:#f87171;font-family:monospace;font-size:12px;padding:20px">Error: ' + e.message + '</div>';
+    console.error('Pod Network error:', e);
+  }
+}
+
 
 
 // ── VIEW: Ridge Profiles ──────────────────────────────────────────────────
