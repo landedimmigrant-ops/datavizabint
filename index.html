@@ -343,7 +343,7 @@ html, body { height: 100%; font-family: 'Inter', system-ui, sans-serif;
   <button class="nav-tab" data-view="ecosystem">Living Ecosystem</button>
   <button class="nav-tab" data-view="signallab">Signal Lab</button>
   <button class="nav-tab" data-view="ridgeline">Ridge Profiles</button>
-  <button class="nav-tab" data-view="voronoi">Voronoi Network</button>
+  <button class="nav-tab" data-view="voronoi">TS Landscape</button>
 </nav>
 
 <div id="view-landscape"  class="view active"></div>
@@ -4294,15 +4294,15 @@ function renderSignalLab() {
     + '<div style="padding:0 24px 40px">' + gridHTML + '</div>';
 }
 
-// ── VIEW: Voronoi Network ─────────────────────────────────────────────────
-// ── VIEW: Voronoi Network (D3 pack layout — no external CDN) ─────────────
+// ── VIEW: TS Landscape ───────────────────────────────────────────────────
 function renderVoronoi() {
   var el = document.getElementById('view-voronoi');
   el.innerHTML = '<div style="padding:20px 24px 8px">'
-    + '<h2 style="font-size:15px;font-weight:800;color:#f0ecf8;margin-bottom:4px">Pod Network</h2>'
+    + '<h2 style="font-size:15px;font-weight:800;color:#f0ecf8;margin-bottom:4px">TS Landscape</h2>'
     + '<p style="font-size:12px;color:#a898c0;margin-bottom:6px">'
-    + 'Projects as nested circles — size ∝ alignment score, colour = primary research area, '
-    + 'grouped and outlined by pod. Hover any circle for details.'
+    + 'The entire network mapped onto the 7 Transformation Statement dimensions. '
+    + 'Each project sits inside its strongest dimension. Circle size = TS score in that dimension. '
+    + 'Colour = research area. Brightness = alignment strength. Hover for project details.'
     + '</p>'
     + '<div id="vnoi-legend" style="display:flex;flex-wrap:wrap;gap:8px 18px;margin-bottom:4px;font-size:11px"></div>'
     + '</div>'
@@ -4313,48 +4313,83 @@ function renderVoronoi() {
 function _buildVoronoiInner(el) {
   try {
 
-  // ── Area colour map
+  // ── Colour maps
   var AREA_COL = {};
   (DATA.research_areas || []).forEach(function(a) { AREA_COL[a.title] = a.color; });
 
-  // Legend
+  // TS dimension order + labels
+  var DIM_ORDER = ['ts_community','ts_technical','ts_imaginaries','ts_network',
+                   'ts_relational','ts_ik','ts_governance'];
+  var DIM_LABEL = {
+    ts_ik:          'IK / TK',
+    ts_relational:  'Relational',
+    ts_community:   'Community-\nCentred',
+    ts_technical:   'Technical AI',
+    ts_governance:  'Governance',
+    ts_network:     'Network',
+    ts_imaginaries: 'Imaginaries'
+  };
+  var DIM_SHORT = {
+    ts_ik:          'IK/TK',
+    ts_relational:  'Relational',
+    ts_community:   'Community',
+    ts_technical:   'Technical',
+    ts_governance:  'Governance',
+    ts_network:     'Network',
+    ts_imaginaries: 'Imaginaries'
+  };
+
+  var scores = DATA.ts_project_scores || {};
+
+  // ── Assign each project to its highest-scoring TS dimension
+  var dimBuckets = {};
+  DIM_ORDER.forEach(function(d) { dimBuckets[d] = []; });
+
+  var unscored = [];
+  DATA.projects.forEach(function(p) {
+    var sc = scores[p.id] || {};
+    var keys = DIM_ORDER.filter(function(k) { return (sc[k] || 0) > 0; });
+    if (!keys.length) { unscored.push(p); return; }
+    var topDim = keys.reduce(function(best, k) { return sc[k] > sc[best] ? k : best; });
+    dimBuckets[topDim].push({ project: p, tsScore: sc[topDim] || 0 });
+  });
+
+  // ── Build legend
   var legEl = document.getElementById('vnoi-legend');
   if (legEl) {
-    var legHTML = (DATA.research_areas || []).map(function(a) {
+    var legHTML = DIM_ORDER.map(function(d) {
+      var col = TS_DIM_COLORS[d] || '#99ee81';
+      var cnt = dimBuckets[d].length;
       return '<div style="display:flex;align-items:center;gap:5px">'
-        + '<div style="width:11px;height:11px;border-radius:3px;background:' + a.color + ';opacity:0.85"></div>'
-        + '<span style="color:#c0b0d8">' + a.title + '</span></div>';
+        + '<div style="width:11px;height:11px;border-radius:50%;background:' + col + ';opacity:0.7"></div>'
+        + '<span style="color:' + col + ';font-weight:600">' + DIM_SHORT[d] + '</span>'
+        + '<span style="color:#5040a0">(' + cnt + ')</span></div>';
     }).join('');
-    legHTML += '<div style="display:flex;align-items:center;gap:5px">'
-      + '<div style="width:28px;height:2px;background:#99ee81;border-radius:1px"></div>'
-      + '<span style="color:#6050a0">pod outline</span></div>';
-    legHTML += '<span style="color:#6050a0;font-size:10px">Circle size = alignment score</span>';
+    legHTML += unscored.length ? '<span style="color:#5040a0;font-size:10px">' + unscored.length + ' projects unscored</span>' : '';
     legEl.innerHTML = legHTML;
   }
 
-  // ── Group projects by pod
-  var podMap = {};
-  DATA.projects.forEach(function(p) {
-    var pod = p.pod || 'Other';
-    if (!podMap[pod]) podMap[pod] = [];
-    podMap[pod].push(p);
-  });
-  var podOrder = Object.keys(podMap).sort(function(a, b) {
-    var aa = podMap[a].reduce(function(s, p) { return s + (p.alignment_avg || 0); }, 0) / podMap[a].length;
-    var ab = podMap[b].reduce(function(s, p) { return s + (p.alignment_avg || 0); }, 0) / podMap[b].length;
-    return ab - aa;
-  });
-
-  // ── D3 hierarchy for pack
+  // ── D3 hierarchy: TS Dimension → Projects
   var rootData = {
     name: 'AbInt',
-    children: podOrder.map(function(pod) {
-      return {
-        name: pod,
-        children: podMap[pod].map(function(p) {
-          return { name: p.short || p.id, value: Math.max(0.5, p.alignment_avg || 1), project: p };
-        })
-      };
+    children: DIM_ORDER.map(function(dimId) {
+      var children = dimBuckets[dimId].map(function(item) {
+        var p   = item.project;
+        var aln = p.alignment_avg || 5;
+        // Value = ts score × alignment composite (rewards both depth and quality)
+        return {
+          name:     p.short || p.id,
+          value:    Math.max(0.05, item.tsScore * (aln / 10)),
+          tsScore:  item.tsScore,
+          project:  p,
+          dimId:    dimId
+        };
+      });
+      // Add a ghost node if empty so dim still shows as a circle
+      if (!children.length) {
+        children = [{ name: '', value: 0.04, tsScore: 0, project: null, dimId: dimId, ghost: true }];
+      }
+      return { name: dimId, children: children };
     })
   };
 
@@ -4363,8 +4398,8 @@ function _buildVoronoiInner(el) {
     .sort(function(a, b) { return b.value - a.value; });
 
   // ── Pack layout
-  var R = 340, DIAM = R * 2;
-  var pack = d3.pack().size([DIAM, DIAM]).padding(4);
+  var R = 360, DIAM = R * 2;
+  var pack = d3.pack().size([DIAM, DIAM]).padding(6);
   pack(hierarchy);
 
   // ── SVG
@@ -4372,88 +4407,114 @@ function _buildVoronoiInner(el) {
     .attr('width', DIAM).attr('height', DIAM)
     .style('display', 'block').style('overflow', 'visible');
 
-  // Dark BG circle
-  svg.append('circle').attr('cx', R).attr('cy', R).attr('r', R).attr('fill', '#0c0618');
+  svg.append('circle').attr('cx', R).attr('cy', R).attr('r', R).attr('fill', '#0a0518');
 
   var tip = document.getElementById('tooltip');
 
-  // ── Pod circles (depth=1): subtle fill + bold outline
-  hierarchy.descendants().filter(function(d) { return d.depth === 1; }).forEach(function(pod) {
-    var col = podColor(pod.data.name);
+  // ── TS Dimension circles (depth=1)
+  hierarchy.descendants().filter(function(d) { return d.depth === 1; }).forEach(function(dim) {
+    var col     = TS_DIM_COLORS[dim.data.name] || '#99ee81';
+    var isEmpty = dimBuckets[dim.data.name].length === 0;
+    var label   = DIM_SHORT[dim.data.name] || dim.data.name;
+
+    // Background fill
     svg.append('circle')
-      .attr('cx', pod.x).attr('cy', pod.y).attr('r', pod.r)
-      .attr('fill', col).attr('fill-opacity', 0.07)
-      .attr('stroke', col).attr('stroke-width', 2.2).attr('stroke-opacity', 0.85)
+      .attr('cx', dim.x).attr('cy', dim.y).attr('r', dim.r)
+      .attr('fill', col)
+      .attr('fill-opacity', isEmpty ? 0.04 : 0.08)
+      .attr('stroke', col)
+      .attr('stroke-width', isEmpty ? 1.2 : 2.4)
+      .attr('stroke-opacity', isEmpty ? 0.3 : 0.88)
+      .attr('stroke-dasharray', isEmpty ? '4,4' : 'none')
       .attr('pointer-events', 'none');
 
-    // Pod label if circle big enough
-    if (pod.r > 40) {
-      var podLbl = pod.data.name.replace(/ [Pp]od$/, '');
-      if (podLbl.length > 11) podLbl = podLbl.substring(0, 10) + '\u2026';
-      var fs = Math.max(8, Math.min(12, pod.r / 5));
+    // Dimension label — inside top of circle
+    if (dim.r > 24) {
+      var fs = Math.max(8, Math.min(13, dim.r / 5.5));
       svg.append('text')
-        .attr('x', pod.x).attr('y', pod.y - pod.r + fs * 1.6)
+        .attr('x', dim.x)
+        .attr('y', isEmpty ? dim.y + fs * 0.4 : dim.y - dim.r + fs * 1.8)
         .attr('text-anchor', 'middle').attr('pointer-events', 'none')
-        .attr('fill', col).attr('font-size', fs)
+        .attr('fill', col)
+        .attr('font-size', fs)
         .attr('font-family', 'system-ui,sans-serif')
-        .attr('font-weight', '800').attr('letter-spacing', '0.06em')
-        .attr('opacity', 0.9)
-        .text(podLbl.toUpperCase());
+        .attr('font-weight', '800')
+        .attr('letter-spacing', '0.04em')
+        .attr('opacity', isEmpty ? 0.45 : 0.95)
+        .text(isEmpty ? label + ' — none' : label);
+    }
+
+    // Project count badge
+    var cnt = dimBuckets[dim.data.name].length;
+    if (cnt > 0 && dim.r > 30) {
+      svg.append('text')
+        .attr('x', dim.x)
+        .attr('y', dim.y - dim.r + fs * 3.2)
+        .attr('text-anchor', 'middle').attr('pointer-events', 'none')
+        .attr('fill', col).attr('font-size', fs * 0.78)
+        .attr('font-family', 'monospace').attr('opacity', 0.6)
+        .text(cnt + ' project' + (cnt > 1 ? 's' : ''));
     }
   });
 
   // ── Project circles (depth=2, leaves)
   hierarchy.leaves().forEach(function(leaf) {
+    if (leaf.data.ghost) return; // skip placeholder nodes
+
     var p      = leaf.data.project;
-    var pod    = leaf.parent.data.name;
+    var dimId  = leaf.data.dimId;
+    var tsScore = leaf.data.tsScore;
     var aln    = p.alignment_avg || 5;
     var area   = p.primary_area || '';
-    var fillC  = AREA_COL[area] || podColor(pod);
-    var opacity = 0.3 + (aln / 10) * 0.55;
+    var fillC  = AREA_COL[area] || TS_DIM_COLORS[dimId] || '#99ee81';
+    var dimCol = TS_DIM_COLORS[dimId] || '#99ee81';
+    var opacity = 0.28 + (aln / 10) * 0.58;
     var alnCol  = aln >= 8 ? '#4ade80' : (aln >= 6 ? '#fbbf24' : '#f87171');
 
     var circle = svg.append('circle')
-      .attr('cx', leaf.x).attr('cy', leaf.y).attr('r', Math.max(0, leaf.r - 1))
+      .attr('cx', leaf.x).attr('cy', leaf.y)
+      .attr('r', Math.max(0, leaf.r - 1))
       .attr('fill', fillC).attr('fill-opacity', opacity)
-      .attr('stroke', fillC).attr('stroke-width', 0.8).attr('stroke-opacity', 0.6)
+      .attr('stroke', dimCol).attr('stroke-width', 0.9).attr('stroke-opacity', 0.5)
       .style('cursor', 'pointer');
 
-    // Label if big enough
-    if (leaf.r > 18) {
-      var nameStr = (p.short || p.id || '').split(' \u2014')[0].split(' - ')[0];
+    // Label
+    if (leaf.r > 16) {
+      var nameStr = (p.short || '').split(' \u2014')[0].split(' - ')[0];
       var words   = nameStr.split(' ');
-      var line1   = words.slice(0, 2).join(' ');
-      var line2   = words.length > 2 ? words.slice(2, 4).join(' ') : '';
-      var fs2     = Math.max(6.5, Math.min(10, leaf.r / 3.2));
+      var fs3     = Math.max(6, Math.min(10, leaf.r / 3.5));
 
-      if (leaf.r > 26 && line2) {
+      if (leaf.r > 28 && words.length > 1) {
         svg.append('text')
-          .attr('x', leaf.x).attr('y', leaf.y - fs2 * 0.7)
+          .attr('x', leaf.x).attr('y', leaf.y - fs3 * 0.6)
           .attr('text-anchor', 'middle').attr('pointer-events', 'none')
-          .attr('fill', '#f0ecf8').attr('font-size', fs2)
+          .attr('fill', '#f0ecf8').attr('font-size', fs3)
           .attr('font-family', 'system-ui,sans-serif').attr('font-weight', '600')
-          .text(line1);
-        svg.append('text')
-          .attr('x', leaf.x).attr('y', leaf.y + fs2 * 0.7)
-          .attr('text-anchor', 'middle').attr('pointer-events', 'none')
-          .attr('fill', '#f0ecf8').attr('font-size', fs2)
-          .attr('font-family', 'system-ui,sans-serif').attr('font-weight', '600')
-          .text(line2);
-        if (leaf.r > 32) {
+          .text(words.slice(0,2).join(' '));
+        if (words.length > 2) {
           svg.append('text')
-            .attr('x', leaf.x).attr('y', leaf.y + fs2 * 2)
+            .attr('x', leaf.x).attr('y', leaf.y + fs3 * 0.7)
             .attr('text-anchor', 'middle').attr('pointer-events', 'none')
-            .attr('fill', alnCol).attr('font-size', fs2 * 0.82)
+            .attr('fill', '#f0ecf8').attr('font-size', fs3)
+            .attr('font-family', 'system-ui,sans-serif').attr('font-weight', '600')
+            .text(words.slice(2,4).join(' '));
+        }
+        if (leaf.r > 36) {
+          svg.append('text')
+            .attr('x', leaf.x).attr('y', leaf.y + fs3 * 2.1)
+            .attr('text-anchor', 'middle').attr('pointer-events', 'none')
+            .attr('fill', alnCol).attr('font-size', fs3 * 0.8)
             .attr('font-family', 'monospace').attr('font-weight', '700')
             .text(aln.toFixed(1));
         }
       } else {
+        var short = words[0].length > 10 ? words[0].substring(0, 9) + '\u2026' : words[0];
         svg.append('text')
-          .attr('x', leaf.x).attr('y', leaf.y + fs2 * 0.38)
+          .attr('x', leaf.x).attr('y', leaf.y + fs3 * 0.38)
           .attr('text-anchor', 'middle').attr('pointer-events', 'none')
-          .attr('fill', '#f0ecf8').attr('font-size', fs2)
+          .attr('fill', '#f0ecf8').attr('font-size', fs3)
           .attr('font-family', 'system-ui,sans-serif').attr('font-weight', '600')
-          .text(line1.length > 10 ? line1.substring(0, 9) + '\u2026' : line1);
+          .text(short);
       }
     }
 
@@ -4462,15 +4523,19 @@ function _buildVoronoiInner(el) {
       d3.select(this).attr('fill-opacity', Math.min(0.95, opacity + 0.3));
       var depth  = p.ai_depth || '\u2014';
       var depthC = depth === 'High' ? '#f87171' : (depth === 'Mid' ? '#fbbf24' : (depth === 'Low' ? '#a3e635' : '#475569'));
+      var tsLabel = DIM_SHORT[dimId] || dimId;
       tip.innerHTML = '<h4>' + (p.short || p.id) + '</h4>'
-        + '<div style="font-size:10px;color:#a898c0;margin-bottom:8px">' + pod + '</div>'
-        + '<div class="tt-row"><span class="tt-label">Area</span>'
+        + '<div style="font-size:10px;color:#a898c0;margin-bottom:8px">' + (p.pod || '') + '</div>'
+        + '<div class="tt-row"><span class="tt-label">Top TS dim</span>'
+        + '<span style="color:' + dimCol + ';font-weight:700">' + tsLabel + '</span></div>'
+        + '<div class="tt-row"><span class="tt-label">TS score</span>'
+        + '<span style="font-weight:600">' + Math.round(tsScore * 100) + '%</span></div>'
+        + '<div class="tt-row"><span class="tt-label">Research area</span>'
         + '<span style="color:' + fillC + '">' + (area || '\u2014') + '</span></div>'
-        + '<div class="tt-row"><span class="tt-label">2\u00b0 Area</span><span>' + (p.secondary_area || '\u2014') + '</span></div>'
-        + '<div class="tt-row"><span class="tt-label">AI Depth</span><span style="color:' + depthC + '">' + depth + '</span></div>'
+        + '<div class="tt-row"><span class="tt-label">AI Depth</span>'
+        + '<span style="color:' + depthC + '">' + depth + '</span></div>'
         + '<div class="tt-row" style="margin-top:6px"><span class="tt-label">Alignment</span>'
-        + '<span style="font-size:14px;font-weight:700;color:' + alnCol + '">' + aln.toFixed(1) + '</span></div>'
-        + '<div class="tt-row"><span class="tt-label">Risk</span><span>' + ((p.risk_score || 0) * 100).toFixed(0) + '%</span></div>';
+        + '<span style="font-size:14px;font-weight:700;color:' + alnCol + '">' + aln.toFixed(1) + '</span></div>';
       tip.style.display = 'block';
       tip.style.left = (event.clientX + 18) + 'px';
       tip.style.top  = (event.clientY - 24) + 'px';
@@ -4495,11 +4560,10 @@ function _buildVoronoiInner(el) {
 
   } catch(e) {
     var c = document.getElementById('vnoi-canvas');
-    if (c) c.innerHTML = '<div style="color:#f87171;font-family:monospace;font-size:12px;padding:20px">Error: ' + e.message + '</div>';
-    console.error('Pod Network error:', e);
+    if (c) c.innerHTML = '<div style="color:#f87171;font-family:monospace;font-size:12px;padding:20px">TS Landscape error: ' + e.message + '</div>';
+    console.error('TS Landscape error:', e);
   }
 }
-
 
 
 // ── VIEW: Ridge Profiles ──────────────────────────────────────────────────
