@@ -342,6 +342,8 @@ html, body { height: 100%; font-family: 'Inter', system-ui, sans-serif;
   <button class="nav-tab" data-view="tsrollup">TS Network Rollup</button>
   <button class="nav-tab" data-view="ecosystem">Living Ecosystem</button>
   <button class="nav-tab" data-view="signallab">Signal Lab</button>
+  <button class="nav-tab" data-view="ridgeline">Ridge Profiles</button>
+  <button class="nav-tab" data-view="voronoi">TS Landscape</button>
 </nav>
 
 <div id="view-landscape"  class="view active"></div>
@@ -357,6 +359,8 @@ html, body { height: 100%; font-family: 'Inter', system-ui, sans-serif;
 <div id="view-tsrollup"   class="view"></div>
 <div id="view-ecosystem"  class="view"></div>
 <div id="view-signallab" class="view"></div>
+<div id="view-ridgeline" class="view"></div>
+<div id="view-voronoi"   class="view"></div>
 
 <script>
 // ── Data ──────────────────────────────────────────────────────────────────
@@ -532,7 +536,9 @@ var VIEWS = {
   podrelations: renderPodRelations,
   tsrollup:     renderTSRollup,
   ecosystem:    renderEcosystem,
-  signallab:    renderSignalLab
+  signallab:    renderSignalLab,
+  ridgeline:    renderRidgeline,
+  voronoi:      renderVoronoi
 };
 
 // ── VIEW 1: Polarity Landscape ────────────────────────────────────────────
@@ -2660,7 +2666,7 @@ function buildPRView() {
     document.getElementById('pr-hint').textContent = 'Pods \u25CF Themes \u25CB Projects. Click any node to highlight connections. Drag to rearrange. Scroll to zoom.';
     buildForceView(canvas);
   } else {
-    document.getElementById('pr-hint').textContent = 'Flow: Pod \u2192 Research Area \u2192 AI Depth \u2192 Theme \u2014 click any block or label to trace its full path. Toggle \u201cView from\u201d to flip perspective.';
+    document.getElementById('pr-hint').textContent = 'Flow: Pod \u2192 Research Area \u2014 click any block or label to trace its full path. Toggle \u201cView from\u201d to flip perspective.';
     buildFlowView(canvas, 'pod');
   }
 }
@@ -3041,7 +3047,7 @@ function buildFlowView(canvas, mode) {
   tLabel.style.cssText = 'font-size:10px;font-weight:700;color:#475569;letter-spacing:.06em;margin-right:2px;';
   tLabel.textContent = 'VIEW FROM';
   toggleBar.appendChild(tLabel);
-  [{m:'pod',icon:'\u25cf',text:'Pod'},{m:'theme',icon:'\u25c6',text:'Theme'}].forEach(function(opt){
+  [{m:'pod',icon:'\u25cf',text:'Pod'},{m:'area',icon:'\u25a0',text:'Research Area'}].forEach(function(opt){
     var btn = document.createElement('button');
     btn.textContent = opt.icon + '  ' + opt.text;
     var active = mode === opt.m;
@@ -3052,43 +3058,30 @@ function buildFlowView(canvas, mode) {
       buildFlowView(canvas, opt.m);
       var hint = document.getElementById('pr-hint');
       if (hint) hint.textContent = opt.m==='pod'
-        ? 'Flow: Pod \u2192 Research Area \u2192 AI Depth \u2192 Theme \u2014 click any block to trace its full path'
-        : 'Flow: Theme \u2192 Research Area \u2192 AI Depth \u2192 Pod \u2014 click any block to trace its full path';
+        ? 'Flow: Pod \u2192 Research Area \u2014 click any block to trace its full path'
+        : 'Flow: Research Area \u2192 Pod \u2014 click any block to trace its full path';
     });
     toggleBar.appendChild(btn);
   });
   canvas.insertBefore(toggleBar, canvas.firstChild);
 
   // ── Records ────────────────────────────────────────────────────────────
-  var projThemeMap = {};
-  (DATA.research_themes||[]).forEach(function(t){
-    if (!t.projects||!t.projects.length) return;
-    t.projects.forEach(function(pid){
-      if (!projThemeMap[pid]) projThemeMap[pid]=[];
-      projThemeMap[pid].push({label:t.label, color:t.color||'#99ee81'});
-    });
-  });
   var records = [];
   DATA.projects.forEach(function(p){
-    var pod   = p.pod||'Podless';
-    var area  = p.primary_area||'Other';
-    var depth = p.ai_depth||'None';
-    var themes = projThemeMap[p.id] || [{label:'Unthemed',color:'#475569'}];
-    var w = 1/themes.length;
-    themes.forEach(function(t){
-      records.push({pod:pod, area:area, depth:depth, theme:t.label,
-                    weight:w, podColor:podColor(pod), themeColor:t.color,
-                    projShort: p.short||p.code||p.id});
-    });
+    var pod  = p.pod||'Podless';
+    var area = p.primary_area||'Other';
+    records.push({pod:pod, area:area, weight:1,
+                  podColor:podColor(pod), areaColor:areaColor(area),
+                  projShort: p.short||p.code||p.id});
   });
 
   // Axis order driven by mode
   var AXES = mode==='pod'
-    ? ['pod','area','depth','theme']
-    : ['theme','area','depth','pod'];
+    ? ['pod','area']
+    : ['area','pod'];
   var AXIS_LABELS = mode==='pod'
-    ? ['Pod','Research Area','AI Depth','Theme']
-    : ['Theme','Research Area','AI Depth','Pod'];
+    ? ['Pod','Research Area']
+    : ['Research Area','Pod'];
 
   // Compute category totals per axis
   function axisCategories(key) {
@@ -3192,20 +3185,12 @@ function buildFlowView(canvas, mode) {
           var ry0 = rBlock.y + rightFillByLeft[rk][lk];
           var ry1 = ry0 + bandH_r;
 
-          // Colour: use pod colour wherever possible (visual consistency)
-          var bandColor = '#99ee81';
+          // Colour: pod colour from left axis (pod mode) or area colour (area mode)
+          var bandColor;
           if (leftKey==='pod') {
             bandColor = podColor(lk);
-          } else if (leftKey==='theme') {
-            var tmL = (DATA.research_themes||[]).find(function(t){ return t.label===lk; });
-            if (tmL) bandColor = tmL.color || '#99ee81';
           } else {
-            var podCounts = {};
-            records.forEach(function(r){
-              if (r[leftKey]===lk && r[rightKey]===rk) podCounts[r.pod]=(podCounts[r.pod]||0)+r.weight;
-            });
-            var topPod = Object.entries(podCounts).sort(function(a,b){return b[1]-a[1];})[0];
-            if (topPod) bandColor = podColor(topPod[0]);
+            bandColor = areaColor(lk);
           }
 
           var midX = (x1+x2)/2;
@@ -3238,16 +3223,10 @@ function buildFlowView(canvas, mode) {
     .attr('stroke', 'none');
 
   // ── Colour helper — returns the display colour for a given axis block ────
-  var DEPTH_COL = {'High':'#f87171','Mid':'#fbbf24','Low':'#a3e635','None':'#475569'};
   function nodeColor(key, cat) {
-    if (key==='pod')   return podColor(cat);
-    if (key==='depth') return DEPTH_COL[cat]||'#a898c0';
-    if (key==='area')  return AREA_COLOR[AREA_NAME_TO_ID[cat]]||'#a898c0';
-    if (key==='theme') {
-      var tm=(DATA.research_themes||[]).find(function(t){ return t.label===cat; });
-      return tm ? tm.color||'#99ee81' : '#99ee81';
-    }
-    return '#99ee81';
+    if (key==='pod')  return podColor(cat);
+    if (key==='area') return AREA_COLOR[AREA_NAME_TO_ID[cat]]||'#a898c0';
+    return '#a898c0';
   }
 
   // ── Click state + highlight logic ────────────────────────────────────────
@@ -3361,13 +3340,9 @@ function buildFlowView(canvas, mode) {
       var block = lay[c[0]];
       if (!block) return;
 
-      var col = key==='pod'   ? podColor(c[0]) :
-                key==='depth' ? ({'High':'#f87171','Mid':'#fbbf24','Low':'#a3e635','None':'#475569'}[c[0]]||'#a898c0') :
-                key==='area'  ? (AREA_COLOR[AREA_NAME_TO_ID[c[0]]]||'#a898c0') : '#99ee81';
-      if (key==='theme'){
-        var tm = (DATA.research_themes||[]).find(function(t){ return t.label===c[0]; });
-        if (tm) col = tm.color||'#99ee81';
-      }
+      var col = key==='pod'  ? podColor(c[0])
+              : key==='area' ? (AREA_COLOR[AREA_NAME_TO_ID[c[0]]]||'#a898c0')
+              : '#a898c0';
 
       blockData.push({key:key, cat:c[0], ai:ai, x:x, y:block.y,
                       h:Math.max(block.h,2), col:col});
@@ -4286,6 +4261,564 @@ function renderSignalLab() {
     + keyHTML
     + '</div>'
     + '<div style="padding:0 24px 40px">' + gridHTML + '</div>';
+}
+
+// ── VIEW: TS Landscape — abstract chord diagram ──────────────────────────
+function renderVoronoi() {
+  var el = document.getElementById('view-voronoi');
+  el.innerHTML =
+    '<div style="padding:20px 24px 8px">'
+    + '<h2 style="font-size:15px;font-weight:800;color:#f0ecf8;margin-bottom:4px">TS Landscape</h2>'
+    + '<p style="font-size:12px;color:#a898c0;margin-bottom:10px">'
+    + 'Abstract energy map of the network across the 7 Transformation Statement dimensions. '
+    + 'Arc size = total transformative weight. Ribbons show which dimension pairs '
+    + 'projects most commonly bridge — thickness = project count. '
+    + 'Ribbon colour = dominant research area. Hover to trace connections.'
+    + '</p>'
+    + '<div id="vnoi-legend" style="display:flex;flex-wrap:wrap;gap:8px 18px;margin-bottom:4px;font-size:11px"></div>'
+    + '</div>'
+    + '<div id="vnoi-canvas" style="display:flex;justify-content:center;padding:4px 24px 40px"></div>';
+  setTimeout(function() { _buildVoronoiInner(el); }, 30);
+}
+
+function _buildVoronoiInner(el) {
+  try {
+
+  // ── Colour maps
+  var AREA_COL = {};
+  (DATA.research_areas || []).forEach(function(a) { AREA_COL[a.title] = a.color; });
+  var FALLBACK_COL = '#4a3570';
+
+  var DIMS = ['ts_ik','ts_relational','ts_community','ts_technical',
+              'ts_governance','ts_network','ts_imaginaries'];
+  var DIM_SHORT = {
+    ts_ik:          'IK / TK',
+    ts_relational:  'Relational',
+    ts_community:   'Community',
+    ts_technical:   'Technical',
+    ts_governance:  'Governance',
+    ts_network:     'Network',
+    ts_imaginaries: 'Imaginaries'
+  };
+  var n = DIMS.length;
+
+  // ── Build top-2 count matrix
+  // diagonal = 3× primary project count; off-diag = count of projects whose top-2 are those two dims
+  var scores     = DATA.ts_project_scores || {};
+  var matrix     = d3.range(n).map(function() { return new Array(n).fill(0); });
+  var chordInfo  = {};  // "i_j" -> {count, areas:{area:count}, aligns:[]}
+  var dimPrimary = new Array(n).fill(0);
+  var dimAligns  = d3.range(n).map(function() { return []; });
+
+  DATA.projects.forEach(function(p) {
+    var sc   = scores[p.id] || {};
+    var aln  = p.alignment_avg || 0;
+    var area = p.primary_area || 'Other';
+    var ranked = DIMS.map(function(dim, i) { return { i: i, v: sc[dim] || 0 }; })
+                     .sort(function(a, b) { return b.v - a.v; });
+    if (ranked[0].v < 0.05) return;
+
+    var t1 = ranked[0].i;
+    dimPrimary[t1]++;
+    dimAligns[t1].push(aln);
+    matrix[t1][t1] += 3;
+
+    if (ranked[1].v >= 0.1) {
+      var t2  = ranked[1].i;
+      matrix[t1][t2] += 1;
+      matrix[t2][t1] += 1;
+      var key = Math.min(t1,t2) + '_' + Math.max(t1,t2);
+      if (!chordInfo[key]) chordInfo[key] = { count: 0, areas: {}, aligns: [] };
+      chordInfo[key].count++;
+      chordInfo[key].areas[area] = (chordInfo[key].areas[area] || 0) + 1;
+      chordInfo[key].aligns.push(aln);
+    }
+  });
+
+  // Add tiny ghost weight so empty dims still appear as a thin arc
+  for (var gi = 0; gi < n; gi++) {
+    var rowSum = matrix[gi].reduce(function(s, v) { return s + v; }, 0);
+    if (rowSum === 0) matrix[gi][gi] = 0.4;
+  }
+
+  function chordDomArea(i, j) {
+    var key = Math.min(i,j) + '_' + Math.max(i,j);
+    var info = chordInfo[key];
+    if (!info || !Object.keys(info.areas).length) return FALLBACK_COL;
+    var dom = Object.keys(info.areas).reduce(function(best, k) {
+      return info.areas[k] > info.areas[best] ? k : best;
+    });
+    return AREA_COL[dom] || FALLBACK_COL;
+  }
+
+  // ── Legend
+  var legEl = document.getElementById('vnoi-legend');
+  if (legEl) {
+    var legHTML = (DATA.research_areas || []).map(function(a) {
+      return '<div style="display:flex;align-items:center;gap:5px">'
+        + '<div style="width:22px;height:4px;border-radius:2px;background:' + a.color + ';opacity:0.85"></div>'
+        + '<span style="color:#c0b0d8">' + a.title + '</span></div>';
+    }).join('');
+    legEl.innerHTML = legHTML
+      + '<div style="color:#5040a0;font-size:10px;margin-top:2px">'
+      + 'Arc size = transformative weight · Ribbon = project count bridging two dimensions · Colour = dominant research area'
+      + '</div>';
+  }
+
+  // ── D3 chord layout
+  var chordLayout = d3.chord()
+    .padAngle(0.04)
+    .sortSubgroups(d3.descending)
+    .sortChords(d3.descending);
+  var chords = chordLayout(matrix);
+
+  // ── SVG
+  var W = 720, CX = W / 2, CY = W / 2;
+  var outerR = 278, innerR = 244, labelR = 298;
+
+  var svg = d3.create('svg')
+    .attr('width', W).attr('height', W)
+    .style('display', 'block').style('overflow', 'visible');
+
+  svg.append('circle').attr('cx', CX).attr('cy', CY).attr('r', outerR + 68)
+    .attr('fill', '#060214');
+
+  var g = svg.append('g').attr('transform', 'translate(' + CX + ',' + CY + ')');
+
+  // SVG defs: per-chord gradients
+  var defs = svg.append('defs');
+  chords.filter(function(c) { return c.source.index !== c.target.index; })
+    .forEach(function(c) {
+      var key = 'rg_' + c.source.index + '_' + c.target.index;
+      if (svg.select('#' + key).empty()) {
+        var colA = TS_DIM_COLORS[DIMS[c.source.index]] || '#99ee81';
+        var colB = chordDomArea(c.source.index, c.target.index);
+        var grad = defs.append('linearGradient').attr('id', key)
+          .attr('gradientUnits', 'userSpaceOnUse')
+          .attr('x1', Math.sin((c.source.startAngle+c.source.endAngle)/2) * innerR)
+          .attr('y1', -Math.cos((c.source.startAngle+c.source.endAngle)/2) * innerR)
+          .attr('x2', Math.sin((c.target.startAngle+c.target.endAngle)/2) * innerR)
+          .attr('y2', -Math.cos((c.target.startAngle+c.target.endAngle)/2) * innerR);
+        grad.append('stop').attr('offset', '0%').attr('stop-color', colA).attr('stop-opacity', 0.85);
+        grad.append('stop').attr('offset', '100%').attr('stop-color', colB).attr('stop-opacity', 0.65);
+      }
+    });
+
+  var arcGen = d3.arc().innerRadius(innerR).outerRadius(outerR);
+  var ribGen = d3.ribbon().radius(innerR - 1);
+  var tip    = document.getElementById('tooltip');
+
+  // ── Ribbons (cross-dimension only)
+  var ribSel = g.append('g').attr('class', 'ribbons')
+    .selectAll('path')
+    .data(chords.filter(function(c) { return c.source.index !== c.target.index; }))
+    .join('path')
+    .attr('class', 'ts-ribbon')
+    .attr('d', ribGen)
+    .attr('fill', function(c) {
+      return 'url(#rg_' + c.source.index + '_' + c.target.index + ')';
+    })
+    .attr('fill-opacity', 0.45)
+    .attr('stroke', 'none')
+    .style('cursor', 'pointer');
+
+  // ── Outer arcs
+  var arcSel = g.append('g').attr('class', 'arcs')
+    .selectAll('g').data(chords.groups).join('g');
+
+  arcSel.append('path')
+    .attr('class', 'ts-arc')
+    .attr('d', arcGen)
+    .attr('fill', function(d) { return TS_DIM_COLORS[DIMS[d.index]] || '#99ee81'; })
+    .attr('fill-opacity', function(d) { return dimPrimary[d.index] > 0 ? 0.88 : 0.3; })
+    .attr('stroke', '#060214').attr('stroke-width', 1.2)
+    .style('cursor', 'pointer');
+
+  // Thin inner ring showing alignment quality (avg alignment colour)
+  arcSel.append('path')
+    .attr('d', d3.arc().innerRadius(innerR - 8).outerRadius(innerR - 1))
+    .attr('fill', function(d) {
+      var alns = dimAligns[d.index];
+      if (!alns.length) return '#1a0d30';
+      var avg = alns.reduce(function(s,v){ return s+v; },0) / alns.length;
+      return avg >= 8 ? '#4ade80' : (avg >= 6 ? '#fbbf24' : '#f87171');
+    })
+    .attr('fill-opacity', function(d) { return dimAligns[d.index].length ? 0.55 : 0; })
+    .attr('pointer-events', 'none');
+
+  // Dimension labels
+  arcSel.append('text')
+    .attr('transform', function(d) {
+      var mid = (d.startAngle + d.endAngle) / 2 - Math.PI / 2;
+      var r   = labelR + (dimPrimary[d.index] === 0 ? -6 : 0);
+      var x   = Math.cos(mid) * r, y = Math.sin(mid) * r;
+      var rot = mid * 180 / Math.PI;
+      if (rot > 90 && rot < 270) rot += 180;
+      return 'translate(' + x + ',' + y + ') rotate(' + rot + ')';
+    })
+    .attr('text-anchor', 'middle')
+    .attr('fill', function(d) {
+      var col = TS_DIM_COLORS[DIMS[d.index]] || '#99ee81';
+      return dimPrimary[d.index] === 0 ? col.replace(/[^,]+(?=\))/, '0.4') : col;
+    })
+    .attr('fill-opacity', function(d) { return dimPrimary[d.index] === 0 ? 0.4 : 1; })
+    .attr('font-size', function(d) { return dimPrimary[d.index] > 3 ? 11.5 : 9.5; })
+    .attr('font-weight', '800')
+    .attr('font-family', 'system-ui,sans-serif')
+    .attr('letter-spacing', '0.04em')
+    .attr('pointer-events', 'none')
+    .text(function(d) { return DIM_SHORT[DIMS[d.index]] || DIMS[d.index]; });
+
+  // Project count sub-label
+  arcSel.filter(function(d) { return dimPrimary[d.index] > 0; }).append('text')
+    .attr('transform', function(d) {
+      var mid = (d.startAngle + d.endAngle) / 2 - Math.PI / 2;
+      var x   = Math.cos(mid) * (labelR + 14), y = Math.sin(mid) * (labelR + 14);
+      var rot = mid * 180 / Math.PI;
+      if (rot > 90 && rot < 270) rot += 180;
+      return 'translate(' + x + ',' + y + ') rotate(' + rot + ')';
+    })
+    .attr('text-anchor', 'middle').attr('fill', '#5040a0')
+    .attr('font-size', 8.5).attr('font-family', 'monospace').attr('pointer-events', 'none')
+    .text(function(d) {
+      var cnt = dimPrimary[d.index];
+      return cnt + (cnt === 1 ? ' project' : ' projects');
+    });
+
+  // ── Hover
+  function highlightDim(idx) {
+    ribSel.attr('fill-opacity', function(c) {
+      return (c.source.index === idx || c.target.index === idx) ? 0.82 : 0.05;
+    });
+    arcSel.selectAll('.ts-arc').attr('fill-opacity', function(d) {
+      return d.index === idx ? 1 : 0.2;
+    });
+  }
+  function resetAll() {
+    ribSel.attr('fill-opacity', 0.45);
+    arcSel.selectAll('.ts-arc').attr('fill-opacity', function(d) {
+      return dimPrimary[d.index] > 0 ? 0.88 : 0.3;
+    });
+    tip.style.display = 'none';
+  }
+
+  arcSel.on('mouseover', function(event, d) {
+    highlightDim(d.index);
+    var col     = TS_DIM_COLORS[DIMS[d.index]] || '#99ee81';
+    var dimLbl  = DIM_SHORT[DIMS[d.index]];
+    var alns    = dimAligns[d.index];
+    var avgAln  = alns.length ? (alns.reduce(function(s,v){return s+v;},0)/alns.length).toFixed(1) : '—';
+    var alnCol  = alns.length ? (parseFloat(avgAln)>=8?'#4ade80':(parseFloat(avgAln)>=6?'#fbbf24':'#f87171')) : '#5040a0';
+    var conns   = DIMS.map(function(dd,j) {
+      if (j===d.index) return null;
+      var key = Math.min(d.index,j)+'_'+Math.max(d.index,j);
+      var info = chordInfo[key];
+      return info && info.count ? {label: DIM_SHORT[dd], count: info.count} : null;
+    }).filter(Boolean).sort(function(a,b){return b.count-a.count;}).slice(0,5);
+
+    tip.innerHTML = '<h4 style="color:' + col + '">' + dimLbl + '</h4>'
+      + '<div class="tt-row"><span class="tt-label">Primary</span><span>' + (dimPrimary[d.index]||0) + ' projects</span></div>'
+      + (alns.length ? '<div class="tt-row"><span class="tt-label">Avg align</span><span style="color:' + alnCol + ';font-weight:700">' + avgAln + '</span></div>' : '')
+      + (conns.length ? '<div style="margin-top:8px;font-size:10px;color:#a898c0">Bridging to:</div>'
+        + conns.map(function(c) {
+            return '<div class="tt-row" style="gap:8px"><span style="color:#c0b0d8">' + c.label + '</span>'
+              + '<span style="color:#99ee81;font-weight:700;font-family:monospace">' + c.count + '</span></div>';
+          }).join('') : '');
+    tip.style.display = 'block';
+    tip.style.left = (event.clientX+18)+'px';
+    tip.style.top  = (event.clientY-24)+'px';
+  })
+  .on('mousemove', function(event) {
+    tip.style.left=(event.clientX+18)+'px'; tip.style.top=(event.clientY-24)+'px';
+  })
+  .on('mouseout', resetAll);
+
+  ribSel.on('mouseover', function(event, c) {
+    ribSel.attr('fill-opacity', function(r) { return r===c?0.88:0.05; });
+    arcSel.selectAll('.ts-arc').attr('fill-opacity', function(d) {
+      return (d.index===c.source.index||d.index===c.target.index)?1:0.15;
+    });
+    var key  = Math.min(c.source.index,c.target.index)+'_'+Math.max(c.source.index,c.target.index);
+    var info = chordInfo[key] || {};
+    var dA   = DIM_SHORT[DIMS[c.source.index]], dB = DIM_SHORT[DIMS[c.target.index]];
+    var amap = info.areas || {};
+    var avgA = info.aligns && info.aligns.length
+      ? (info.aligns.reduce(function(s,v){return s+v;},0)/info.aligns.length).toFixed(1) : '—';
+    var alnCol = parseFloat(avgA)>=8?'#4ade80':(parseFloat(avgA)>=6?'#fbbf24':'#f87171');
+    var areaLines = Object.keys(amap).sort(function(a,b){return amap[b]-amap[a];}).slice(0,4)
+      .map(function(a) {
+        return '<div class="tt-row" style="gap:6px">'
+          +'<div style="width:8px;height:8px;border-radius:2px;flex-shrink:0;background:'
+          +(AREA_COL[a]||FALLBACK_COL)+'"></div>'
+          +'<span style="color:#c0b0d8">' + a + '</span>'
+          +'<span style="color:#a898c0;font-family:monospace">' + amap[a] + '</span></div>';
+      }).join('');
+    tip.innerHTML = '<h4 style="font-size:12px">' + dA + ' \u2194 ' + dB + '</h4>'
+      + '<div class="tt-row"><span class="tt-label">Projects</span><span style="font-weight:700">' + (info.count||0) + '</span></div>'
+      + (info.aligns && info.aligns.length ? '<div class="tt-row"><span class="tt-label">Avg align</span><span style="color:'+alnCol+';font-weight:700">'+avgA+'</span></div>' : '')
+      + (areaLines ? '<div style="margin-top:8px;font-size:10px;color:#a898c0">Research areas:</div>' + areaLines : '');
+    tip.style.display = 'block';
+    tip.style.left=(event.clientX+18)+'px'; tip.style.top=(event.clientY-24)+'px';
+  })
+  .on('mousemove', function(event) {
+    tip.style.left=(event.clientX+18)+'px'; tip.style.top=(event.clientY-24)+'px';
+  })
+  .on('mouseout', resetAll);
+
+  // Border
+  svg.append('circle').attr('cx',CX).attr('cy',CY).attr('r',outerR+1)
+    .attr('fill','none').attr('stroke','#2a1a48').attr('stroke-width',3);
+
+  var canvas = document.getElementById('vnoi-canvas');
+  if (canvas) canvas.appendChild(svg.node());
+
+  } catch(e) {
+    var c = document.getElementById('vnoi-canvas');
+    if (c) c.innerHTML = '<div style="color:#f87171;font-family:monospace;font-size:12px;padding:20px">TS Landscape error: ' + e.message + '</div>';
+    console.error('TS Landscape error:', e);
+  }
+}
+
+
+// ── VIEW: Ridge Profiles ──────────────────────────────────────────────────
+function buildRidgePath(xPts, vals, baseline, ridgeH) {
+  var n = xPts.length;
+  if (n === 0) return 'M 0 0 Z';
+  var lx = xPts[0] - 28;
+  var rx = xPts[n - 1] + 28;
+  var xs = [lx].concat(xPts).concat([rx]);
+  var vs = [0].concat(vals).concat([0]);
+  var m = xs.length;
+  var d = 'M ' + lx + ' ' + baseline;
+  for (var i = 0; i < m - 1; i++) {
+    var i0 = Math.max(0, i - 1);
+    var i3 = Math.min(m - 1, i + 2);
+    var p0x = xs[i0], p0y = vs[i0];
+    var p1x = xs[i],  p1y = vs[i];
+    var p2x = xs[i + 1], p2y = vs[i + 1];
+    var p3x = xs[i3], p3y = vs[i3];
+    var t = 0.42;
+    var cp1x = p1x + t * (p2x - p0x) / 2;
+    var cp1y = Math.max(0, p1y + t * (p2y - p0y) / 2);
+    var cp2x = p2x - t * (p3x - p1x) / 2;
+    var cp2y = Math.max(0, p2y - t * (p3y - p1y) / 2);
+    d += ' C ' + cp1x.toFixed(1) + ' ' + (baseline - cp1y * ridgeH).toFixed(1)
+      + ',' + cp2x.toFixed(1) + ' ' + (baseline - cp2y * ridgeH).toFixed(1)
+      + ',' + p2x.toFixed(1) + ' ' + (baseline - Math.max(0, p2y) * ridgeH).toFixed(1);
+  }
+  d += ' Z';
+  return d;
+}
+
+function renderRidgeline() {
+  var el = document.getElementById('view-ridgeline');
+  var scores = DATA.ts_project_scores || {};
+
+  var DIMS = ['ts_ik','ts_relational','ts_community','ts_technical','ts_governance','ts_network','ts_imaginaries'];
+  var DIM_LABEL = {
+    ts_ik:          'IK / TK',
+    ts_relational:  'Relational',
+    ts_community:   'Community',
+    ts_technical:   'Technical',
+    ts_governance:  'Governance',
+    ts_network:     'Network',
+    ts_imaginaries: 'Imaginaries'
+  };
+
+  // Group by pod, sort pods by avg alignment desc
+  var podMap = {};
+  DATA.projects.forEach(function(p) {
+    var pod = p.pod || 'Other';
+    if (!podMap[pod]) podMap[pod] = [];
+    podMap[pod].push(p);
+  });
+  var podOrder = Object.keys(podMap).sort(function(a, b) {
+    var avgA = podMap[a].reduce(function(s, p) { return s + (p.alignment_avg || 0); }, 0) / podMap[a].length;
+    var avgB = podMap[b].reduce(function(s, p) { return s + (p.alignment_avg || 0); }, 0) / podMap[b].length;
+    return avgB - avgA;
+  });
+  // Sort projects within each pod by alignment desc
+  podOrder.forEach(function(pod) {
+    podMap[pod].sort(function(a, b) { return (b.alignment_avg || 0) - (a.alignment_avg || 0); });
+  });
+
+  // Layout constants
+  var PAD_L   = 158;
+  var PAD_T   = 52;
+  var PAD_R   = 100;
+  var COL_W   = 86;
+  var ROW_H   = 31;
+  var POD_H   = 24;
+  var RIDGE_H = 54;
+  var NUM_COLS = DIMS.length;
+  var totalW = PAD_L + NUM_COLS * COL_W + PAD_R;
+
+  // Calculate positions
+  var rows = [];  // {type, pod, project?, y}
+  var curY = PAD_T;
+  podOrder.forEach(function(pod) {
+    rows.push({ type: 'pod', pod: pod, count: podMap[pod].length, y: curY });
+    curY += POD_H;
+    podMap[pod].forEach(function(p) {
+      rows.push({ type: 'proj', project: p, pod: pod, y: curY });
+      curY += ROW_H;
+    });
+  });
+  var totalH = curY + RIDGE_H + 20;
+
+  // Build SVG
+  var bubX = PAD_L + NUM_COLS * COL_W + 32;
+  var svg = '<svg id="svg-ridgeline" width="' + totalW + '" height="' + totalH + '" style="display:block;overflow:visible">';
+
+  // ── Defs: per-pod gradients
+  svg += '<defs>';
+  podOrder.forEach(function(pod) {
+    var col = podColor(pod);
+    var gid = 'rg_' + pod.replace(/[^a-z0-9]/gi, '_');
+    svg += '<linearGradient id="' + gid + '" x1="0" y1="0" x2="0" y2="1">'
+      + '<stop offset="0%" stop-color="' + col + '" stop-opacity="0.92"/>'
+      + '<stop offset="60%" stop-color="' + col + '" stop-opacity="0.55"/>'
+      + '<stop offset="100%" stop-color="' + col + '" stop-opacity="0.12"/>'
+      + '</linearGradient>';
+  });
+  svg += '</defs>';
+
+  // ── Column guide lines + headers
+  DIMS.forEach(function(dim, di) {
+    var cx = PAD_L + di * COL_W + COL_W / 2;
+    svg += '<line x1="' + cx + '" y1="' + PAD_T + '" x2="' + cx + '" y2="' + (totalH - 16) + '"'
+      + ' stroke="#3a2060" stroke-width="1" stroke-dasharray="3,6" opacity="0.55"/>';
+    svg += '<text x="' + cx + '" y="' + (PAD_T - 10) + '"'
+      + ' text-anchor="middle" fill="#8878a8" font-size="9.5" font-family="system-ui,sans-serif" font-weight="500">'
+      + DIM_LABEL[dim] + '</text>';
+  });
+  svg += '<text x="' + bubX + '" y="' + (PAD_T - 10) + '"'
+    + ' text-anchor="middle" fill="#8878a8" font-size="9" font-family="system-ui,sans-serif">Align</text>';
+
+  // ── Collect project rows for z-ordered ridge drawing
+  var projRows = rows.filter(function(r) { return r.type === 'proj'; });
+
+  // Draw ridges bottom-to-top for correct overlap
+  for (var ri = projRows.length - 1; ri >= 0; ri--) {
+    var rowObj = projRows[ri];
+    var p      = rowObj.project;
+    var pod    = rowObj.pod;
+    var bY     = rowObj.y;
+    var sc     = scores[p.id] || {};
+    var col    = podColor(pod);
+    var gid    = 'rg_' + pod.replace(/[^a-z0-9]/gi, '_');
+    var aln    = p.alignment_avg || 0;
+    var opacity = (0.55 + (aln / 10) * 0.4).toFixed(2);
+
+    var vals = DIMS.map(function(dim) { return Math.min(1, Math.max(0, sc[dim] || 0)); });
+    var xPts = DIMS.map(function(dim, di) { return PAD_L + di * COL_W + COL_W / 2; });
+    var pathD = buildRidgePath(xPts, vals, bY, RIDGE_H);
+
+    // Filled ridge
+    svg += '<path class="ridge-path" data-pid="' + p.id.replace(/"/g, '') + '"'
+      + ' d="' + pathD + '"'
+      + ' fill="url(#' + gid + ')" stroke="' + col + '" stroke-width="0.9"'
+      + ' opacity="' + opacity + '" style="cursor:pointer"/>';
+
+    // White peak dot
+    var maxVal = Math.max.apply(null, vals);
+    if (maxVal > 0.06) {
+      var maxIdx = vals.indexOf(maxVal);
+      svg += '<circle cx="' + xPts[maxIdx].toFixed(1) + '" cy="' + (bY - maxVal * RIDGE_H).toFixed(1) + '"'
+        + ' r="2.8" fill="white" opacity="0.88" pointer-events="none"/>';
+    }
+
+    // Project name
+    var nameStr = (p.short || p.id || '').split(' \u2014')[0].split(' - ')[0];
+    if (nameStr.length > 18) nameStr = nameStr.substring(0, 17) + '\u2026';
+    svg += '<text x="' + (PAD_L - 9) + '" y="' + (bY + 3.5) + '"'
+      + ' text-anchor="end" fill="#c0b0d8" font-size="9" font-family="system-ui,sans-serif">'
+      + nameStr + '</text>';
+
+    // Alignment bubble
+    var alnR  = (3.5 + (aln / 10) * 9).toFixed(1);
+    var alnCol = aln >= 8 ? '#4ade80' : (aln >= 6 ? '#fbbf24' : '#f87171');
+    svg += '<circle cx="' + bubX + '" cy="' + bY + '" r="' + alnR + '"'
+      + ' fill="' + alnCol + '" opacity="0.32" stroke="' + alnCol + '" stroke-width="0.7"/>';
+    svg += '<text x="' + (bubX + parseFloat(alnR) + 5) + '" y="' + (bY + 3.5) + '"'
+      + ' fill="' + alnCol + '" font-size="8.5" font-family="monospace" font-weight="600">'
+      + aln.toFixed(1) + '</text>';
+  }
+
+  // ── Pod headers (drawn after ridges so text is on top)
+  rows.forEach(function(r) {
+    if (r.type !== 'pod') return;
+    var col = podColor(r.pod);
+    var label = r.pod.replace(/ [Pp]od$/, '').toUpperCase();
+    svg += '<text x="2" y="' + (r.y + 15) + '"'
+      + ' fill="' + col + '" font-size="8" font-family="system-ui,sans-serif"'
+      + ' font-weight="700" letter-spacing="0.09em">'
+      + label + ' <tspan fill="#7060a0" font-weight="400">(' + r.count + ')</tspan></text>';
+    svg += '<line x1="2" y1="' + (r.y + 19) + '" x2="' + (PAD_L - 14) + '" y2="' + (r.y + 19) + '"'
+      + ' stroke="' + col + '" stroke-width="0.5" opacity="0.4"/>';
+  });
+
+  svg += '</svg>';
+
+  // ── Legend row
+  var legendHTML = '<div style="display:flex;flex-wrap:wrap;gap:18px;margin:10px 0 4px;font-size:10px;color:#8878a8">'
+    + '<span>● White dot = peak TS dimension</span>'
+    + '<span style="color:#4ade80">● Bubble ≥ 8</span>'
+    + '<span style="color:#fbbf24">● Bubble 6–8</span>'
+    + '<span style="color:#f87171">● Bubble &lt; 6  (= alignment score)</span>'
+    + '<span>Ridge height = TS score (0–1 scale)</span>'
+    + '</div>';
+
+  el.innerHTML = '<div style="padding:20px 24px 8px">'
+    + '<h2 style="font-size:15px;font-weight:800;color:#f0ecf8;margin-bottom:4px">Ridge Profiles</h2>'
+    + '<p style="font-size:12px;color:#a898c0;margin-bottom:6px">'
+    + 'Each row is a project. The ridge sweeps across 7 Transformative Systems dimensions — '
+    + 'height at each column reflects that project\'s score there. White dot marks the peak dimension. '
+    + 'Projects grouped by pod, sorted highest alignment first.'
+    + '</p>'
+    + legendHTML
+    + '</div>'
+    + '<div style="overflow-x:auto;padding:4px 24px 40px">' + svg + '</div>';
+
+  // ── Tooltip interaction
+  var tip = document.getElementById('tooltip');
+  el.querySelectorAll('.ridge-path').forEach(function(path) {
+    path.addEventListener('mouseover', function(e) {
+      var pid = this.getAttribute('data-pid');
+      var p   = DATA.projects.find(function(pr) { return pr.id === pid; });
+      if (!p) return;
+      var sc  = scores[p.id] || {};
+      var aln = p.alignment_avg || 0;
+      var alnCol = aln >= 8 ? '#4ade80' : (aln >= 6 ? '#fbbf24' : '#f87171');
+      var dimRows = DIMS.map(function(dim) {
+        var v = Math.round((sc[dim] || 0) * 100);
+        var barCol = v > 60 ? '#99ee81' : (v > 30 ? '#fbbf24' : '#6050a0');
+        return '<div class="tt-row"><span class="tt-label">' + DIM_LABEL[dim] + '</span>'
+          + '<div style="flex:1;background:#1a0d30;border-radius:2px;height:4px;margin:2px 0">'
+          + '<div style="width:' + v + '%;height:4px;background:' + barCol + ';border-radius:2px"></div></div>'
+          + '<span style="font-family:monospace;color:' + barCol + ';font-size:10px;margin-left:6px;min-width:26px">' + v + '</span></div>';
+      }).join('');
+      tip.innerHTML = '<h4>' + (p.short || p.id) + '</h4>'
+        + '<div style="font-size:10px;color:#a898c0;margin-bottom:8px">' + (p.pod || '') + '</div>'
+        + '<div style="display:flex;align-items:baseline;gap:6px;margin-bottom:10px">'
+        + '<span class="tt-label">Alignment</span>'
+        + '<span style="font-size:15px;font-weight:700;color:' + alnCol + '">' + aln.toFixed(1) + '</span>'
+        + '</div>'
+        + dimRows;
+      tip.style.display = 'block';
+      tip.style.left = (e.clientX + 18) + 'px';
+      tip.style.top  = (e.clientY - 20) + 'px';
+      this.style.opacity = '1';
+    });
+    path.addEventListener('mousemove', function(e) {
+      tip.style.left = (e.clientX + 18) + 'px';
+      tip.style.top  = (e.clientY - 20) + 'px';
+    });
+    path.addEventListener('mouseout', function() {
+      tip.style.display = 'none';
+      this.style.opacity = '';
+    });
+  });
 }
 
 // ── Init ──────────────────────────────────────────────────────────────────
