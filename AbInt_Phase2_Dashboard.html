@@ -3257,11 +3257,41 @@ function buildFlowView(canvas, mode) {
           }
 
           var midX = (x1+x2)/2;
-          var pathStr = 'M '+x1+' '+ly0
-            +' C '+midX+' '+ly0+' '+midX+' '+ry0+' '+x2+' '+ry0
-            +' L '+x2+' '+ry1
-            +' C '+midX+' '+ry1+' '+midX+' '+ly1+' '+x1+' '+ly1
-            +' Z';
+          var pathStr;
+
+          if (rightKey === 'npg') {
+            // ── Weave path: bands funnel to a gather-neck then fan to NPG ──
+            // Gather point: 68% across, all bands for same NPG converge
+            // toward that NPG block's centre before spreading to final pos.
+            var gX      = x1 + (x2 - x1) * 0.68;
+            var rMidY   = rBlock.y + rBlock.h / 2;
+            var squeeze = 0.08;  // compress to 8% of NPG block height at neck
+
+            // Proportional position of this band within its NPG block
+            var frac0 = rBlock.h > 0 ? (ry0 - rBlock.y) / rBlock.h : 0;
+            var frac1 = rBlock.h > 0 ? (ry1 - rBlock.y) / rBlock.h : 0;
+            var gy0 = rMidY + (frac0 - 0.5) * rBlock.h * squeeze;
+            var gy1 = rMidY + (frac1 - 0.5) * rBlock.h * squeeze;
+
+            // Control points for two-segment cubic bezier
+            var cp1X = x1  + (gX - x1)  * 0.55;
+            var cp2X = gX  + (x2 - gX)  * 0.45;
+
+            pathStr = 'M '  + x1   + ' ' + ly0
+              + ' C ' + cp1X + ' ' + ly0 + ' ' + (gX-8) + ' ' + gy0 + ' ' + gX + ' ' + gy0
+              + ' C ' + (gX+8) + ' ' + gy0 + ' ' + cp2X + ' ' + ry0 + ' ' + x2 + ' ' + ry0
+              + ' L ' + x2   + ' ' + ry1
+              + ' C ' + cp2X + ' ' + ry1 + ' ' + (gX+8) + ' ' + gy1 + ' ' + gX + ' ' + gy1
+              + ' C ' + (gX-8) + ' ' + gy1 + ' ' + cp1X + ' ' + ly1 + ' ' + x1 + ' ' + ly1
+              + ' Z';
+          } else {
+            // Standard single-segment S-curve for Phase 1 bands
+            pathStr = 'M '+x1+' '+ly0
+              +' C '+midX+' '+ly0+' '+midX+' '+ry0+' '+x2+' '+ry0
+              +' L '+x2+' '+ry1
+              +' C '+midX+' '+ry1+' '+midX+' '+ly1+' '+x1+' '+ly1
+              +' Z';
+          }
 
           allBands.push({
             ai:ai, leftKey:leftKey, lk:lk, rightKey:rightKey, rk:rk,
