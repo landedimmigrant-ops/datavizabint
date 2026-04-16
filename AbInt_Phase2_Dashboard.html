@@ -308,13 +308,50 @@ html, body { height: 100%; font-family: 'Inter', system-ui, sans-serif;
 .intel-filter-btn.f-obs.active    { background: #a78bfa; border-color: #a78bfa; }
 
 /* ── Pod Relations tab ── */
-.pr-header { padding: 18px 24px 0; }
-.pr-view-toggle { display:flex; gap:6px; margin:10px 0 6px; }
-.pr-toggle-btn { padding:5px 16px; border-radius:99px; border:1.5px solid #1c1030; background:transparent; color:#a898c0; font-size:12px; cursor:pointer; transition:all .15s; }
-.pr-toggle-btn.active { border-color:#99ee81; background:#99ee8122; color:#99ee81; font-weight:700; }
-.pr-canvas { padding:0 24px 24px; }
-.pr-legend { display:flex; gap:14px; flex-wrap:wrap; padding:8px 24px 0; }
-.pr-legend-item { font-size:10px; display:flex; align-items:center; gap:5px; color:#a898c0; }
+.pr-body { padding: 0 24px 40px; display:flex; flex-direction:column; gap:36px; }
+.pr-phase-section {
+  border-radius: 14px;
+  border: 1px solid #2a3050;
+  background: #0f1420;
+  overflow: visible;
+}
+.pr-phase-header {
+  display: flex; align-items: center; gap: 12px;
+  padding: 16px 20px 10px;
+  border-bottom: 1px solid #2a3050;
+}
+.pr-phase-badge {
+  font-size: 10px; font-weight: 800; letter-spacing: .08em;
+  padding: 3px 10px; border-radius: 99px;
+  text-transform: uppercase;
+}
+.pr-phase-badge.p1 { background: #1e3a2a; color: #4ade80; border: 1px solid #4ade8044; }
+.pr-phase-badge.p2 { background: #1e1e3a; color: #818cf8; border: 1px solid #818cf844; }
+.pr-phase-title { font-size: 13px; font-weight: 700; color: #f0ecf8; }
+.pr-phase-sub { font-size: 11px; color: #475569; margin-left: auto; }
+.pr-phase-canvas { padding: 16px 20px 0; }
+.pr-flip-bar {
+  display: flex; align-items: center; justify-content: center;
+  gap: 10px; padding: 14px 20px 18px;
+  border-top: 1px solid #1c2235; margin-top: 12px;
+}
+.pr-flip-label { font-size: 10px; font-weight: 700; color: #334155; letter-spacing:.06em; text-transform:uppercase; }
+.pr-flip-btn {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 11px; font-weight: 700;
+  padding: 6px 16px; border-radius: 20px; cursor: pointer;
+  border: 1.5px solid; transition: all .2s; outline: none;
+}
+.pr-flip-btn.active  { background:#1e3a5f; border-color:#3b82f6; color:#93c5fd; }
+.pr-flip-btn.inactive{ background:transparent; border-color:#2d3f5a; color:#3d5070; }
+.pr-phase2-placeholder {
+  display: flex; align-items: center; justify-content: center;
+  min-height: 160px; margin: 16px 20px 20px;
+  border-radius: 10px;
+  border: 1.5px dashed #2a3050;
+  font-size: 12px; color: #2a3050;
+  font-style: italic;
+}
 /* ── Scrollbar ── */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: var(--bg); }
@@ -2640,35 +2677,60 @@ function renderPodProfile() {
   el.innerHTML = intro + html;
 }
 
-// ── VIEW 8c: Pod Relations (Force Network + Parallel Sets) ────────────────
-var podRelView = 'force';
+// ── VIEW 8c: Pod Relations ─────────────────────────────────────────────────
+var prFlowMode = 'pod';   // 'pod' = Pods → Research Areas, 'area' = Research Areas → Pods
 
 function renderPodRelations() {
   var el = document.getElementById('view-podrelations');
-  el.innerHTML = ''
-    + '<div class="pr-header">'
-    + '<div style="font-size:15px;font-weight:800;color:#f0ecf8;margin-bottom:2px">Pod Relations</div>'
-    + '<div class="pr-view-toggle">'
-    + '<button class="pr-toggle-btn' + (podRelView==='force'?' active':'') + '" id="pr-btn-force" onclick="podRelView=\'force\';document.getElementById(\'pr-btn-force\').className=\'pr-toggle-btn active\';document.getElementById(\'pr-btn-flow\').className=\'pr-toggle-btn\';buildPRView()">Force Network</button>'
-    + '<button class="pr-toggle-btn' + (podRelView==='flow'?' active':'') + '" id="pr-btn-flow"  onclick="podRelView=\'flow\'; document.getElementById(\'pr-btn-force\').className=\'pr-toggle-btn\';document.getElementById(\'pr-btn-flow\').className=\'pr-toggle-btn active\';buildPRView()">Parallel Flow</button>'
+
+  el.innerHTML =
+    '<div class="pr-body">'
+
+    // ── Phase 1 ──────────────────────────────────────────────────────────────
+    + '<div class="pr-phase-section">'
+    + '<div class="pr-phase-header">'
+    + '<span class="pr-phase-badge p1">Phase 1</span>'
+    + '<span class="pr-phase-title">Pod \u2194 Research Area Distribution</span>'
+    + '<span class="pr-phase-sub">How projects flow between pods and research areas</span>'
     + '</div>'
-    + '<div style="font-size:10px;color:#475569;margin-bottom:8px" id="pr-hint"></div>'
+    + '<div class="pr-phase-canvas" id="pr-canvas-p1"></div>'
+    + '<div class="pr-flip-bar">'
+    + '<span class="pr-flip-label">View direction</span>'
+    + '<button id="pr-flip-pod"  class="pr-flip-btn ' + (prFlowMode==='pod' ?'active':'inactive') + '" onclick="prSetFlow(\'pod\')">'
+    + '<span style="font-size:13px">&#9679;</span> Pods \u2192 Research Areas</button>'
+    + '<button id="pr-flip-area" class="pr-flip-btn ' + (prFlowMode==='area'?'active':'inactive') + '" onclick="prSetFlow(\'area\')">'
+    + '<span style="font-size:11px">&#9632;</span> Research Areas \u2192 Pods</button>'
     + '</div>'
-    + '<div class="pr-canvas" id="pr-canvas"></div>';
-  buildPRView();
+    + '</div>'
+
+    // ── Phase 2 ──────────────────────────────────────────────────────────────
+    + '<div class="pr-phase-section">'
+    + '<div class="pr-phase-header">'
+    + '<span class="pr-phase-badge p2">Phase 2</span>'
+    + '<span class="pr-phase-title">Coming soon</span>'
+    + '</div>'
+    + '<div class="pr-phase2-placeholder">Phase 2 content \u2014 to be defined</div>'
+    + '</div>'
+
+    + '</div>';  // end pr-body
+
+  // Render Phase 1 flow
+  var canvas1 = document.getElementById('pr-canvas-p1');
+  buildFlowView(canvas1, prFlowMode);
 }
 
-function buildPRView() {
-  var canvas = document.getElementById('pr-canvas');
-  if (!canvas) return;
-  canvas.innerHTML = '';
-  if (podRelView === 'force') {
-    document.getElementById('pr-hint').textContent = 'Pods \u25CF Themes \u25CB Projects. Click any node to highlight connections. Drag to rearrange. Scroll to zoom.';
-    buildForceView(canvas);
-  } else {
-    document.getElementById('pr-hint').textContent = 'Flow: Pod \u2192 Research Area \u2014 click any block or label to trace its full path. Toggle \u201cView from\u201d to flip perspective.';
-    buildFlowView(canvas, 'pod');
-  }
+function prSetFlow(mode) {
+  prFlowMode = mode;
+  // Update button states
+  var bPod  = document.getElementById('pr-flip-pod');
+  var bArea = document.getElementById('pr-flip-area');
+  if (bPod)  bPod.className  = 'pr-flip-btn ' + (mode==='pod'  ? 'active' : 'inactive');
+  if (bArea) bArea.className = 'pr-flip-btn ' + (mode==='area' ? 'active' : 'inactive');
+  // Rebuild flow
+  var canvas1 = document.getElementById('pr-canvas-p1');
+  if (!canvas1) return;
+  canvas1.innerHTML = '';
+  buildFlowView(canvas1, mode);
 }
 
 // ── Force-directed network ─────────────────────────────────────────────────
@@ -3039,31 +3101,7 @@ function buildFlowView(canvas, mode) {
   var BAND_HI=0.82, BAND_DIM=0.04;
   var plotH = H - PAD_T - PAD_B;
 
-  // ── Toggle bar (HTML above SVG) ─────────────────────────────────────────
-  var toggleBar = document.createElement('div');
-  toggleBar.className = 'flow-toggle-bar';
-  toggleBar.style.cssText = 'display:flex;align-items:center;gap:8px;margin-bottom:10px;';
-  var tLabel = document.createElement('span');
-  tLabel.style.cssText = 'font-size:10px;font-weight:700;color:#475569;letter-spacing:.06em;margin-right:2px;';
-  tLabel.textContent = 'VIEW FROM';
-  toggleBar.appendChild(tLabel);
-  [{m:'pod',icon:'\u25cf',text:'Pod'},{m:'area',icon:'\u25a0',text:'Research Area'}].forEach(function(opt){
-    var btn = document.createElement('button');
-    btn.textContent = opt.icon + '  ' + opt.text;
-    var active = mode === opt.m;
-    btn.style.cssText = 'font-size:10px;font-weight:700;padding:4px 14px;border-radius:20px;cursor:pointer;border:1.5px solid;transition:all .15s;outline:none;'
-      + (active ? 'background:#1e3a5f;border-color:#3b82f6;color:#93c5fd;'
-                : 'background:transparent;border-color:#2d3f5a;color:#4a6080;');
-    if (!active) btn.addEventListener('click', function(){
-      buildFlowView(canvas, opt.m);
-      var hint = document.getElementById('pr-hint');
-      if (hint) hint.textContent = opt.m==='pod'
-        ? 'Flow: Pod \u2192 Research Area \u2014 click any block to trace its full path'
-        : 'Flow: Research Area \u2192 Pod \u2014 click any block to trace its full path';
-    });
-    toggleBar.appendChild(btn);
-  });
-  canvas.insertBefore(toggleBar, canvas.firstChild);
+  // Toggle is now handled externally by prSetFlow() / pr-flip-bar
 
   // ── Records ────────────────────────────────────────────────────────────
   var records = [];
