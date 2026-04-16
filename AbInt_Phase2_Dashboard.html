@@ -3280,7 +3280,7 @@ function buildFlowView(canvas, mode) {
 
   // ── SVG defs: dashed fill patterns for Phase 2 (provisional) bands ──────
   var defs = svg.append('defs');
-  // Create a horizontal stripe pattern for each NPG colour
+  // Vertical scan-line pattern per NPG colour — 2px stripe, 1px gap
   var p2PatIds = {};
   Object.keys(NPG_COLOR).forEach(function(npg){
     var col = NPG_COLOR[npg];
@@ -3288,11 +3288,11 @@ function buildFlowView(canvas, mode) {
     p2PatIds[npg] = patId;
     var pat = defs.append('pattern')
       .attr('id', patId)
-      .attr('width', 6).attr('height', 6)
+      .attr('width', 3).attr('height', 1)   // repeats every 3px on X axis
       .attr('patternUnits', 'userSpaceOnUse');
-    // Coloured dash (3px tall), then 3px transparent gap
-    pat.append('rect').attr('width',6).attr('height',2.5)
-      .attr('fill', col).attr('opacity', 0.55);
+    // 2px wide vertical stripe, 1px transparent gap
+    pat.append('rect').attr('x',0).attr('y',0).attr('width',2).attr('height',1)
+      .attr('fill', col).attr('opacity', 0.6);
   });
 
   // Tag each band: phase2 = true if it connects to the NPG axis
