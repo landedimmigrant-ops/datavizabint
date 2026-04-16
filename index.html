@@ -3088,41 +3088,50 @@ function buildFlowView(canvas, mode) {
   // Toggle is now handled externally by prSetFlow() / pr-flip-bar
 
   // ── NPG stream mapping ─────────────────────────────────────────────────
-  // Phase 2 Network Project Groups derived from Phase 1 research areas
+  // NPG A  — Language & Knowledge Systems
+  // NPG B  — Embodied Intelligence  (Socio-Neuro + Other: Kite, Two Bears, etc.)
+  // NPG C  — Land-Based AI          (Env Stewardship + Multi-Agent)
   var NPG_A_AREAS = {'Language':1, 'Storytelling':1};
-  var NPG_B_AREAS = {'Env Stewardship':1, 'Environmental Stewardship':1,
-                     'Socio-Neuro AI':1, 'Multi-Agent Systems':1};
-  // "Other" projects explicitly assigned to NPG B (Kite, Two Bears, Sacred Code, DEEP KIN)
-  var NPG_B_OTHER_IDS = {};
-  DATA.projects.forEach(function(p){
-    var area = p.primary_area||'';
-    if (area === 'Other' || area === '') NPG_B_OTHER_IDS[p.id] = true;
-  });
+  var NPG_B_AREAS = {'Socio-Neuro AI':1};
+  var NPG_C_AREAS = {'Env Stewardship':1, 'Environmental Stewardship':1,
+                     'Multi-Agent Systems':1};
 
   function npgStream(p) {
     var area = p.primary_area || '';
-    if (NPG_B_OTHER_IDS[p.id]) return 'NPG B';
-    if (NPG_B_AREAS[area]) return 'NPG B';
     if (NPG_A_AREAS[area]) return 'NPG A';
-    return 'NPG B';  // fallback
+    if (NPG_B_AREAS[area]) return 'NPG B';
+    if (NPG_C_AREAS[area]) return 'NPG C';
+    // "Other" projects (Kite, Two Bears, Sacred Code, DEEP KIN) → Embodied Intelligence
+    return 'NPG B';
   }
 
   var NPG_COLOR = {
-    'NPG A': '#38bdf8',   // blue — language & knowledge
-    'NPG B': '#f59e0b'    // amber — embodied intelligence
+    'NPG A': '#38bdf8',   // blue  — language & knowledge
+    'NPG B': '#f59e0b',   // amber — embodied intelligence
+    'NPG C': '#4ade80'    // green — land-based AI
   };
   var NPG_LABELS = {
     'NPG A': 'Language &\nKnowledge Systems',
-    'NPG B': 'Embodied Intelligence &\nLand-Based AI'
+    'NPG B': 'Embodied\nIntelligence',
+    'NPG C': 'Land-Based AI'
   };
 
-  // ── Records ────────────────────────────────────────────────────────────
+  // ── Records — equal weight per research area, not per project ──────────
+  // Count projects per area so we can normalise
+  var areaCount = {};
+  DATA.projects.forEach(function(p){
+    var area = p.primary_area||'Other';
+    areaCount[area] = (areaCount[area]||0) + 1;
+  });
+
   var records = [];
   DATA.projects.forEach(function(p){
     var pod  = p.pod||'Podless';
     var area = p.primary_area||'Other';
     var npg  = npgStream(p);
-    records.push({pod:pod, area:area, npg:npg, weight:1,
+    // Weight = 1/n_in_area so every area gets equal total visual proportion
+    var w = 1 / (areaCount[area] || 1);
+    records.push({pod:pod, area:area, npg:npg, weight:w,
                   podColor:podColor(pod), areaColor:areaColor(area),
                   npgColor:NPG_COLOR[npg]||'#475569',
                   projShort: p.short||p.code||p.id});
@@ -3257,41 +3266,11 @@ function buildFlowView(canvas, mode) {
           }
 
           var midX = (x1+x2)/2;
-          var pathStr;
-
-          if (rightKey === 'npg') {
-            // ── Weave path: bands funnel to a gather-neck then fan to NPG ──
-            // Gather point: 68% across, all bands for same NPG converge
-            // toward that NPG block's centre before spreading to final pos.
-            var gX      = x1 + (x2 - x1) * 0.68;
-            var rMidY   = rBlock.y + rBlock.h / 2;
-            var squeeze = 0.08;  // compress to 8% of NPG block height at neck
-
-            // Proportional position of this band within its NPG block
-            var frac0 = rBlock.h > 0 ? (ry0 - rBlock.y) / rBlock.h : 0;
-            var frac1 = rBlock.h > 0 ? (ry1 - rBlock.y) / rBlock.h : 0;
-            var gy0 = rMidY + (frac0 - 0.5) * rBlock.h * squeeze;
-            var gy1 = rMidY + (frac1 - 0.5) * rBlock.h * squeeze;
-
-            // Control points for two-segment cubic bezier
-            var cp1X = x1  + (gX - x1)  * 0.55;
-            var cp2X = gX  + (x2 - gX)  * 0.45;
-
-            pathStr = 'M '  + x1   + ' ' + ly0
-              + ' C ' + cp1X + ' ' + ly0 + ' ' + (gX-8) + ' ' + gy0 + ' ' + gX + ' ' + gy0
-              + ' C ' + (gX+8) + ' ' + gy0 + ' ' + cp2X + ' ' + ry0 + ' ' + x2 + ' ' + ry0
-              + ' L ' + x2   + ' ' + ry1
-              + ' C ' + cp2X + ' ' + ry1 + ' ' + (gX+8) + ' ' + gy1 + ' ' + gX + ' ' + gy1
-              + ' C ' + (gX-8) + ' ' + gy1 + ' ' + cp1X + ' ' + ly1 + ' ' + x1 + ' ' + ly1
-              + ' Z';
-          } else {
-            // Standard single-segment S-curve for Phase 1 bands
-            pathStr = 'M '+x1+' '+ly0
-              +' C '+midX+' '+ly0+' '+midX+' '+ry0+' '+x2+' '+ry0
-              +' L '+x2+' '+ry1
-              +' C '+midX+' '+ry1+' '+midX+' '+ly1+' '+x1+' '+ly1
-              +' Z';
-          }
+          var pathStr = 'M '+x1+' '+ly0
+            +' C '+midX+' '+ly0+' '+midX+' '+ry0+' '+x2+' '+ry0
+            +' L '+x2+' '+ry1
+            +' C '+midX+' '+ry1+' '+midX+' '+ly1+' '+x1+' '+ly1
+            +' Z';
 
           allBands.push({
             ai:ai, leftKey:leftKey, lk:lk, rightKey:rightKey, rk:rk,
@@ -3347,7 +3326,7 @@ function buildFlowView(canvas, mode) {
     .attr('stroke-opacity', function(d){ return d.phase2 ? 0.2 : 0; })
     .attr('stroke-dasharray', function(d){ return d.phase2 ? '3,3' : 'none'; });
 
-  // ── Colour helper — returns the display colour for a given axis block ────
+  // ── Colour helper — returns display colour for a given axis block ────────
   function nodeColor(key, cat) {
     if (key==='pod')  return podColor(cat);
     if (key==='area') return AREA_COLOR[AREA_NAME_TO_ID[cat]]||'#a898c0';
