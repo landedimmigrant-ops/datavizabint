@@ -3209,7 +3209,7 @@ function buildFlowView(canvas, mode) {
         if (r.projShort) projMap[lk][rk].add(r.projShort);
       });
 
-      var rightFillByLeft = {};
+      var rightFill = {};   // single running fill per right block (not per left-cat)
       var leftCatsSorted = axisCats[ai].map(function(c){ return c[0]; })
         .sort(function(a,b){ return leftLay[a].y - leftLay[b].y; });
 
@@ -3228,14 +3228,13 @@ function buildFlowView(canvas, mode) {
           var w = flows[lk][rk];
           var rUnit = rBlock.h / rBlock.total;
 
-          if (!rightFillByLeft[rk]) rightFillByLeft[rk]={};
-          if (!rightFillByLeft[rk][lk]) rightFillByLeft[rk][lk]=0;
+          if (!rightFill[rk]) rightFill[rk] = 0;
 
           var bandH_l = w * lUnit;
           var bandH_r = w * rUnit;
           var ly0 = lBlock.y + lBlock.filled;
           var ly1 = ly0 + bandH_l;
-          var ry0 = rBlock.y + rightFillByLeft[rk][lk];
+          var ry0 = rBlock.y + rightFill[rk];
           var ry1 = ry0 + bandH_r;
 
           // Colour: inherit from left axis category
@@ -3272,7 +3271,7 @@ function buildFlowView(canvas, mode) {
           });
 
           lBlock.filled += bandH_l;
-          rightFillByLeft[rk][lk] += bandH_r;
+          rightFill[rk] += bandH_r;
         });
       });
     })(ai);
