@@ -3081,7 +3081,7 @@ function buildFlowView(canvas, mode) {
   var W = Math.max(700, (canvas.parentElement ? canvas.parentElement.clientWidth : 960) - 32);
   var H = Math.max(530, Math.min(680, window.innerHeight - 210));
   var PAD_L=152, PAD_R=162, PAD_T=52, PAD_B=28;
-  var AX_W=16, BLOCK_GAP=6, BAND_OP=0.36;
+  var AX_W=16, BLOCK_GAP=6, BAND_OP=0.72;
   var BAND_HI=0.82, BAND_DIM=0.04;
   var plotH = H - PAD_T - PAD_B;
 
@@ -3285,23 +3285,6 @@ function buildFlowView(canvas, mode) {
     })(ai);
   }
 
-  // ── SVG defs: dashed fill patterns for Phase 2 (provisional) bands ──────
-  var defs = svg.append('defs');
-  // Vertical scan-line pattern per NPG colour — 2px stripe, 1px gap
-  var p2PatIds = {};
-  Object.keys(NPG_COLOR).forEach(function(npg){
-    var col = NPG_COLOR[npg];
-    var patId = 'p2pat-' + npg.replace(/\s/g,'');
-    p2PatIds[npg] = patId;
-    var pat = defs.append('pattern')
-      .attr('id', patId)
-      .attr('width', 3).attr('height', 1)   // repeats every 3px on X axis
-      .attr('patternUnits', 'userSpaceOnUse');
-    // 2px wide vertical stripe, 1px transparent gap
-    pat.append('rect').attr('x',0).attr('y',0).attr('width',2).attr('height',1)
-      .attr('fill', col).attr('opacity', 0.6);
-  });
-
   // Tag each band: phase2 = true if it connects to the NPG axis
   allBands.forEach(function(d){
     d.phase2 = (d.rightKey === 'npg' || d.leftKey === 'npg');
@@ -3311,19 +3294,9 @@ function buildFlowView(canvas, mode) {
   var bandSel = svg.selectAll('path.fband')
     .data(allBands).enter().append('path').attr('class','fband')
     .attr('d', function(d){ return d.path; })
-    .attr('fill', function(d){
-      if (d.phase2) {
-        // Use the dashed pattern for the NPG the band connects to
-        var npgCat = d.rightKey==='npg' ? d.rk : d.lk;
-        return p2PatIds[npgCat] ? 'url(#'+p2PatIds[npgCat]+')' : d.color;
-      }
-      return d.color;
-    })
-    .attr('fill-opacity', function(d){ return d.phase2 ? 0.7 : BAND_OP; })
-    .attr('stroke', function(d){ return d.phase2 ? d.color : 'none'; })
-    .attr('stroke-width', function(d){ return d.phase2 ? 0.5 : 0; })
-    .attr('stroke-opacity', function(d){ return d.phase2 ? 0.2 : 0; })
-    .attr('stroke-dasharray', function(d){ return d.phase2 ? '3,3' : 'none'; });
+    .attr('fill', function(d){ return d.color; })
+    .attr('fill-opacity', function(d){ return d.phase2 ? 0.18 : BAND_OP; })
+    .attr('stroke', 'none');
 
   // ── Colour helper — returns display colour for a given axis block ────────
   function nodeColor(key, cat) {
@@ -3354,24 +3327,13 @@ function buildFlowView(canvas, mode) {
       .attr('fill', function(d){
         var hit=false;
         startVals.forEach(function(v){ if (d.originSet.has(v)) hit=true; });
-        if (d.phase2) {
-          // Keep pattern fill — just adjust opacity below
-          var npgCat = d.rightKey==='npg' ? d.rk : d.lk;
-          return p2PatIds[npgCat] ? 'url(#'+p2PatIds[npgCat]+')' : d.color;
-        }
-        return hit ? clickColor : d.color;
+        return (hit && !d.phase2) ? clickColor : d.color;
       })
       .attr('fill-opacity', function(d){
         var hit=false;
         startVals.forEach(function(v){ if (d.originSet.has(v)) hit=true; });
-        if (d.phase2) return hit ? 1.0 : BAND_DIM;
+        if (d.phase2) return hit ? 0.35 : 0.06;
         return hit ? BAND_HI : BAND_DIM;
-      })
-      .attr('stroke-opacity', function(d){
-        if (!d.phase2) return 0;
-        var hit=false;
-        startVals.forEach(function(v){ if (d.originSet.has(v)) hit=true; });
-        return hit ? 0.5 : 0.05;
       });
 
     // Block rects + labels: highlight related, dim unrelated
@@ -3398,15 +3360,8 @@ function buildFlowView(canvas, mode) {
   function clearFilter() {
     activeFilter = null;
     bandSel.transition().duration(200)
-      .attr('fill', function(d){
-        if (d.phase2) {
-          var npgCat = d.rightKey==='npg' ? d.rk : d.lk;
-          return p2PatIds[npgCat] ? 'url(#'+p2PatIds[npgCat]+')' : d.color;
-        }
-        return d.color;
-      })
-      .attr('fill-opacity', function(d){ return d.phase2 ? 0.7 : BAND_OP; })
-      .attr('stroke-opacity', function(d){ return d.phase2 ? 0.2 : 0; });
+      .attr('fill', function(d){ return d.color; })
+      .attr('fill-opacity', function(d){ return d.phase2 ? 0.18 : BAND_OP; });
     blockRects.transition().duration(200).attr('fill-opacity', 1);
     blockLabels.transition().duration(200)
       .attr('fill-opacity', 1)
