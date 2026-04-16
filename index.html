@@ -3278,13 +3278,45 @@ function buildFlowView(canvas, mode) {
     })(ai);
   }
 
+  // ── SVG defs: dashed fill patterns for Phase 2 (provisional) bands ──────
+  var defs = svg.append('defs');
+  // Create a horizontal stripe pattern for each NPG colour
+  var p2PatIds = {};
+  Object.keys(NPG_COLOR).forEach(function(npg){
+    var col = NPG_COLOR[npg];
+    var patId = 'p2pat-' + npg.replace(/\s/g,'');
+    p2PatIds[npg] = patId;
+    var pat = defs.append('pattern')
+      .attr('id', patId)
+      .attr('width', 6).attr('height', 6)
+      .attr('patternUnits', 'userSpaceOnUse');
+    // Coloured dash (3px tall), then 3px transparent gap
+    pat.append('rect').attr('width',6).attr('height',2.5)
+      .attr('fill', col).attr('opacity', 0.55);
+  });
+
+  // Tag each band: phase2 = true if it connects to the NPG axis
+  allBands.forEach(function(d){
+    d.phase2 = (d.rightKey === 'npg' || d.leftKey === 'npg');
+  });
+
   // ── Render bands via D3 data binding (enables transition on click) ──────
   var bandSel = svg.selectAll('path.fband')
     .data(allBands).enter().append('path').attr('class','fband')
     .attr('d', function(d){ return d.path; })
-    .attr('fill', function(d){ return d.color; })
-    .attr('fill-opacity', BAND_OP)
-    .attr('stroke', 'none');
+    .attr('fill', function(d){
+      if (d.phase2) {
+        // Use the dashed pattern for the NPG the band connects to
+        var npgCat = d.rightKey==='npg' ? d.rk : d.lk;
+        return p2PatIds[npgCat] ? 'url(#'+p2PatIds[npgCat]+')' : d.color;
+      }
+      return d.color;
+    })
+    .attr('fill-opacity', function(d){ return d.phase2 ? 0.7 : BAND_OP; })
+    .attr('stroke', function(d){ return d.phase2 ? d.color : 'none'; })
+    .attr('stroke-width', function(d){ return d.phase2 ? 0.5 : 0; })
+    .attr('stroke-opacity', function(d){ return d.phase2 ? 0.2 : 0; })
+    .attr('stroke-dasharray', function(d){ return d.phase2 ? '3,3' : 'none'; });
 
   // ── Colour helper — returns the display colour for a given axis block ────
   function nodeColor(key, cat) {
@@ -3310,17 +3342,29 @@ function buildFlowView(canvas, mode) {
     }
 
     // Bands on the traced path: recolour to clicked node's colour so the thread
-    // stays visually consistent all the way through all four axes
+    // stays visually consistent. Phase 2 bands keep their dashed pattern.
     bandSel.transition().duration(200)
       .attr('fill', function(d){
         var hit=false;
         startVals.forEach(function(v){ if (d.originSet.has(v)) hit=true; });
+        if (d.phase2) {
+          // Keep pattern fill — just adjust opacity below
+          var npgCat = d.rightKey==='npg' ? d.rk : d.lk;
+          return p2PatIds[npgCat] ? 'url(#'+p2PatIds[npgCat]+')' : d.color;
+        }
         return hit ? clickColor : d.color;
       })
       .attr('fill-opacity', function(d){
         var hit=false;
         startVals.forEach(function(v){ if (d.originSet.has(v)) hit=true; });
+        if (d.phase2) return hit ? 1.0 : BAND_DIM;
         return hit ? BAND_HI : BAND_DIM;
+      })
+      .attr('stroke-opacity', function(d){
+        if (!d.phase2) return 0;
+        var hit=false;
+        startVals.forEach(function(v){ if (d.originSet.has(v)) hit=true; });
+        return hit ? 0.5 : 0.05;
       });
 
     // Block rects + labels: highlight related, dim unrelated
@@ -3347,8 +3391,15 @@ function buildFlowView(canvas, mode) {
   function clearFilter() {
     activeFilter = null;
     bandSel.transition().duration(200)
-      .attr('fill', function(d){ return d.color; })
-      .attr('fill-opacity', BAND_OP);
+      .attr('fill', function(d){
+        if (d.phase2) {
+          var npgCat = d.rightKey==='npg' ? d.rk : d.lk;
+          return p2PatIds[npgCat] ? 'url(#'+p2PatIds[npgCat]+')' : d.color;
+        }
+        return d.color;
+      })
+      .attr('fill-opacity', function(d){ return d.phase2 ? 0.7 : BAND_OP; })
+      .attr('stroke-opacity', function(d){ return d.phase2 ? 0.2 : 0; });
     blockRects.transition().duration(200).attr('fill-opacity', 1);
     blockLabels.transition().duration(200)
       .attr('fill-opacity', 1)
