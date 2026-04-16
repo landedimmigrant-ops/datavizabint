@@ -2678,55 +2678,39 @@ function renderPodProfile() {
 }
 
 // ── VIEW 8c: Pod Relations ─────────────────────────────────────────────────
-var prFlowMode = 'pod';   // 'pod' = Pods → Research Areas, 'area' = Research Areas → Pods
+var prFlowMode = 'pod';   // 'pod' = Pods → Research Areas → NPGs, 'area' = Areas → Pods → NPGs
 
 function renderPodRelations() {
   var el = document.getElementById('view-podrelations');
 
   el.innerHTML =
     '<div class="pr-body">'
-
-    // ── Phase 1 ──────────────────────────────────────────────────────────────
     + '<div class="pr-phase-section">'
     + '<div class="pr-phase-header">'
-    + '<span class="pr-phase-badge p1">Phase 1</span>'
-    + '<span class="pr-phase-title">Pod \u2194 Research Area Distribution</span>'
-    + '<span class="pr-phase-sub">How projects flow between pods and research areas</span>'
+    + '<span class="pr-phase-title">Phase 1 \u2192 Phase 2 Project Flow</span>'
+    + '<span class="pr-phase-sub">How Phase 1 research flows into Phase 2 Network Project Groups</span>'
     + '</div>'
     + '<div class="pr-phase-canvas" id="pr-canvas-p1"></div>'
     + '<div class="pr-flip-bar">'
-    + '<span class="pr-flip-label">View direction</span>'
+    + '<span class="pr-flip-label">Phase 1 direction</span>'
     + '<button id="pr-flip-pod"  class="pr-flip-btn ' + (prFlowMode==='pod' ?'active':'inactive') + '" onclick="prSetFlow(\'pod\')">'
-    + '<span style="font-size:13px">&#9679;</span> Pods \u2192 Research Areas</button>'
+    + 'Pods \u2192 Research Areas</button>'
     + '<button id="pr-flip-area" class="pr-flip-btn ' + (prFlowMode==='area'?'active':'inactive') + '" onclick="prSetFlow(\'area\')">'
-    + '<span style="font-size:11px">&#9632;</span> Research Areas \u2192 Pods</button>'
+    + 'Research Areas \u2192 Pods</button>'
     + '</div>'
     + '</div>'
+    + '</div>';
 
-    // ── Phase 2 ──────────────────────────────────────────────────────────────
-    + '<div class="pr-phase-section">'
-    + '<div class="pr-phase-header">'
-    + '<span class="pr-phase-badge p2">Phase 2</span>'
-    + '<span class="pr-phase-title">Coming soon</span>'
-    + '</div>'
-    + '<div class="pr-phase2-placeholder">Phase 2 content \u2014 to be defined</div>'
-    + '</div>'
-
-    + '</div>';  // end pr-body
-
-  // Render Phase 1 flow
   var canvas1 = document.getElementById('pr-canvas-p1');
   buildFlowView(canvas1, prFlowMode);
 }
 
 function prSetFlow(mode) {
   prFlowMode = mode;
-  // Update button states
   var bPod  = document.getElementById('pr-flip-pod');
   var bArea = document.getElementById('pr-flip-area');
   if (bPod)  bPod.className  = 'pr-flip-btn ' + (mode==='pod'  ? 'active' : 'inactive');
   if (bArea) bArea.className = 'pr-flip-btn ' + (mode==='area' ? 'active' : 'inactive');
-  // Rebuild flow
   var canvas1 = document.getElementById('pr-canvas-p1');
   if (!canvas1) return;
   canvas1.innerHTML = '';
@@ -3103,23 +3087,54 @@ function buildFlowView(canvas, mode) {
 
   // Toggle is now handled externally by prSetFlow() / pr-flip-bar
 
+  // ── NPG stream mapping ─────────────────────────────────────────────────
+  // Phase 2 Network Project Groups derived from Phase 1 research areas
+  var NPG_A_AREAS = {'Language':1, 'Storytelling':1};
+  var NPG_B_AREAS = {'Env Stewardship':1, 'Environmental Stewardship':1,
+                     'Socio-Neuro AI':1, 'Multi-Agent Systems':1};
+  // "Other" projects explicitly assigned to NPG B (Kite, Two Bears, Sacred Code, DEEP KIN)
+  var NPG_B_OTHER_IDS = {};
+  DATA.projects.forEach(function(p){
+    var area = p.primary_area||'';
+    if (area === 'Other' || area === '') NPG_B_OTHER_IDS[p.id] = true;
+  });
+
+  function npgStream(p) {
+    var area = p.primary_area || '';
+    if (NPG_B_OTHER_IDS[p.id]) return 'NPG B';
+    if (NPG_B_AREAS[area]) return 'NPG B';
+    if (NPG_A_AREAS[area]) return 'NPG A';
+    return 'NPG B';  // fallback
+  }
+
+  var NPG_COLOR = {
+    'NPG A': '#38bdf8',   // blue — language & knowledge
+    'NPG B': '#f59e0b'    // amber — embodied intelligence
+  };
+  var NPG_LABELS = {
+    'NPG A': 'Language &\nKnowledge Systems',
+    'NPG B': 'Embodied Intelligence &\nLand-Based AI'
+  };
+
   // ── Records ────────────────────────────────────────────────────────────
   var records = [];
   DATA.projects.forEach(function(p){
     var pod  = p.pod||'Podless';
     var area = p.primary_area||'Other';
-    records.push({pod:pod, area:area, weight:1,
+    var npg  = npgStream(p);
+    records.push({pod:pod, area:area, npg:npg, weight:1,
                   podColor:podColor(pod), areaColor:areaColor(area),
+                  npgColor:NPG_COLOR[npg]||'#475569',
                   projShort: p.short||p.code||p.id});
   });
 
-  // Axis order driven by mode
+  // Axis order driven by mode — NPG always last (Phase 2 destination)
   var AXES = mode==='pod'
-    ? ['pod','area']
-    : ['area','pod'];
+    ? ['pod','area','npg']
+    : ['area','pod','npg'];
   var AXIS_LABELS = mode==='pod'
-    ? ['Pod','Research Area']
-    : ['Research Area','Pod'];
+    ? ['Pod','Research Area','NPG Stream']
+    : ['Research Area','Pod','NPG Stream'];
 
   // Compute category totals per axis
   function axisCategories(key) {
@@ -3223,12 +3238,23 @@ function buildFlowView(canvas, mode) {
           var ry0 = rBlock.y + rightFillByLeft[rk][lk];
           var ry1 = ry0 + bandH_r;
 
-          // Colour: pod colour from left axis (pod mode) or area colour (area mode)
+          // Colour: inherit from left axis category
           var bandColor;
-          if (leftKey==='pod') {
-            bandColor = podColor(lk);
-          } else {
-            bandColor = areaColor(lk);
+          if (leftKey==='pod')       bandColor = podColor(lk);
+          else if (leftKey==='area') bandColor = areaColor(lk);
+          else if (leftKey==='npg')  bandColor = NPG_COLOR[lk]||'#a898c0';
+          else {
+            // For middle axes, use the dominant start-axis colour
+            var startCounts = {};
+            records.forEach(function(r){
+              if (r[leftKey]===lk && r[rightKey]===rk) {
+                var sKey = AXES[0];
+                var sColor = sKey==='pod' ? podColor(r[sKey]) : areaColor(r[sKey]);
+                startCounts[sColor] = (startCounts[sColor]||0) + r.weight;
+              }
+            });
+            var best = Object.entries(startCounts).sort(function(a,b){return b[1]-a[1];})[0];
+            bandColor = best ? best[0] : '#a898c0';
           }
 
           var midX = (x1+x2)/2;
@@ -3264,6 +3290,7 @@ function buildFlowView(canvas, mode) {
   function nodeColor(key, cat) {
     if (key==='pod')  return podColor(cat);
     if (key==='area') return AREA_COLOR[AREA_NAME_TO_ID[cat]]||'#a898c0';
+    if (key==='npg')  return NPG_COLOR[cat]||'#a898c0';
     return '#a898c0';
   }
 
@@ -3360,6 +3387,35 @@ function buildFlowView(canvas, mode) {
 
   svg.on('click', clearFilter);
 
+  // ── Phase labels + divider ──────────────────────────────────────────────
+  // Phase 1 spans first two axes (pod/area), Phase 2 is the NPG axis
+  var npgIdx = AXES.indexOf('npg');
+  var p1AxStart = axX[0] - 10;
+  var p1AxEnd   = npgIdx > 0 ? (axX[npgIdx-1] + AX_W + axX[npgIdx]) / 2 : axX[AXES.length-1];
+  var p2AxStart = npgIdx >= 0 ? p1AxEnd : W;
+  var p2AxEnd   = npgIdx >= 0 ? axX[npgIdx] + AX_W + 10 : W;
+
+  // Phase 1 badge
+  svg.append('rect').attr('x', p1AxStart).attr('y', 4).attr('width', 52).attr('height', 16)
+    .attr('rx', 8).attr('fill', '#4ade8018').attr('stroke', '#4ade8044').attr('stroke-width', 1);
+  svg.append('text').attr('x', p1AxStart + 26).attr('y', 15)
+    .attr('text-anchor','middle').attr('font-size', 8).attr('font-weight', 800)
+    .attr('fill', '#4ade80').attr('letter-spacing', 1).text('PHASE 1');
+
+  // Phase 2 badge
+  if (npgIdx >= 0) {
+    svg.append('rect').attr('x', p2AxStart + 20).attr('y', 4).attr('width', 52).attr('height', 16)
+      .attr('rx', 8).attr('fill', '#818cf818').attr('stroke', '#818cf844').attr('stroke-width', 1);
+    svg.append('text').attr('x', p2AxStart + 46).attr('y', 15)
+      .attr('text-anchor','middle').attr('font-size', 8).attr('font-weight', 800)
+      .attr('fill', '#818cf8').attr('letter-spacing', 1).text('PHASE 2');
+
+    // Vertical divider between phases
+    svg.append('line').attr('x1', p1AxEnd).attr('x2', p1AxEnd)
+      .attr('y1', PAD_T - 8).attr('y2', H - PAD_B + 8)
+      .attr('stroke', '#818cf833').attr('stroke-width', 1).attr('stroke-dasharray', '4,4');
+  }
+
   // ── Draw axis blocks with click handlers ───────────────────────────────
   var blockData = [];   // accumulate for D3 selections below
   var labelData = [];
@@ -3380,20 +3436,44 @@ function buildFlowView(canvas, mode) {
 
       var col = key==='pod'  ? podColor(c[0])
               : key==='area' ? (AREA_COLOR[AREA_NAME_TO_ID[c[0]]]||'#a898c0')
+              : key==='npg'  ? (NPG_COLOR[c[0]]||'#a898c0')
               : '#a898c0';
 
       blockData.push({key:key, cat:c[0], ai:ai, x:x, y:block.y,
                       h:Math.max(block.h,2), col:col});
 
       var isFirst = ai===0;
+      var isLast  = ai===AXES.length-1;
       var labelX  = isFirst ? x-6 : x+AX_W+6;
       var anchor  = isFirst ? 'end' : 'start';
-      var maxLen  = (isFirst||ai===AXES.length-1) ? 22 : 14;
+      var maxLen  = (isFirst||isLast) ? 30 : 14;
       var name    = c[0].length>maxLen ? c[0].slice(0,maxLen-1)+'\u2026' : c[0];
-      var fullLbl = name+' \u00b7 '+Math.round(c[1]);
-      if (block.h>=7) {
-        labelData.push({key:key, cat:c[0], ai:ai, x:labelX,
-                        y:block.y+block.h/2, anchor:anchor, col:col, text:fullLbl});
+
+      // For NPG axis, show the full descriptive name + count
+      if (key==='npg' && NPG_LABELS[c[0]]) {
+        var lines = NPG_LABELS[c[0]].split('\n');
+        var countTxt = Math.round(c[1]) + ' projects';
+        if (block.h >= 7) {
+          // Multi-line label for NPG
+          var npgY = block.y + block.h/2;
+          lines.forEach(function(line, li){
+            labelData.push({key:key, cat:c[0], ai:ai, x:labelX,
+                            y: npgY + (li - (lines.length-1)/2) * 12 - 6,
+                            anchor:anchor, col:col,
+                            text: line, _noClick: false});
+          });
+          // Project count below
+          labelData.push({key:key, cat:c[0], ai:ai, x:labelX,
+                          y: npgY + ((lines.length-1)/2) * 12 + 8,
+                          anchor:anchor, col:'#475569',
+                          text: countTxt, _small: true});
+        }
+      } else {
+        var fullLbl = name+' \u00b7 '+Math.round(c[1]);
+        if (block.h>=7) {
+          labelData.push({key:key, cat:c[0], ai:ai, x:labelX,
+                          y:block.y+block.h/2, anchor:anchor, col:col, text:fullLbl});
+        }
       }
     });
   });
@@ -3421,8 +3501,10 @@ function buildFlowView(canvas, mode) {
     .attr('x', function(d){ return d.x; }).attr('y', function(d){ return d.y; })
     .attr('text-anchor', function(d){ return d.anchor; })
     .attr('dominant-baseline','middle')
-    .attr('font-size', 9).attr('fill', function(d){ return d.col; })
-    .attr('font-weight','600').attr('pointer-events','all')
+    .attr('font-size', function(d){ return d._small ? 8 : 9; })
+    .attr('fill', function(d){ return d.col; })
+    .attr('font-weight', function(d){ return d._small ? '400' : '600'; })
+    .attr('pointer-events','all')
     .style('cursor','pointer')
     .text(function(d){ return d.text; })
     .on('click', function(ev, d){
